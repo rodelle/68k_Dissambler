@@ -47,7 +47,7 @@ Done
 * GetBits(value, lowerBit, numBits)
 * Args: D0 (value), D1(lowerBit), D2(numBits)
 * Returns the bits from value[lowerBit] to value[lowerBit + numBits]
-* ex. GetBits(1111 0110 0111, 3, 5) = 1111 [0110 0]111 = 00110
+* ex. GetBits(1111 0110 0111, 3, 5) = 1111 [0110 0]111 = 01100
 *****************************************************************************
 GetBits
     MOVE.L  D3,-(SP)    * callee save D3 so it can be used by the function
