@@ -53,6 +53,8 @@ sMOVEM   EQU    $501
 START    ORG    $1000            ; first instruction of program
     
 ProgramStart
+    JSR PrintHexadecimal
+
     MOVE.L  #kStartMessage,D0 * load start message as arg1
     JSR     PrintMessage
 
@@ -108,6 +110,29 @@ Done
     MOVE.B  #9,D0 * quits program
     TRAP    #15
 
+* ex. D0=$AFE1 prints "AFE1"
+PrintHexadecimal
+    MOVE.L  #$3DDE,D1
+    MOVEM.L D1-D7, -(SP)    * save registers
+    
+    MOVE.L  D1,D0
+    AND     #$F,D0
+    JSR     PrintLiteral
+    
+    MOVE.L  D1,D0
+    LSR     #4,D0
+    AND     #$F,D0
+    JSR     PrintLiteral
+
+    MOVE.L  D1,D0
+    LSR     #4,D0
+    AND     #$F,D0
+    JSR     PrintLiteral
+
+    MOVEM.L (SP)+, D1-D7    * restore registers
+    JSR     PrintMessage    * print the word
+    RTS
+    
 *****************************************************************************
 * PrintLiteral(wordIndex)
 * Args: D0 ($<size><index>)       
@@ -138,7 +163,13 @@ PrintLiteral
     LEA     StringLiterals,A0
     MULU    D6,D2           * get index into correct string array
     ADD.L   D2,A0           * access the correct string array
-    MOVEA  (A0),A0         * get the string array
+    MOVEA  (A0),A0          * get the string array    
+    
+    * if numCharacters == 0, numCharacters++
+    CMP     #0,D6       
+    BNE     RLPL_Endif
+    ADD     #1,D6           * Add 1 if using StringLiterals0 for numbers    
+RLPL_Endif
     
     ADD     #1,D6           * add one for the null terminator
     MULU    D6,D0           * get the correct array index
@@ -194,6 +225,10 @@ kStartMessage
 kGoodbyeMessage
     DC.B    CR,LF,'Goodbye!',0
 
+StringLiterals0
+    DC.B    '0',0,'1',0,'2',0,'3',0,'4',0,'5',0,'6',0,'7',0,'8',0,'9',0
+    DC.B    'A',0,'B',0,'C',0,'D',0,'E',0,'F',0
+
 StringLiterals1
     DC.B    '0',0,'1',0,'2',0,'3',0,'4',0,'5',0,'6',0,'7',0,'8',0,'9',0
     DC.B    '.',0,'#',0,'$',0,'%',0,' ',0
@@ -235,7 +270,7 @@ StringLiterals5
     DC.B    'MOVEM',0,0
 
 StringLiterals 
-    DC.W 0 * 0 character words
+    DC.W StringLiterals0 * numbers
     DC.W StringLiterals1 * 1 character words
     DC.W StringLiterals2 * 2 character words
     DC.W StringLiterals3 * 3 character words
