@@ -52,10 +52,9 @@ sMOVEM   EQU    $501
 
 START    ORG    $1000            ; first instruction of program
     
-* Output
 ProgramStart
-    *MOVE.L  #kStartMessage,D0 * load start message as arg1
-    *JSR     PrintMessage
+    MOVE.L  #kStartMessage,D0 * load start message as arg1
+    JSR     PrintMessage
 
     MOVE    #sOR,D0 * print out literal "ADD"
     JSR PrintLiteral
@@ -102,28 +101,23 @@ ProgramStart
     MOVE    #sCMPI,D0 * print out literal "CMPI"
     JSR PrintLiteral
     
-    BRA      Success
-Success
-    MOVE    #kSuccessMessage,D0
-    JSR     PrintMessage
-    JMP Done
-
-Fail
-    MOVE    #kFailMessage,D0
-    JSR     PrintMessage
-    JMP Done
-
 Done
     MOVE    #kGoodbyeMessage,D0
     JSR     PrintMessage
 
     MOVE.B  #9,D0 * quits program
     TRAP    #15
-    
+
+*****************************************************************************
+* PrintLiteral(wordIndex)
+* Args: D0 ($<size><index>)       
+* Prints the word using the size and index to look up values in a
+* pre-initialized 2d array of words.
+* ex. PrintLiteral($30A) prints out the 10th, 3 letter word, or "ROL"
+*     Words have been assigned user-friendly constants for your pleasure.
+*     Passing in sMOVE as an argument to PrintLiteral prints out "MOVE", etc.
+*****************************************************************************
 PrintLiteral
-    * if d0 == 0, print newline
-    * if d0 == beef, print tab
-    * if d0 == dead, print space
     MOVEM.L D1-D7, -(SP)    * save registers
     MOVE.L  D0,D7           * save D0
     MOVE.L  #8,D1
@@ -180,9 +174,11 @@ GetBits
 *   to print out its contents as a string
 *****************************************************************************
 PrintMessage        * void PrintMessage(String* message)
+    MOVEM.L D1-D7, -(SP)    * save registers
     MOVEA.L D0,A1   * load address of message from argument 1
     MOVE.B  #14,D0  * print contents of A1
     TRAP    #15     
+    MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
 
 kFailMessage
@@ -193,7 +189,7 @@ kSuccessMessage
 
 kStartMessage
     DC.B    'This function allows users to print from a set of literal words '
-    DC.B    'by passing in an index ',CR,LF,CR,LF,0
+    DC.B    CR,LF,'by passing in an index ',CR,LF,CR,LF,0
 
 kGoodbyeMessage
     DC.B    CR,LF,'Goodbye!',0
