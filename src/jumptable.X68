@@ -5,7 +5,6 @@
 * Description: Jump tables arranged to take advantage of
 *              offset
 *-----------------------------------------------------------
-
 * print constants 
 CR                  EQU     $0D
 LF                  EQU     $0A
@@ -152,20 +151,20 @@ JumpUsingFuncTable
 * Returns the bits from value[lowerBit] to value[lowerBit + numBits]
 * ex. GetBits(1111 0110 0111, 3, 5) = 1111 [0110 0]111 = 01100
 GetBits
-    MOVE.L  D4,-(SP)    * callee saves D4 so it can be used by the function
-    MOVE.L  D1,D0       * store initial value in the return register
+        MOVE.L  D4,-(SP)    * save D4 so it can be used by the function
+        MOVE.L  D1,D0       * store initial value in return register
     
-    * bit mask set up
-    CLR     D4
-    MOVE.L  #1,D4
-    LSL     D3,D4
-    SUB     #1,D4       * create the bit mask
+        * bit mask set up
+        CLR     D4
+        MOVE.L  #1,D4
+        LSL     D3,D4       * calculate 2^n (n = number of bits)
+        SUB     #1,D4       * create the bit mask with 2^n-1
     
-    LSR     D2,D0       * discard lower bits of the value (shift into place)
-    AND.L   D4,D0       * mask off the higher bits of the value
+        LSR     D2,D0       * shift right, discarding lower bits
+        AND.L   D4,D0       * mask out higher bits
 
-    MOVE.L  (SP)+,D4    * restore used register(s)
-    RTS
+        MOVE.L  (SP)+,D4    * restore used register(s)
+        RTS
 
 
 ; void Func_NO_OP()
