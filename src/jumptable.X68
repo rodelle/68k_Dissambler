@@ -6,43 +6,44 @@
 *              offset
 *-----------------------------------------------------------
 
-; print constants 
+* print constants 
 CR                  EQU     $0D
 LF                  EQU     $0A
 
-; opcode examples (first nibble)
-; for testing function jump table
-MOVE_B_OP           EQU     %0001
-MOVE_L_OP           EQU     %0010
-BCLR_ORI_CMPI_OP    EQU     %0000
-MOVE_W_OP           EQU     %0011
-MISC_OP             EQU     %0100
-SUBQ_OP             EQU     %0101
-BRANCH_OP           EQU     %0110
-NO_OP_1             EQU     %0111
-OR_DIVS_OP          EQU     %1000
-SUB_OP              EQU     %1001
-NO_OP_2             EQU     %1010
-CMP_EOR_OP          EQU     %1011
-MULS_OP             EQU     %1100
-ADD_OP              EQU     %1101
-SHIFT_OP            EQU     %1110
-NO_OP_3             EQU     %1111
+* opcode examples
+* for testing function jump table
+* only first 4 bits matter (rest is made up)
+MOVE_B_OP           EQU     %0001001111111111
+MOVE_L_OP           EQU     %0010000000000000
+BCLR_ORI_CMPI_OP    EQU     %0000000000000000
+MOVE_W_OP           EQU     %0011000000000000
+MISC_OP             EQU     %0100001111111111
+SUBQ_OP             EQU     %0101000000000000
+BRANCH_OP           EQU     %0110000000000000
+NO_OP_1             EQU     %0111000000000000
+OR_DIVS_OP          EQU     %1000001111111111
+SUB_OP              EQU     %1001000000000000
+NO_OP_2             EQU     %1010000000000000
+CMP_EOR_OP          EQU     %1011000000000000
+MULS_OP             EQU     %1100001111111111
+ADD_OP              EQU     %1101000000000000
+SHIFT_OP            EQU     %1110001111111111
+NO_OP_3             EQU     %1111000000000000
 
 
-START   ORG     $1000   ; first instruction of program
+START   ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Print
         
-        ; test opcodes
+        * test opcodes
         
-        MOVE.L  #MOVE_W_OP,D1           ; test move.w function
+        MOVE.L  #MOVE_W_OP,D1           * test move.w function
         JSR     JumpUsingFuncTable
         
-        MOVE.L  #BCLR_ORI_CMPI_OP,D1    ; test bclr function
+        MOVE.L  #BCLR_ORI_CMPI_OP,D1    * test bclr function
         JSR     JumpUsingFuncTable
         
-        MOVE.L  #MISC_OP,D1             ; test misc function
+        MOVE.L  #MISC_OP,D1             * test misc function
         JSR     JumpUsingFuncTable
         
         MOVE.L  #SHIFT_OP,D1
@@ -88,7 +89,6 @@ START   ORG     $1000   ; first instruction of program
 DONE    MOVE.B  #9,D0  ; terminate program
         TRAP    #15
 
-
 FuncTable
         DC.L    Func_BCLR_ORI_CMPI
         DC.L    Func_MOVE_B
@@ -107,35 +107,65 @@ FuncTable
         DC.L    Func_SHIFT
         DC.L    Func_NO_OP
 
+
 *-----------------------------------------------------------
 * Functions
 *-----------------------------------------------------------
 
-; void Print(D1 = Msg Address)
-; no changes to registers
-Print   MOVEM.L D0,-(SP)
+* void Print(MsgAddress)
+*            D1
+Print   MOVEM.L D0/A1,-(SP)
+        
         MOVEA   D1,A1
         MOVE.B  #14,D0
         TRAP    #15
-        MOVEM.L (SP)+,D0
+        
+        MOVEM.L (SP)+,D0/A1
         RTS
         
 
-; void JumpUsingFuncTable(D1 = OpcodeNibble0)
-; no changes to registers
+* void JumpUsingFuncTable(2-word-opcode)
+*                         D1
 JumpUsingFuncTable
-        MOVEM.L D1/A1,-(SP)     ; save A1 and D1
+        MOVEM.L D0-D3/A1,-(SP)     * save registers that will be modified
         
-        ; multiply nibble by 4 to get longword offset
-        ; into the func table (DC.L)
-        LSL.L   #2,D1
-        LEA     FuncTable,A1    ; get the func table address
-        ADD.L   D1,A1           ; offset into table
-        MOVEA.L (A1),A1         ; dereference offset
-        JSR     (A1)            ; dereference and call function
+        * get the 4 MSBits of the address
+        * D1 already contains opcode
+        MOVE.L #12,D2 * starting at bit 12
+        MOVE.L #4,D3  * get 4 bits
+        JSR GetBits   * (returns result in D0)
         
-        MOVEM.L (SP)+,D1/A1     ; restore A1 and D1
+        * multiply nibble by 4 to get longword offset
+        * into the func table (DC.L)
+        LSL.L   #2,D0
+        LEA     FuncTable,A1    * get the func table address
+        ADD.L   D0,A1           * offset into table
+        MOVEA.L (A1),A1         * dereference offset
+        JSR     (A1)            * dereference and call function
+        
+        MOVEM.L (SP)+,D0-D3/A1     * restore registers
         RTS
+
+
+* int GetBits(value, lowerBit, numBits)
+* D0          D1     D2        D3
+* Returns the bits from value[lowerBit] to value[lowerBit + numBits]
+* ex. GetBits(1111 0110 0111, 3, 5) = 1111 [0110 0]111 = 01100
+GetBits
+    MOVE.L  D4,-(SP)    * callee saves D4 so it can be used by the function
+    MOVE.L  D1,D0       * store initial value in the return register
+    
+    * bit mask set up
+    CLR     D4
+    MOVE.L  #1,D4
+    LSL     D3,D4
+    SUB     #1,D4       * create the bit mask
+    
+    LSR     D2,D0       * discard lower bits of the value (shift into place)
+    AND.L   D4,D0       * mask off the higher bits of the value
+
+    MOVE.L  (SP)+,D4    * restore used register(s)
+    RTS
 
 
 ; void Func_NO_OP()
@@ -241,25 +271,26 @@ Func_SHIFT
 * Data
 *-----------------------------------------------------------
 
-; messages for tracing output
-START_MSG           DC.B    'Jump table example',CR,LF,0
-NO_OP_MSG           DC.B    'Invalid instruction',CR,LF,0
-MOVE_W_MSG          DC.B    'MOVE.W instruction',CR,LF,0
-MOVE_B_MSG          DC.B    'MOVE.B instruction',CR,LF,0
-MOVE_L_MSG          DC.B    'MOVE.L instruction',CR,LF,0
-BCLR_ORI_CMPI_MSG   DC.B    'BCLR/ORI/CMPI instruction',CR,LF,0
+* messages for tracing output
+START_MSG           DC.B    'Jump table example',CR,LF,'------------------',CR,LF,0
+NO_OP_MSG           DC.B    'Error: invalid instruction opcode',CR,LF,0
+MOVE_W_MSG          DC.B    'MOVE.W          instruction',CR,LF,0
+MOVE_B_MSG          DC.B    'MOVE.B          instruction',CR,LF,0
+MOVE_L_MSG          DC.B    'MOVE.L          instruction',CR,LF,0
+BCLR_ORI_CMPI_MSG   DC.B    'BCLR/ORI/CMPI   instruction',CR,LF,0
 MISC_MSG            DC.B    'JSR/LEA/RTS/NEG/DIVS/MULS/MOVEM instruction',CR,LF,0
-SUBQ_MSG            DC.B    'SUBQ instruction',CR,LF,0
-BRANCH_MSG          DC.B    'Bcc/BRA instruction',CR,LF,0
-OR_DIVS_MSG         DC.B    'OR/DIVS instruction',CR,LF,0
-SUB_MSG             DC.B    'SUB instruction',CR,LF,0
-CMP_EOR_MSG         DC.B    'CMP/EOR instruction',CR,LF,0
-MULS_MSG            DC.B    'MULS instruction',CR,LF,0
-ADD_MSG             DC.B    'ADD instruction',CR,LF,0
+SUBQ_MSG            DC.B    'SUBQ            instruction',CR,LF,0
+BRANCH_MSG          DC.B    'Bcc/BRA         instruction',CR,LF,0
+OR_DIVS_MSG         DC.B    'OR/DIVS         instruction',CR,LF,0
+SUB_MSG             DC.B    'SUB             instruction',CR,LF,0
+CMP_EOR_MSG         DC.B    'CMP/EOR         instruction',CR,LF,0
+MULS_MSG            DC.B    'MULS            instruction',CR,LF,0
+ADD_MSG             DC.B    'ADD             instruction',CR,LF,0
 SHIFT_MSG           DC.B    'LSR/LSL/ASR/ASL instruction',CR,LF,0
 
 
-        END    START        ; last line of source
+        END    START        * last line of source
+
 
 
 *~Font name~Courier New~
