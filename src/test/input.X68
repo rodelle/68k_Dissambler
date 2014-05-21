@@ -62,6 +62,7 @@ START    ORG    $1000
 ProgramStart
 
     JSR GetFourHexBitsFromUser
+    
     MOVE.B #8, D1
     JSR PrintHexadecimal
     
@@ -71,20 +72,23 @@ Done
 
     MOVE.B  #9,D0 * quits program
     TRAP    #15
-
+    
+*****************************************************************************
 * GetFourHexBitsFromUser()
+* Args: None
 * Returns the hexadecimal value of the next 4 characters entered by the user
-* Ex. "AD12" returns #$AD12
+* Ex. "AD12" returns $AD12
+*****************************************************************************
 GetFourHexBitsFromUser
     MOVEM.L D2-D4, -(SP) * Save used registers
     CLR     D2
+    CLR     D0
     MOVE.B  #4,D3 * Read the next 4 letters entered by user
     
 GFHBRL_DoWhile
-    MOVE.B  #5,D0 * Get input from the user
+    MOVE.B  #5,D0 * Reads letter from the user into D1
     TRAP    #15
 
-    MOVE.L  D1,D0
     JSR ValueFromHexadecimal * convert to decimal
 
     LSL.L   #4,D2 * Create space for next hex bit
@@ -99,23 +103,28 @@ GFHBRL_Done
     MOVEM.L (SP)+, D2-D4 * Restore used registers
     RTS
 
-* subrtract 48 if between 0-9
-* subtract 55 if between A-F
-* D0, the ascii value
-* return, the decimal value
+*****************************************************************************
+* ValueFromHexAscii(hexNumber)
+* Args: D1 (the hexBit ascii value)
+* Converts the hex bit ascii value into decimal value
+* Ex. ValueFromHexAscii(65) = $A * The ascii value of 'A' is 65
+*     ValueFromHexAscii(51) = $3 * The ascii value of '3' is 51
+*****************************************************************************
 ValueFromHexadecimal
-    CMP.B   #58,D0      * Ascii Value '9' is at 57
+    MOVEM.L D2, -(SP)   * save registers
+    CMP.B   #58,D1      * Ascii Value '9' is at 57
     BLT     VFHRL_ParseNumber
     BRA     VFHRL_ParseLetter
 
 VFHRL_ParseNumber
-    SUB.B   #48,D0
+    SUB.B   #48,D1      * Ascii value '0' = 48
     BRA VFHRL_Done
 VFHRL_ParseLetter
-    SUB.B   #55,D0
+    SUB.B   #55,D1      * Ascii value 'A' = 65
 VFHRL_Done
+    MOVE.L  D1,D0
+    MOVEM.L (SP)+, D2   * restore used registers
     RTS
-    
 
 *****************************************************************************
 * PrintHexadecimal(number, size)
