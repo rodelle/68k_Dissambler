@@ -11,9 +11,13 @@ LF                  EQU     $0A
 
 * opcode examples
 * for testing function jump table
-* only first 4 bits matter (rest is made up)
-MOVE_B_OP           EQU     %0001001111111111
 MOVE_L_OP           EQU     %0010000000000000
+MOVEA_L_OP          EQU     %0010000001000000
+MOVE_W_OP           EQU     %0011000000000000
+MOVEA_W_OP          EQU     %0011000001000000
+
+
+MOVE_B_OP           EQU     %0001001111111111
 BCLR_ORI_CMPI_OP    EQU     %0000000000000000
 MOVE_W_OP           EQU     %0011000000000000
 MISC_OP             EQU     %0100001111111111
@@ -36,52 +40,65 @@ START   ORG     $1000   * first instruction of program
         
         * test opcodes
         
-        MOVE.L  #MOVE_W_OP,D1           * test move.w function
-        JSR     JumpUsingFuncTable
         
-        MOVE.L  #BCLR_ORI_CMPI_OP,D1    * test bclr function
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #MISC_OP,D1             * test misc function
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #SHIFT_OP,D1
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #MULS_OP,D1
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #ADD_OP,D1
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #CMP_EOR_OP,D1
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #SUB_OP,D1
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #OR_DIVS_OP,D1
-        JSR     JumpUsingFuncTable
-        
-        MOVE.L  #BRANCH_OP,D1
-        JSR     JumpUsingFuncTable
-           
-        MOVE.L  #SUBQ_OP,D1
-        JSR     JumpUsingFuncTable
-                
-        MOVE.L  #MOVE_B_OP,D1
-        JSR     JumpUsingFuncTable
-                
         MOVE.L  #MOVE_L_OP,D1
         JSR     JumpUsingFuncTable
         
-        ; test errors
-        MOVE.L  #NO_OP_1,D1             
+        MOVE.L  #MOVEA_L_OP,D1
         JSR     JumpUsingFuncTable
-        MOVE.L  #NO_OP_2,D1             
+        
+        MOVE.L  #MOVE_W_OP,D1
         JSR     JumpUsingFuncTable
-        MOVE.L  #NO_OP_3,D1             
-        JSR     JumpUsingFuncTable
+        
+        MOVE.L  #MOVEA_W_OP,D1
+        JSR     JumpUsingFuncTable        
+        
+*        MOVE.L  #MOVE_W_OP,D1           * test move.w function
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #BCLR_ORI_CMPI_OP,D1    * test bclr function
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #MISC_OP,D1             * test misc function
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #SHIFT_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #MULS_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #ADD_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #CMP_EOR_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #SUB_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #OR_DIVS_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        MOVE.L  #BRANCH_OP,D1
+*        JSR     JumpUsingFuncTable
+*           
+*        MOVE.L  #SUBQ_OP,D1
+*        JSR     JumpUsingFuncTable
+*                
+*        MOVE.L  #MOVE_B_OP,D1
+*        JSR     JumpUsingFuncTable
+*                
+*        MOVE.L  #MOVE_L_OP,D1
+*        JSR     JumpUsingFuncTable
+*        
+*        ; test errors
+*        MOVE.L  #NO_OP_1,D1             
+*        JSR     JumpUsingFuncTable
+*        MOVE.L  #NO_OP_2,D1             
+*        JSR     JumpUsingFuncTable
+*        MOVE.L  #NO_OP_3,D1             
+*        JSR     JumpUsingFuncTable
                 
         JMP     DONE
 
@@ -91,8 +108,8 @@ DONE    MOVE.B  #9,D0  ; terminate program
 FuncTable
         DC.L    Func_BCLR_ORI_CMPI
         DC.L    Func_MOVE_B
-        DC.L    Func_MOVE_L
-        DC.L    Func_MOVE_W        
+        DC.L    Func_MOVE_MOVEA_L
+        DC.L    Func_MOVE_MOVEA_W        
         DC.L    Func_MISC        
         DC.L    Func_SUBQ
         DC.L    Func_BRANCH
@@ -123,7 +140,7 @@ Print   MOVEM.L D0/A1,-(SP)
         RTS
         
 
-* void JumpUsingFuncTable(2-word-opcode)
+* void JumpUsingFuncTable(opcode)
 *                         D1
 JumpUsingFuncTable
         MOVEM.L D0-D3/A1,-(SP)     * save registers that will be modified
@@ -140,7 +157,7 @@ JumpUsingFuncTable
         LEA     FuncTable,A1    * get the func table address
         ADD.L   D0,A1           * offset into table
         MOVEA.L (A1),A1         * dereference offset
-        JSR     (A1)            * dereference and call function
+        JSR     (A1)            * dereference and call function (D1 contains opcode)
         
         MOVEM.L (SP)+,D0-D3/A1     * restore registers
         RTS
@@ -167,9 +184,83 @@ GetBits
         RTS
 
 
-; void Func_NO_OP()
-Func_NO_OP
-        MOVE    #NO_OP_MSG,D1
+* void Func_MOVE_MOVEA_L(opcode)
+*                        D1
+Func_MOVE_MOVEA_L
+        MOVE.L  D4,-(SP)    * save D1 so it can be modified
+        
+        MOVE.L  #6,D2       * get bit 6
+        MOVE.L  #3,D3       * to bit 8
+        JSR     GetBits     * store result in D0
+        
+        * if (D0 contains 1)
+        CMP     #1,D0
+        * then the function is MOVEA
+        BEQ     CALL_MOVEA_Func_MOVE_MOVEA_L
+        
+        * else it is MOVE
+        JSR     Func_MOVE_L
+        BRA     DONE_Func_MOVE_MOVEA_L
+
+CALL_MOVEA_Func_MOVE_MOVEA_L
+        JSR     Func_MOVEA_L
+
+DONE_Func_MOVE_MOVEA_L
+        * done determining between move and movea
+        MOVE.L  (SP)+,D1    * restore D1
+        RTS
+
+
+* void Func_MOVEA_L()              
+Func_MOVEA_L
+        MOVE    #MOVEA_L_MSG,D1
+        JSR     Print
+        RTS
+        
+        
+* void Func_MOVE_L()             
+Func_MOVE_L
+        MOVE    #MOVE_L_MSG,D1
+        JSR     Print
+        RTS
+
+
+; void Func_MOVE_MOVEA_W()
+Func_MOVE_MOVEA_W
+        MOVE.L  D4,-(SP)    * save D1 so it can be modified
+        
+        MOVE.L  #6,D2       * get bit 6
+        MOVE.L  #3,D3       * to bit 8
+        JSR     GetBits     * store result in D0
+        
+        * if (D0 contains 1)
+        CMP     #1,D0
+        * then the function is MOVEA
+        BEQ     CALL_MOVEA_Func_MOVE_MOVEA_W
+        
+        * else it is MOVE
+        JSR     Func_MOVE_W
+        BRA     DONE_Func_MOVE_MOVEA_W
+
+CALL_MOVEA_Func_MOVE_MOVEA_W
+        JSR     Func_MOVEA_W
+
+DONE_Func_MOVE_MOVEA_W
+        * done determining between move and movea
+        MOVE.L  (SP)+,D1    * restore D1
+        RTS
+        
+
+* void Func_MOVEA_W()              
+Func_MOVEA_W
+        MOVE    #MOVEA_W_MSG,D1
+        JSR     Print
+        RTS
+        
+        
+* void Func_MOVE_W()             
+Func_MOVE_W
+        MOVE    #MOVE_W_MSG,D1
         JSR     Print
         RTS
         
@@ -179,20 +270,6 @@ Func_MOVE_B
         MOVE    #MOVE_B_MSG,D1
         JSR     Print
         RTS     
-        
-        
-; void Func_MOVE_W()
-Func_MOVE_W
-        MOVE    #MOVE_W_MSG,D1
-        JSR     Print
-        RTS
-
-
-; void Func_MOVE_L()
-Func_MOVE_L
-        MOVE    #MOVE_L_MSG,D1
-        JSR     Print
-        RTS
 
 
 ; void Func_BCLR_ORI_CMPI()
@@ -265,6 +342,11 @@ Func_SHIFT
         RTS
 
 
+; void Func_NO_OP()
+Func_NO_OP
+        MOVE    #NO_OP_MSG,D1
+        JSR     Print
+        RTS
 
 *-----------------------------------------------------------
 * Data
@@ -274,8 +356,10 @@ Func_SHIFT
 START_MSG           DC.B    'Jump table example',CR,LF,'------------------',CR,LF,0
 NO_OP_MSG           DC.B    'Error: invalid instruction opcode',CR,LF,0
 MOVE_W_MSG          DC.B    'MOVE.W          instruction',CR,LF,0
+MOVEA_W_MSG         DC.B    'MOVEA.W          instruction',CR,LF,0
 MOVE_B_MSG          DC.B    'MOVE.B          instruction',CR,LF,0
 MOVE_L_MSG          DC.B    'MOVE.L          instruction',CR,LF,0
+MOVEA_L_MSG         DC.B    'MOVEA.L         instruction',CR,LF,0
 BCLR_ORI_CMPI_MSG   DC.B    'BCLR/ORI/CMPI   instruction',CR,LF,0
 MISC_MSG            DC.B    'JSR/LEA/RTS/NEG/DIVS/MULS/MOVEM instruction',CR,LF,0
 SUBQ_MSG            DC.B    'SUBQ            instruction',CR,LF,0
@@ -290,9 +374,3 @@ SHIFT_MSG           DC.B    'LSR/LSL/ASR/ASL instruction',CR,LF,0
 
         END    START        * last line of source
 
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
