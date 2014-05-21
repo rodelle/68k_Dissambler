@@ -176,7 +176,7 @@ PrintLiteral
     JSR     GetBits         * get the number of characters in the word
     MOVE.L  D0,D6
     
-    MOVE.L   D7,D0          * restore the original argument
+    MOVE.L  D7,D0          * restore the original argument
     MOVE.L  #0,D1
     MOVE    #8,D2
     JSR     GetBits         * get the array index containg the correct string
@@ -281,9 +281,6 @@ StringLiterals
 
 
     END START
-
-
-
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
