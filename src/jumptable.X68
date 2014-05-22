@@ -83,7 +83,7 @@ JumpUsingFuncTable
         MOVEM.L D0-D3/A1,-(SP)     * save registers that will be modified
         
         * get the 4 MSBits of the address
-        MOVE.L  A5,D1       * copy current "PC" into D1
+        MOVE.L  (A5),D1       * copy current "PC" into D1
         MOVE.L  #12,D2      * starting at bit 12
         MOVE.L  #4,D3       * get 4 bits
         JSR     GetBits     * (returns result in D0)
@@ -391,6 +391,7 @@ NO_MORE_OPS         DC.W     %0000000000000000
 
 
         END    START        * last line of source
+
 
 
 
