@@ -9,24 +9,24 @@
 CR              EQU     $0D
 LF              EQU     $0A
 
-Func_Dn         EQU     1     * 000 xxx 0
-Func_An         EQU     2     * 001 xxx 1
-Func_An_i       EQU     3     * 010 xxx 2
-Func_An_ip      EQU     4     * 011 xxx 3
-Func_An_im      EQU     5     * 100 xxx 4
-Func_Junk       EQU     6     * 101 xxx 5-
-Func_Junk_2     EQU     7     * 110 xxx 6-
-Func_Word_A     EQU     8     * 111 000 7
-Func_Long_A     EQU     9     * 111 001 8
-Func_Junk_3     EQU     10    * 101 xxx 9-
-Func_Junk_4     EQU     11    * 110 xxx 10-
-Func_Data       EQU     12    * 111 100 11
+Func_Dn         EQU     0     * 000 xxx 0
+Func_An         EQU     1     * 001 xxx 1
+Func_An_i       EQU     2     * 010 xxx 2
+Func_An_ip      EQU     3     * 011 xxx 3
+Func_An_im      EQU     4     * 100 xxx 4
+Func_Junk       EQU     5     * 101 xxx 5-
+Func_Junk_2     EQU     6     * 110 xxx 6-
+Func_Word_A     EQU     7     * 111 000 7
+Func_Long_A     EQU     8     * 111 001 8
+Func_Junk_3     EQU     9     * 111 010 9-
+Func_Junk_4     EQU     10    * 111 011 10-
+Func_Data       EQU     11    * 111 100 11
 
     
 START       ORG     $1000 
 
             MOVE.B  #%00111001,D1
-            JSR     JumpUsingFuncTable
+            JSR     JumpUsingFuncTableModeReg
 
 DONE        MOVE.B  #9,D0
             TRAP    #15
@@ -49,10 +49,10 @@ FuncTable
 * Functions
 *-----------------------------------------------------------
 
-* void JumpUsingFunctTable(1-Byte-Mode-Register)
-*                          D1
-JumpUsingFuncTable
-            MOVEM.L D0-D4/A1,-(SP)
+* void JumpUsingFuncTable(1-Byte-Mode-Register)
+*                         D1
+JumpUsingFuncTableModeReg
+            MOVEM.L D0-D5/A1,-(SP)
             
             * preping D2/D3 for mode/register
             CLR     D2
@@ -69,7 +69,40 @@ JumpUsingFuncTable
             LSL.B   D4,D3   * And register into LS 3 bits
             LSR.B   D4,D3   * Register
             
-            * get jump value
+            * check if Mode is 0 - 6
+            MOVE.B  #7,D5
+            SUB.B   D2,D5
+            BNE     NO_ADD_TOGETHER
+            BRA     ADD_TOGETHER
+
+* void JamesUsingFuncTable(1-Byte-Register-Mode)
+*                          D1
+JumpUsingFuncTableRegMode
+            MOVEM.L D0-D5/A1,-(SP)
+            
+            * preping D2/D3 for mode/register
+            CLR     D2
+            CLR     D3
+            MOVE.B  D1,D2
+            MOVE.B  D1,D3
+            
+            * get mode
+            MOVE    #3,D4
+            LSR.B   D4,D3
+            
+            * get register
+            MOVE    #5,D4
+            LSL.B   D4,D2
+            LSR.B   D4,D2
+            
+            * check if Mode is 0 - 6
+            MOVE.B  #7,D5
+            SUB.B   D2,D5
+            BNE     ADD_TOGETHER
+            BRA     NO_ADD_TOGETHER
+            
+* get jump value for Word/Long Address OR data
+ADD_TOGETHER            
             LEA     FuncTable,A1
             CLR     D0
             ADD.W   D2,D0
@@ -77,32 +110,25 @@ JumpUsingFuncTable
             MULS.W  #4,D0
             ADD.W   A1,D0
             MOVEA.W D0,A1
+            BRA     END_JumpFuncTable
+
+* get jump value for NON-Word/Long Address OR Data
+NO_ADD_TOGETHER
+            LEA     FuncTable,A1
+            ADD.W   D2,D0
+            MULS.W  #4,D0
+            ADD.W   A1,D0
+            MOVEA.W D0,A1
+            BRA     END_JumpFuncTable
             
+END_JumpFuncTable
+            MOVEM.L (SP)+,D0-D5/A1
             RTS
-
-* int GetBits(value, lowerBit, numBits)
-* D0          D1     D2        D3
-* Returns the bits from value[lowerBit] to value[lowerBit + numBits]
-* ex. GetBits(1111 0110 0111, 3, 5) = 1111 [0110 0]111 = 01100
-GetBits
-        MOVE.L  D4,-(SP)    * save D4 so it can be used by the function
-        MOVE.L  D1,D0       * store initial value in return register
-    
-        * bit mask set up
-        CLR     D4
-        MOVE.L  #1,D4
-        LSL     D3,D4       * calculate 2^n (n = number of bits)
-        SUB     #1,D4       * create the bit mask with 2^n-1
-    
-        LSR     D2,D0       * shift right, discarding lower bits
-        AND.L   D4,D0       * mask out higher bits
-
-        MOVE.L  (SP)+,D4    * restore used register(s)
-        RTS
-
 
 *-----------------------------------------------------------
             END    START        ; last line of source
+
+
 
 *~Font name~Courier New~
 *~Font size~10~
