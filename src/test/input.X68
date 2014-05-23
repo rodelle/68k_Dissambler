@@ -8,63 +8,28 @@
 CR      EQU     $0D
 LF      EQU     $0A    
 
-sA      EQU     $10A
-sD      EQU     $10D
-sDot    EQU     $110
-sHash   EQU     $111
-sDollar EQU     $112
-sPercent EQU    $113
-sPlus   EQU     $114
-sMinus  EQU     $115
-sLParen EQU     $116
-sRParen EQU     $117
-sSpace  EQU     $118
-sComma  EQU     $119
-
-sNewLine EQU    $200
-sOR     EQU     $201
-
-sADD    EQU     $300
-sBCC    EQU     $301
-sBCS    EQU     $302
-sBVC    EQU     $303
-sBGE    EQU     $304
-sBLT    EQU     $305
-sBRA    EQU     $306
-sCMP    EQU     $307
-sEOR    EQU     $308
-sROR    EQU     $309
-sROL    EQU     $30A
-sLSR    EQU     $30B
-sLSL    EQU     $30C
-sASL    EQU     $30D
-sASR    EQU     $30E
-sSUB    EQU     $30F
-sORI    EQU     $310
-sJSR    EQU     $311
-sLEA    EQU     $312
-sRTS    EQU     $313
-sNEG    EQU     $314
-
-sADDA   EQU     $400
-sMOVE   EQU     $401
-sBCLR   EQU     $402
-sDIVS   EQU     $403
-sSUBQ   EQU     $404
-sMULS   EQU     $405
-sCMPI   EQU     $406
-
-sMOVEA   EQU    $500
-sMOVEM   EQU    $501
-
 START    ORG    $1000
     
 ProgramStart
-
-    JSR GetFourHexBitsFromUser
+    MOVE.L #kStartAddressPrompt,D0
+    JSR PrintMessage
     
-    MOVE.B #8, D1
-    JSR PrintHexadecimal
+    JSR GetFourHexBitsFromUser
+    MOVE.L #0,A5
+    MOVEA.L D0,A5
+    
+    MOVE.L #kNewline,D0
+    JSR PrintMessage
+    
+    MOVE.L #kEndAddressPrompt,D0
+    JSR PrintMessage
+    
+    JSR GetFourHexBitsFromUser
+    MOVE.L #0,A6
+    MOVEA.L D0,A6
+    
+    * MOVE.B #4, D1
+    * JSR PrintHexadecimal
     
 Done
     MOVE    #kGoodbyeMessage,D0
@@ -239,8 +204,8 @@ PrintMessage        * void PrintMessage(String* message)
     RTS
 
 kStartMessage
-    DC.B    'These function allows users to print from a set of literal ',CR,LF
-    DC.B    'word by passing in an index or to print a hexadecimal string'
+    DC.B    'This functions grabs two values from the user and stores them ',CR,LF
+    DC.B    'in A5 and A6, the starting and ending address of the test program'
     DC.B    CR,LF,CR,LF,0,0
 
 kGoodbyeMessage
@@ -279,8 +244,20 @@ StringLiterals
     DC.W StringLiterals4 * 4 character words
     DC.W StringLiterals5 * 5 character words
 
+kNewline
+    DC.B CR,LF,0
+
+kStartAddressPrompt
+    DC.B 'Please enter the starting address: ',0
+
+kEndAddressPrompt
+    DC.B 'Please enter the ending address: ',0
+
+kRestartPrompt
+    DC.B 'Would you like to dissamble another program (y/n)? ',0
 
     END START
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
