@@ -27,6 +27,8 @@ START       ORG     $1000
 
             MOVE.B  #%00111001,D1
             JSR     JumpUsingFuncTableModeReg
+            MOVE.B  #%00001111,D1
+            JSR     JumpUsingFuncTableRegMode
 
 DONE        MOVE.B  #9,D0
             TRAP    #15
@@ -98,8 +100,8 @@ JumpUsingFuncTableRegMode
             * check if Mode is 0 - 6
             MOVE.B  #7,D5
             SUB.B   D2,D5
-            BNE     ADD_TOGETHER
-            BRA     NO_ADD_TOGETHER
+            BNE     NO_ADD_TOGETHER
+            BRA     ADD_TOGETHER
             
 * get jump value for Word/Long Address OR data
 ADD_TOGETHER            
