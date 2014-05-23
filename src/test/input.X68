@@ -11,6 +11,25 @@ LF      EQU     $0A
 START    ORG    $1000
     
 ProgramStart
+    JSR GetStartEndAddress
+    
+Done
+    MOVE    #kGoodbyeMessage,D0
+    JSR     PrintMessage
+
+    MOVE.B  #9,D0 * quits program
+    TRAP    #15
+
+*****************************************************************************
+* GetStartEndAddress()
+* Args: None
+* Gets two addresses from the user and assigns them to A5 and A6 respectively
+*   A5 and A6 represent the starting and ending address of the program we
+*   are dissambling.
+* Ex. User enters 8000 and A000 as the starting and ending address
+*     A5 = $00008000, A6 = $0000A000
+*****************************************************************************
+GetStartEndAddress
     MOVE.L #kStartAddressPrompt,D0
     JSR PrintMessage
     
@@ -27,16 +46,7 @@ ProgramStart
     JSR GetFourHexBitsFromUser
     MOVE.L #0,A6
     MOVEA.L D0,A6
-    
-    * MOVE.B #4, D1
-    * JSR PrintHexadecimal
-    
-Done
-    MOVE    #kGoodbyeMessage,D0
-    JSR     PrintMessage
-
-    MOVE.B  #9,D0 * quits program
-    TRAP    #15
+    RTS
     
 *****************************************************************************
 * GetFourHexBitsFromUser()
