@@ -1,8 +1,9 @@
 *-----------------------------------------------------------
-* Title      : 68k Grabs Input from the User and prints it
+* Title      : 68k Input Loop
 * Written by : No Preference
 * Description: Demonstrates the input loop that grabs the 
-*   starting and ending address of the test program.
+*   starting and ending address of the test program then 
+*   prompts the user to restart the program.
 *-----------------------------------------------------------
 
 CR      EQU     $0D
@@ -10,16 +11,58 @@ LF      EQU     $0A
 
 START    ORG    $1000
     
-ProgramStart
-    JSR GetStartEndAddress
+NoPreferenceDissambler
+NPD_DoWhile
+    JSR     GetStartEndAddress  * Grab ending and starting address from user
+    * JSR   BeginDissambly      * Ending and starting address are assigned, begin loop
+                                * parsing each opcode
+    JSR     PromptForReinput    * Ask the user if they want to dissamble another program
+
+    JSR     PrintNewline        * prints newline, does not modify D0
+    CMP     #0,D0
+    BEQ     NPD_DoWhile         * User responded they wish to restart
     
-Done
+NPD_ProgramDone
     MOVE    #kGoodbyeMessage,D0
     JSR     PrintMessage
 
-    MOVE.B  #9,D0 * quits program
+    MOVE.B  #9,D0               * quit program
     TRAP    #15
 
+*****************************************************************************
+* PromptForReinput()
+* Args: None
+* Prompts the user with a question to restart the program and grabs a single
+*   character input as response.
+* Returns 0 if the user responded yes, 1 otherwise
+* Ex. "Would you like to restart the program (y/n)?" y => D0 = 0
+*     "Would you like to restart the program (y/n)?" n => D0 = 1
+*****************************************************************************
+PromptForReinput
+    MOVE.L #kRestartPrompt,D0
+    JSR PrintMessage
+    
+    MOVE.B  #5,D0 * Reads letter from the user into D1
+    TRAP    #15
+    
+    MOVE.B  D1,D2
+    SUB.B   #121,D2 * compare to 'y'
+    BEQ     PFRRL_ReturnTrue
+    
+    MOVE.B  D1,D2
+    SUB.B   #89,D1 * compare to 'Y'
+    BEQ     PFRRL_ReturnTrue
+    
+    BRA PFRRL_ReturnFalse * else use says no
+    
+PFRRL_ReturnFalse
+    MOVE #1,D0
+    RTS
+    
+PFRRL_ReturnTrue
+    MOVE #0,D0
+    RTS
+    
 *****************************************************************************
 * GetStartEndAddress()
 * Args: None
@@ -37,8 +80,7 @@ GetStartEndAddress
     MOVE.L #0,A5
     MOVEA.L D0,A5
     
-    MOVE.L #kNewline,D0
-    JSR PrintMessage
+    JSR PrintNewline
     
     MOVE.L #kEndAddressPrompt,D0
     JSR PrintMessage
@@ -46,6 +88,9 @@ GetStartEndAddress
     JSR GetFourHexBitsFromUser
     MOVE.L #0,A6
     MOVEA.L D0,A6
+    
+    JSR PrintNewline
+    
     RTS
     
 *****************************************************************************
@@ -76,6 +121,18 @@ GFHBRL_DoWhile
 GFHBRL_Done
     MOVE.L  D2,D0
     MOVEM.L (SP)+, D2-D4 * Restore used registers
+    RTS
+
+*****************************************************************************
+* PrintNewline()
+* Args: None
+* Prints a literal newline
+*****************************************************************************
+PrintNewline
+    MOVEM.L D0, -(SP) * Save used registers
+    MOVE.L #kNewline,D0
+    JSR PrintMessage
+    MOVEM.L (SP)+, D0 * Restore used registers
     RTS
 
 *****************************************************************************
@@ -165,13 +222,7 @@ PrintLiteral
     MULU    D6,D2           * get index into correct string array
     ADD.L   D2,A0           * access the correct string array
     MOVEA  (A0),A0          * get the string array    
-    
-    * if numCharacters == 0, numCharacters++
-*    CMP     #0,D6       
-*    BNE     RLPL_Endif
-*    ADD     #1,D6           * Add 1 if using StringLiterals0 for numbers    
-*RLPL_Endif
-    
+       
     ADD     #1,D6           * add one for the null terminator
     MULU    D6,D0           * get the correct array index
     ADD     D0,A0           * access the correct string in the array
