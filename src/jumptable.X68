@@ -60,7 +60,7 @@ JumpTable
         DC.L    Func_CMP_EOR
         DC.L    Func_MULS
         DC.L    Func_ADD_ADDA
-        DC.L    Func_SHIFT
+        DC.L    Func_SHIFT_ROTATE
         DC.L    Func_NO_OP
 
 
@@ -286,7 +286,7 @@ Done_Func_OR_DIVS
 * determines between cmp and eor
 *****************************************************************************
 Func_CMP_EOR
-        MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
+        MOVEM.L  D1,-(SP)    * save D1
 
         CLR.L   D1
         MOVE.W  (A5),D1     * copy current "PC" into D1
@@ -304,14 +304,14 @@ Call_CMP_Func_CMP_EOR
 
 Done_Func_CMP_EOR
         * done determining between cmp and eor
-        MOVEM.L  (SP)+,D1-D3    * restore
+        MOVEM.L  (SP)+,D1    * restore
         RTS
 
 
 *****************************************************************************
 * void Func_Bcc_BRA()
 * second level opcode decoding
-* determines between Bcc and BRA
+* determines between BCS, BVC, BGE, BLT and BRA
 *****************************************************************************
 Func_Bcc_BRA
         MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
@@ -323,21 +323,198 @@ Func_Bcc_BRA
         JSR     Func_GetBits     * store result in D0
 
         * if (D0 contains 0)
-        CMP     #0,D0
-
         * then the instruction is BRA
-        BEQ     Call_BRA_Func_Bcc_BRA
-
-        * else it is some type of Bcc
-        JSR     Func_Bcc
+        CMP     #0,D0
+        BNE     BCS_Func_Bcc_BRA
+        JSR     Func_BRA
         BRA     Done_Func_Bcc_BRA
 
-Call_BRA_Func_Bcc_BRA
-        JSR     Func_BRA
+BCS_Func_Bcc_BRA
+        * else if (D0 is 5)
+        * then the instruction is BCS
+        CMP     #5,D0
+        BNE     BVC_Func_Bcc_BRA
+        JSR     Func_BCS
+        BRA     Done_Func_Bcc_BRA
+        
+BVC_Func_Bcc_BRA
+        * else if (D0 is 8)
+        * then the instruction is BVC
+        CMP     #8,D0
+        BNE     BGE_Func_Bcc_BRA
+        JSR     Func_BVC
+        BRA     Done_Func_Bcc_BRA
+
+BGE_Func_Bcc_BRA
+        * else if (D0 is 12)
+        * then the instruction is BGE
+        CMP     #12,D0
+        BNE     BLT_Func_Bcc_BRA
+        JSR     Func_BGE
+        BRA     Done_Func_Bcc_BRA
+        
+BLT_Func_Bcc_BRA
+        * else if (D0 is 13)
+        * then the instruction is BLT
+        CMP     #13,D0
+        BNE     Error_Func_Bcc_BRA
+        JSR     Func_BLT
+        BRA     Done_Func_Bcc_BRA
+
+Error_Func_Bcc_BRA
+        JSR     Func_NO_OP
 
 Done_Func_Bcc_BRA
-        * done determining between cmp and eor
+        * done determining Bcc/BRA
         MOVEM.L  (SP)+,D1-D3    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_SHIFT_ROTATE()
+* second level opcode decoding
+* determines shift/rotate type
+*****************************************************************************
+Func_SHIFT_ROTATE
+        MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
+
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        MOVE.L  #6,D2       * get bit 6
+        MOVE.L  #2,D3       * to bit 7
+        JSR     Func_GetBits  * store result in D0
+
+        * if (D0 contains 3)
+        CMP     #3,D0
+
+        * then use bits 9 and 10 to determine type
+        BEQ     Use_9_10_Func_SHIFT_ROTATE
+
+        * else use bits 3 and 4
+        MOVE.L  #3,D2
+        MOVE.L  #2,D3
+        BRA     Determine_Type_Func_SHIFT_ROTATE
+
+Use_9_10_Func_SHIFT_ROTATE
+        MOVE.L  #9,D2
+        MOVE.L  #2,D3
+
+Determine_Type_Func_SHIFT_ROTATE
+        JSR     Func_GetBits  * store result in D0
+
+        * if (D0 contains 3)
+        * it is ROx
+        CMP     #3,D0
+        BNE     LSx_Type_Func_SHIFT_ROTATE
+        JSR     Func_ROL_ROR
+        BRA     Done_Func_SHIFT_ROTATE
+
+LSx_Type_Func_SHIFT_ROTATE
+        * else if (D0 contains 1)
+        * it is LSx
+        CMP     #1,D0
+        BNE     ASx_Type_Func_SHIFT_ROTATE
+        JSR     Func_LSL_LSR
+        BRA     Done_Func_SHIFT_ROTATE
+
+ASx_Type_Func_SHIFT_ROTATE
+        * else if (D0 contains 0)
+        * it is ASx
+        CMP     #0,D0
+        BNE     Error_Func_SHIFT_ROTATE
+        JSR     Func_LSL_LSR
+        BRA     Done_Func_SHIFT_ROTATE
+
+Error_Func_SHIFT_ROTATE
+        JSR     Func_NO_OP
+
+Done_Func_SHIFT_ROTATE
+        * done determining asl, asr, lsl, lsr, rol, ror
+        MOVEM.L  (SP)+,D1-D3    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_ASL_ASR()
+* third level opcode decoding
+* determines between asr asl
+*****************************************************************************
+Func_ASL_ASR
+        MOVEM.L  D1,-(SP)       * save D1
+
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        BTST    #8,D1       * test if bit 8 is 0
+
+        * if bit 8 is 0 then the instruction is ASR
+        BEQ     Call_ASR_Func_ASL_ASR
+
+        * else it is ASL
+        JSR     Func_ASL
+        BRA     Done_Func_ASL_ASR
+
+Call_ASR_Func_ASL_ASR
+        JSR     Func_ASR
+
+Done_Func_ASL_ASR
+        * done determining between asr and asl
+        MOVEM.L  (SP)+,D1       * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_LSL_LSR()
+* third level opcode decoding
+* determines between LSR, LSL
+*****************************************************************************
+Func_LSL_LSR
+        MOVEM.L  D1,-(SP)       * save D1
+
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        BTST    #8,D1       * test if bit 8 is 0
+
+        * if bit 8 is 0 then the instruction is LSR
+        BEQ     Call_LSR_Func_LSL_LSR
+
+        * else it is LSL
+        JSR     Func_LSL
+        BRA     Done_Func_LSL_LSR
+
+Call_LSR_Func_LSL_LSR
+        JSR     Func_LSR
+
+Done_Func_LSL_LSR
+        * done determining between LSR and LSL
+        MOVEM.L  (SP)+,D1       * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_ROL_ROR()
+* third level opcode decoding
+* determines between ROR, ROL
+*****************************************************************************
+Func_ROL_ROR
+        MOVEM.L  D1,-(SP)       * save D1
+
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        BTST    #8,D1       * test if bit 8 is 0
+
+        * if bit 8 is 0 then the instruction is ROR
+        BEQ     Call_ROR_Func_ROL_ROR
+
+        * else it is ROL
+        JSR     Func_ROL
+        BRA     Done_Func_ROL_ROR
+
+Call_ROR_Func_ROL_ROR
+        JSR     Func_ROR
+
+Done_Func_ROL_ROR
+        * done determining between ROR and ROL
+        MOVEM.L  (SP)+,D1       * restore
         RTS
 
 
@@ -558,13 +735,67 @@ Func_SUBQ
 
 
 *****************************************************************************
-* void Func_Bcc()
+* void Func_BCS()
 *****************************************************************************
-Func_Bcc
+Func_BCS
         MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
-        MOVE    #Bcc_MSG,D1
+        MOVE    #BCS_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+        
+
+*****************************************************************************
+* void Func_BVC()
+*****************************************************************************
+Func_BVC
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #BVC_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+        
+
+*****************************************************************************
+* void Func_BGE()
+*****************************************************************************
+Func_BGE
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #BGE_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+        
+
+*****************************************************************************
+* void Func_BLT()
+*****************************************************************************
+Func_BLT
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #BLT_MSG,D1
         JSR     Func_Print
 
         * increment A5 by 1 word
@@ -666,13 +897,103 @@ Func_MULS
 
 
 *****************************************************************************
-* void Func_SHIFT()
+* void Func_LSR()
 *****************************************************************************
-Func_SHIFT
+Func_LSR
         MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
-        MOVE    #SHIFT_MSG,D1
+        MOVE    #LSR_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_LSL()
+*****************************************************************************
+Func_LSL
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #LSL_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_ASR()
+*****************************************************************************
+Func_ASR
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #ASR_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_ASL()
+*****************************************************************************
+Func_ASL
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #ASL_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_ROR()
+*****************************************************************************
+Func_ROR
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #ROR_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_ROL()
+*****************************************************************************
+Func_ROL
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #ROL_MSG,D1
         JSR     Func_Print
 
         * increment A5 by 1 word
@@ -700,6 +1021,8 @@ Func_NO_OP
         MOVEM.L  (SP)+,D1    * restore
         RTS
 
+
+
 *****************************************************************************
 * Data
 *****************************************************************************
@@ -721,11 +1044,19 @@ SUB_MSG             DC.B    'SUB.*   <ea>/Dn,Dn/<ea>',CR,LF,0
 SUBQ_MSG            DC.B    'SUBQ.*  #<data>,<ea>',CR,LF,0
 CMP_MSG             DC.B    'CMP.*   <ea>,Dn',CR,LF,0
 EOR_MSG             DC.B    'EOR.*   Dn,<ea>',CR,LF,0
-Bcc_MSG             DC.B    'Bcc     (addr)',CR,LF,0
+BCS_MSG             DC.B    'BCS     (addr)',CR,LF,0
+BVC_MSG             DC.B    'BVC     (addr)',CR,LF,0
+BGE_MSG             DC.B    'BGE     (addr)',CR,LF,0
+BLT_MSG             DC.B    'BLT     (addr)',CR,LF,0
 BRA_MSG             DC.B    'BRA     (addr)',CR,LF,0
+LSR_MSG             DC.B    'LSR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+LSL_MSG             DC.B    'LSL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ASR_MSG             DC.B    'ASR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ASL_MSG             DC.B    'ASL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ROR_MSG             DC.B    'ROR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ROL_MSG             DC.B    'ROL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
 BCLR_ORI_CMPI_MSG   DC.B    'BCLR/ORI/CMPI                    instruction',CR,LF,0
 MISC_MSG            DC.B    'JSR/LEA/RTS/NEG/DIVS/MULS/MOVEM  instruction',CR,LF,0
-SHIFT_MSG           DC.B    'LSR/LSL/ASR/ASL/ROR/ROL          instruction',CR,LF,0
 
 
 
@@ -745,22 +1076,39 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
                 DC.W     %0101000000000000      * SUBQ
                 DC.W     %1011000000000000      * CMP
                 DC.W     %1011000100000000      * EOR
-                DC.W     %0110010000000000      * BCC
                 DC.W     %0110010100000000      * BCS
                 DC.W     %0110100000000000      * BVC
                 DC.W     %0110110000000000      * BGE
                 DC.W     %0110110100000000      * BLT
                 DC.W     %0110000000000000      * BRA
+                DC.W     %1110000000001000      * LSR
+                DC.W     %1110001011000000      * LSR <ea>
+                DC.W     %1110000100001000      * LSL
+                DC.W     %1110001111000000      * LSL <ea>
+                DC.W     %1110000000000000      * ASR
+                DC.W     %1110000011000000      * ASR <ea>
+                DC.W     %1110000100000000      * ASL
+                DC.W     %1110000111000000      * ASL <ea>
+                DC.W     %1110000000011000      * ROR
+                DC.W     %1110011011000000      * ROR <ea>
+                DC.W     %1110000100011000      * ROL
+                DC.W     %1110011111000000      * ROL <ea>
                 DC.W     %0000000000000000      * BCLR, ORI, CMPI
                 DC.W     %0100000000000000      * JSR, LEA, RTS, NEG, DIVS, MULS, MOVEM
-                DC.W     %1110000000000000      * LSR, LSL, ASR, ASL, ROR, ROL
                 DC.W     %0111000000000000      * bad op (based on first 4 bits)
                 DC.W     %1010000000000000      * bad op (based on first 4 bits)
                 DC.W     %1111000000000000      * bad op (based on first 4 bits)
+                DC.W     %0110111100000000      * bad op (variation of Bcc)
+                DC.W     %0110000100000000      * bad op (variation of Bcc)
+                DC.W     %0110001000000000      * bad op (variation of Bcc)
+                DC.W     %0110001100000000      * bad op (variation of Bcc)
+                DC.W     %0110010000000000      * bad op (variation of Bcc)
 NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
+
+
 
 
 
