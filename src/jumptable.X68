@@ -58,7 +58,7 @@ JumpTable
         DC.L    Func_SUB
         DC.L    Func_NO_OP
         DC.L    Func_CMP_EOR
-        DC.L    Func_MULS
+        DC.L    Func_MULS_W
         DC.L    Func_ADD_ADDA
         DC.L    Func_SHIFT_ROTATE
         DC.L    Func_NO_OP
@@ -251,7 +251,7 @@ Done_Func_ADD_ADDA
 *****************************************************************************
 * void Func_OR_DIVS()
 * second level opcode decoding
-* determines between OR and DIVS
+* determines between OR and DIVS.W
 *****************************************************************************
 Func_OR_DIVS
         MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
@@ -264,7 +264,7 @@ Func_OR_DIVS
 
         * if (D0 contains 3)
         CMP     #3,D0
-        * then the instruction is DIVS
+        * then the instruction is DIVS.W
         BEQ     Call_DIVS_Func_OR_DIVS
 
         * else it is OR
@@ -272,7 +272,7 @@ Func_OR_DIVS
         BRA     Done_Func_OR_DIVS
 
 Call_DIVS_Func_OR_DIVS
-        JSR     Func_DIVS
+        JSR     Func_DIVS_W
 
 Done_Func_OR_DIVS
         * done determining between divs and or
@@ -336,7 +336,7 @@ BCS_Func_Bcc_BRA
         BNE     BVC_Func_Bcc_BRA
         JSR     Func_BCS
         BRA     Done_Func_Bcc_BRA
-        
+
 BVC_Func_Bcc_BRA
         * else if (D0 is 8)
         * then the instruction is BVC
@@ -352,7 +352,7 @@ BGE_Func_Bcc_BRA
         BNE     BLT_Func_Bcc_BRA
         JSR     Func_BGE
         BRA     Done_Func_Bcc_BRA
-        
+
 BLT_Func_Bcc_BRA
         * else if (D0 is 13)
         * then the instruction is BLT
@@ -366,6 +366,145 @@ Error_Func_Bcc_BRA
 
 Done_Func_Bcc_BRA
         * done determining Bcc/BRA
+        MOVEM.L  (SP)+,D1-D3    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_BCLR_ORI_CMPI()
+* second level opcode decoding
+* determines between BCLR, ORI, and CMPI
+*****************************************************************************
+Func_BCLR_ORI_CMPI
+        MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
+
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        MOVE.L  #7,D2       * get bit 7
+        MOVE.L  #2,D3       * to bit 8
+        JSR     Func_GetBits     * store result in D0
+
+        * if (D0 contains 3)
+        * then the instruction is BCLR
+        CMP     #3,D0
+        BNE     Use_10_11_Func_BCLR_ORI_CMPI
+        JSR     Func_BCLR
+        BRA     Done_Func_BCLR_ORI_CMPI
+
+Use_10_11_Func_BCLR_ORI_CMPI
+        * else we need to check bits 10 and 11
+        MOVE.L  #8,D2      * get bit 8
+        MOVE.L  #4,D3       * to bit 11
+        JSR     Func_GetBits   * store result in D0
+
+        * if (D0 is 8)
+        * then the instruction is BCLR
+        CMP     #8,D0
+        BNE     ORI_Func_BCLR_ORI_CMPI
+        JSR     Func_BCLR
+        BRA     Done_Func_BCLR_ORI_CMPI
+
+ORI_Func_BCLR_ORI_CMPI
+        * else if (D0 is 0)
+        * then the instruction is ORI
+        CMP     #0,D0
+        BNE     CMPI_Func_BCLR_ORI_CMPI
+        JSR     Func_ORI
+        BRA     Done_Func_BCLR_ORI_CMPI
+
+CMPI_Func_BCLR_ORI_CMPI
+        * else if (D0 is 12)
+        * then the instruction is CMPI
+        CMP     #12,D0
+        BNE     Error_Func_BCLR_ORI_CMPI
+        JSR     Func_CMPI
+        BRA     Done_Func_BCLR_ORI_CMPI
+
+Error_Func_BCLR_ORI_CMPI
+        * else it is an error
+        JSR     Func_NO_OP
+
+Done_Func_BCLR_ORI_CMPI
+        * done determining BCLR ORI CMPI
+        MOVEM.L  (SP)+,D1-D3    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_MISC()
+* second level opcode decoding
+* determines between JSR, LEA, RTS, NEG, DIVS, MULS, MOVEM
+*****************************************************************************
+Func_MISC
+        MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
+
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        MOVE.L  #6,D2       * get bit 6
+        MOVE.L  #3,D3       * to bit 8
+        JSR     Func_GetBits     * store result in D0
+
+        * if (D0 contains 7)
+        * then the instruction is LEA
+        CMP     #7,D0
+        BNE     Check_RTS_JSR_Func_MISC
+        JSR     Func_LEA
+        BRA     Done_Func_MISC
+
+Check_RTS_JSR_Func_MISC
+        * else we need to check bits 6 thru 11 for JSR or RTS
+        MOVE.L  #6,D2      * get bit 6
+        MOVE.L  #6,D3      * to bit 11
+        JSR     Func_GetBits   * store result in D0
+
+        * if (D0 is 58)
+        * then the instruction is JSR
+        CMP     #58,D0
+        BNE     RTS_Func_MISC
+        JSR     Func_JSR
+        BRA     Done_Func_MISC
+
+RTS_Func_MISC
+        * else if (D0 is 57)
+        * then the instruction is RTS
+        CMP     #57,D0
+        BNE     MULS_Func_MISC
+        JSR     Func_RTS
+        BRA     Done_Func_MISC
+
+MULS_Func_MISC
+        * else if (D0 is 48)
+        * then the instruction is MULS.L
+        CMP     #48,D0
+        BNE     DIVS_Func_MISC
+        JSR     Func_MULS_L
+        BRA     Done_Func_MISC
+
+DIVS_Func_MISC
+        * else if (D0 is 49)
+        * then the instruction is DIVS.L
+        CMP     #49,D0
+        BNE     NEG_MOVEM_Func_MISC
+        JSR     Func_DIVS_L
+        BRA     Done_Func_MISC
+
+NEG_MOVEM_Func_MISC
+        * else
+        * the instruction is NEG or MOVEM
+        BTST    #11,D1       * test if bit 11 is 0
+
+        * if bit 11 is 0 then the instruction is probably NEG
+        BEQ     NEG_Func_ASL_ASR
+        
+        * else it is probably MOVEM
+        JSR     Func_MOVEM
+        BRA     Done_Func_MISC
+        
+NEG_Func_ASL_ASR
+        JSR     Func_NEG
+
+Done_Func_MISC
+        * done determining JSR, LEA, RTS, NEG, DIVS, MULS, MOVEM
         MOVEM.L  (SP)+,D1-D3    * restore
         RTS
 
@@ -387,7 +526,7 @@ Func_SHIFT_ROTATE
         * if (D0 contains 3)
         CMP     #3,D0
 
-        * then use bits 9 and 10 to determine type
+        * then use bits 9 & 10 to determine type
         BEQ     Use_9_10_Func_SHIFT_ROTATE
 
         * else use bits 3 and 4
@@ -422,10 +561,11 @@ ASx_Type_Func_SHIFT_ROTATE
         * it is ASx
         CMP     #0,D0
         BNE     Error_Func_SHIFT_ROTATE
-        JSR     Func_LSL_LSR
+        JSR     Func_ASL_ASR
         BRA     Done_Func_SHIFT_ROTATE
 
 Error_Func_SHIFT_ROTATE
+        * else it is an error
         JSR     Func_NO_OP
 
 Done_Func_SHIFT_ROTATE
@@ -663,13 +803,13 @@ Func_OR
 
 
 *****************************************************************************
-* void Func_DIVS()
+* void Func_BCLR()
 *****************************************************************************
-Func_DIVS
+Func_BCLR
         MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
-        MOVE    #DIVS_MSG,D1
+        MOVE    #BCLR_MSG,D1
         JSR     Func_Print
 
         * increment A5 by 1 word
@@ -681,13 +821,13 @@ Func_DIVS
 
 
 *****************************************************************************
-* void Func_BCLR_ORI_CMPI()
+* void Func_ORI()
 *****************************************************************************
-Func_BCLR_ORI_CMPI
+Func_ORI
         MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
-        MOVE    #BCLR_ORI_CMPI_MSG,D1
+        MOVE    #ORI_MSG,D1
         JSR     Func_Print
 
         * increment A5 by 1 word
@@ -699,13 +839,103 @@ Func_BCLR_ORI_CMPI
 
 
 *****************************************************************************
-* void Func_MISC()
+* void Func_CMPI()
 *****************************************************************************
-Func_MISC
+Func_CMPI
         MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
-        MOVE    #MISC_MSG,D1
+        MOVE    #CMPI_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_NEG()
+*****************************************************************************
+Func_NEG
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #NEG_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_MOVEM()
+*****************************************************************************
+Func_MOVEM
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #MOVEM_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 2 words
+        MOVE.L  #2,D1   * put 2 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+        
+
+*****************************************************************************
+* void Func_JSR()
+*****************************************************************************
+Func_JSR
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #JSR_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_LEA()
+*****************************************************************************
+Func_LEA
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #LEA_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_RTS()
+*****************************************************************************
+Func_RTS
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #RTS_MSG,D1
         JSR     Func_Print
 
         * increment A5 by 1 word
@@ -750,7 +980,7 @@ Func_BCS
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
-        
+
 
 *****************************************************************************
 * void Func_BVC()
@@ -768,7 +998,7 @@ Func_BVC
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
-        
+
 
 *****************************************************************************
 * void Func_BGE()
@@ -786,7 +1016,7 @@ Func_BGE
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
-        
+
 
 *****************************************************************************
 * void Func_BLT()
@@ -879,17 +1109,71 @@ Func_EOR
 
 
 *****************************************************************************
-* void Func_MULS()
+* void Func_MULS_W()
 *****************************************************************************
-Func_MULS
+Func_MULS_W
         MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
-        MOVE    #MULS_MSG,D1
+        MOVE    #MULS_W_MSG,D1
         JSR     Func_Print
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_DIVS_W()
+*****************************************************************************
+Func_DIVS_W
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #DIVS_W_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_MULS_L()
+*****************************************************************************
+Func_MULS_L
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #MULS_L_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 2 words
+        MOVE.L  #2,D1   * put 2 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+
+        MOVEM.L  (SP)+,D1    * restore
+        RTS
+
+
+*****************************************************************************
+* void Func_DIVS_L()
+*****************************************************************************
+Func_DIVS_L
+        MOVEM.L  D1,-(SP)    * save D1
+
+        * print pseudo assembly
+        MOVE    #DIVS_L_MSG,D1
+        JSR     Func_Print
+
+        * increment A5 by 2 words
+        MOVE.L  #2,D1   * put 2 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
@@ -1028,35 +1312,43 @@ Func_NO_OP
 *****************************************************************************
 
 * messages for tracing output
-START_MSG           DC.B    'Jump table example',CR,LF,'------------------',CR,LF,0
-NO_OP_MSG           DC.B    'Error: invalid opcode',CR,LF,0
-MOVE_B_MSG          DC.B    'MOVE.B  <ea>,<ea>',CR,LF,0
-MOVE_W_MSG          DC.B    'MOVE.W  <ea>,<ea>',CR,LF,0
-MOVEA_W_MSG         DC.B    'MOVEA.W <ea>,An',CR,LF,0
-MOVE_L_MSG          DC.B    'MOVE.L  <ea>,<ea>',CR,LF,0
-MOVEA_L_MSG         DC.B    'MOVEA.L <ea>,An',CR,LF,0
-ADD_MSG             DC.B    'ADD.*   <ea>/Dn,Dn/<ea>',CR,LF,0
-ADDA_MSG            DC.B    'ADDA.*  <ea>,An',CR,LF,0
-OR_MSG              DC.B    'OR.*    <ea>/Dn,Dn/<ea>',CR,LF,0
-DIVS_MSG            DC.B    'DIVS.W  <ea>,Dn',CR,LF,0
-MULS_MSG            DC.B    'MULS.W  <ea>,Dn',CR,LF,0
-SUB_MSG             DC.B    'SUB.*   <ea>/Dn,Dn/<ea>',CR,LF,0
-SUBQ_MSG            DC.B    'SUBQ.*  #<data>,<ea>',CR,LF,0
-CMP_MSG             DC.B    'CMP.*   <ea>,Dn',CR,LF,0
-EOR_MSG             DC.B    'EOR.*   Dn,<ea>',CR,LF,0
-BCS_MSG             DC.B    'BCS     (addr)',CR,LF,0
-BVC_MSG             DC.B    'BVC     (addr)',CR,LF,0
-BGE_MSG             DC.B    'BGE     (addr)',CR,LF,0
-BLT_MSG             DC.B    'BLT     (addr)',CR,LF,0
-BRA_MSG             DC.B    'BRA     (addr)',CR,LF,0
-LSR_MSG             DC.B    'LSR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-LSL_MSG             DC.B    'LSL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ASR_MSG             DC.B    'ASR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ASL_MSG             DC.B    'ASL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ROR_MSG             DC.B    'ROR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ROL_MSG             DC.B    'ROL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-BCLR_ORI_CMPI_MSG   DC.B    'BCLR/ORI/CMPI                    instruction',CR,LF,0
-MISC_MSG            DC.B    'JSR/LEA/RTS/NEG/DIVS/MULS/MOVEM  instruction',CR,LF,0
+START_MSG       DC.B    'Jump table example',CR,LF,'------------------',CR,LF,0
+NO_OP_MSG       DC.B    'Error: invalid opcode',CR,LF,0
+MOVE_B_MSG      DC.B    'MOVE.B  <ea>,<ea>',CR,LF,0
+MOVE_W_MSG      DC.B    'MOVE.W  <ea>,<ea>',CR,LF,0
+MOVEA_W_MSG     DC.B    'MOVEA.W <ea>,An',CR,LF,0
+MOVE_L_MSG      DC.B    'MOVE.L  <ea>,<ea>',CR,LF,0
+MOVEA_L_MSG     DC.B    'MOVEA.L <ea>,An',CR,LF,0
+ADD_MSG         DC.B    'ADD.*   <ea>/Dn,Dn/<ea>',CR,LF,0
+ADDA_MSG        DC.B    'ADDA.*  <ea>,An',CR,LF,0
+OR_MSG          DC.B    'OR.*    <ea>/Dn,Dn/<ea>',CR,LF,0
+DIVS_W_MSG      DC.B    'DIVS.W  <ea>,Dn',CR,LF,0
+MULS_W_MSG      DC.B    'MULS.W  <ea>,Dn',CR,LF,0
+DIVS_L_MSG      DC.B    'DIVS.L  <ea>,Dq/Dr:Dq',CR,LF,0
+MULS_L_MSG      DC.B    'MULS.L  <ea>,Dl/Dh-Dl',CR,LF,0
+SUB_MSG         DC.B    'SUB.*   <ea>/Dn,Dn/<ea>',CR,LF,0
+SUBQ_MSG        DC.B    'SUBQ.*  #<data>,<ea>',CR,LF,0
+CMP_MSG         DC.B    'CMP.*   <ea>,Dn',CR,LF,0
+EOR_MSG         DC.B    'EOR.*   Dn,<ea>',CR,LF,0
+BCS_MSG         DC.B    'BCS     (addr)',CR,LF,0
+BVC_MSG         DC.B    'BVC     (addr)',CR,LF,0
+BGE_MSG         DC.B    'BGE     (addr)',CR,LF,0
+BLT_MSG         DC.B    'BLT     (addr)',CR,LF,0
+BRA_MSG         DC.B    'BRA     (addr)',CR,LF,0
+LSR_MSG         DC.B    'LSR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+LSL_MSG         DC.B    'LSL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ASR_MSG         DC.B    'ASR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ASL_MSG         DC.B    'ASL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ROR_MSG         DC.B    'ROR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+ROL_MSG         DC.B    'ROL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
+BCLR_MSG        DC.B    'BCLR.*  Dn/#<data>,<ea>/Dn',CR,LF,0
+ORI_MSG         DC.B    'ORI.*   #<data>,<ea>',CR,LF,0
+CMPI_MSG        DC.B    'CMPI.*  #<data>,<ea>',CR,LF,0
+JSR_MSG         DC.B    'JSR     <ea>',CR,LF,0
+LEA_MSG         DC.B    'LEA     <ea>,An',CR,LF,0
+NEG_MSG         DC.B    'NEG.*   <ea>',CR,LF,0
+MOVEM_MSG       DC.B    'MOVEM.* <list>/<ea>,<ea>/<list>',CR,LF,0
+RTS_MSG         DC.B    'RTS',CR,LF,0
 
 
 
@@ -1070,8 +1362,8 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
                 DC.W     %1101000000000000      * ADD
                 DC.W     %1101000011000000      * ADDA
                 DC.W     %1000000000000000      * OR
-                DC.W     %1000000011000000      * DIVS
-                DC.W     %1100000000000000      * MULS
+                DC.W     %1000000011000000      * DIVS.W
+                DC.W     %1100000000000000      * MULS.W
                 DC.W     %1001000000000000      * SUB
                 DC.W     %0101000000000000      * SUBQ
                 DC.W     %1011000000000000      * CMP
@@ -1093,8 +1385,20 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
                 DC.W     %1110011011000000      * ROR <ea>
                 DC.W     %1110000100011000      * ROL
                 DC.W     %1110011111000000      * ROL <ea>
-                DC.W     %0000000000000000      * BCLR, ORI, CMPI
-                DC.W     %0100000000000000      * JSR, LEA, RTS, NEG, DIVS, MULS, MOVEM
+                DC.W     %0000000110000000      * BCLR Dn,<ea>
+                DC.W     %0000100010000000      * BCLR Dn,Dn
+                DC.W     %0000000000000000      * ORI
+                DC.W     %0000110000000000      * CMPI
+                DC.W     %0100000111000000      * LEA
+                DC.W     %0100111010000000      * JSR
+                DC.W     %0100111001000000      * RTS
+                DC.W     %0100110000000000      * MULS.L
+                DC.W     %0000100000000000      *    MULS.L (cont)
+                DC.W     %0100110001000000      * DIVS.L
+                DC.W     %0000100000000000      *    DIVS.L (cont)
+                DC.W     %0100100010000000      * MOVEM
+                DC.W     %0100100010000000      *    MOVEM (cont)
+                DC.W     %0100010000000000      * NEG
                 DC.W     %0111000000000000      * bad op (based on first 4 bits)
                 DC.W     %1010000000000000      * bad op (based on first 4 bits)
                 DC.W     %1111000000000000      * bad op (based on first 4 bits)
@@ -1103,10 +1407,15 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
                 DC.W     %0110001000000000      * bad op (variation of Bcc)
                 DC.W     %0110001100000000      * bad op (variation of Bcc)
                 DC.W     %0110010000000000      * bad op (variation of Bcc)
+                DC.W     %1110000000010000      * bad op (variation of RO*/AS*/LS*)
+                DC.W     %1110010011000000      * bad op (variation of RO*/AS*/LS*)
 NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
+
+
+
 
 
 
