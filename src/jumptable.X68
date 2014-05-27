@@ -17,6 +17,21 @@ Main    ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Func_Print
 
+* TEMP DEFINITIONS
+Func_Dn         EQU     0     * 000 xxx 0
+Func_An         EQU     1     * 001 xxx 1
+Func_An_i       EQU     2     * 010 xxx 2
+Func_An_ip      EQU     3     * 011 xxx 3
+Func_An_im      EQU     4     * 100 xxx 4
+Func_Junk       EQU     5     * 101 xxx 5-
+Func_Junk_2     EQU     6     * 110 xxx 6-
+Func_Word_A     EQU     7     * 111 000 7
+Func_Long_A     EQU     8     * 111 001 8
+Func_Junk_3     EQU     9     * 111 010 9-
+Func_Junk_4     EQU     10    * 111 011 10-
+Func_Data       EQU     11    * 111 100 11
+* END TEMP DEFINITIONS
+
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
         MOVE.L  #NoMoreOpcodes,A6
@@ -90,12 +105,12 @@ AddressTable
 
 
 *****************************************************************************
-* void JumpUsingAddressTableModeReg(6bit Mode-Register)
+* void JumpAddressTableModeReg(6bit Mode-Register)
 *                            D1
 * Unsure what to leave in the registers
 * Currently leaves nothing in registers
 *****************************************************************************
-JumpUsingAddressTableModeReg
+Func_JumpAddressTableModeReg
             MOVEM.L D0-D5/A1,-(SP)
             
             * preping D2/D3 for mode/register
@@ -120,12 +135,12 @@ JumpUsingAddressTableModeReg
             BRA     ADD_TOGETHER
 
 *****************************************************************************
-* void JumpUsingAddressTableRegMode(6bit Register-Mode)
+* void JumpAddressTableRegMode(6bit Register-Mode)
 *                            D1
 * Unsure what to leave in the registers
 * Currently leaves nothing in registers
 *****************************************************************************
-JumpUsingAddressTableRegMode
+Func_JumpAddressTableRegMode
             MOVEM.L D0-D5/A1,-(SP)
             
             * preping D2/D3 for mode/register
@@ -161,7 +176,7 @@ ADD_TOGETHER
             MULS.W  #4,D0
             ADD.W   A1,D0
             MOVEA.W D0,A1
-            BRA     END_JumpAddressTable
+            BRA     Done_Func_JumpAddressTable
 
 * get jump value for NON-Word/Long Address OR Data
 NO_ADD_TOGETHER
@@ -170,9 +185,10 @@ NO_ADD_TOGETHER
             MULS.W  #4,D0
             ADD.W   A1,D0
             MOVEA.W D0,A1
-            BRA     END_JumpAddressTable
+            BRA     Done_Func_JumpAddressTable
             
-END_JumpAddressTable
+Done_Func_JumpAddressTable
+            * run stuff here before MOVEM command
             MOVEM.L (SP)+,D0-D5/A1
             RTS
 
