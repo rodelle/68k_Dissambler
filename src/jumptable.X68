@@ -63,12 +63,118 @@ JumpTable
         DC.L    Func_SHIFT_ROTATE
         DC.L    Func_NO_OP
 
+*****************************************************************************
+* Address Table
+* jump table for determining addressing modes and registers
+* based on 6 bits, 3 for mode and 3 for address
+* Instructions are stored as longwords in memory
+*****************************************************************************
+AddressTable
+        DC.L    Func_Dn     * 000 xxx 0
+        DC.L    Func_An     * 001 xxx 1
+        DC.L    Func_An_i   * 010 xxx 2
+        DC.L    Func_An_ip  * 011 xxx 3
+        DC.L    Func_An_im  * 100 xxx 4
+        DC.L    Func_Junk   * 101 xxx 5-
+        DC.L    Func_Junk_2 * 110 xxx 6-
+        DC.L    Func_Word_A * 111 000 7
+        DC.L    Func_Long_A * 111 001 8
+        DC.L    Func_Junk_3 * 101 xxx 9-
+        DC.L    Func_Junk_4 * 110 xxx 10-
+        DC.L    Func_Data   * 111 100 11
 
 
 *****************************************************************************
 * Functions
 *****************************************************************************
 
+
+*****************************************************************************
+* void JumpUsingAddressTableModeReg(6bit Mode-Register)
+*                            D1
+* Unsure what to leave in the registers
+* Currently leaves nothing in registers
+*****************************************************************************
+JumpUsingAddressTableModeReg
+            MOVEM.L D0-D5/A1,-(SP)
+            
+            * preping D2/D3 for mode/register
+            CLR     D2
+            CLR     D3
+            MOVE.B  D1,D2   * Mode
+            MOVE.B  D1,D3   * Register
+            
+            * get mode
+            MOVE    #3,D4   * Shift Mode down into LS 3 bits
+            LSR.B   D4,D2   * Mode
+            
+            * get register
+            MOVE    #5,D4   * Shift non-register bits out
+            LSL.B   D4,D3   * And register into LS 3 bits
+            LSR.B   D4,D3   * Register
+            
+            * check if Mode is 0 - 6
+            MOVE.B  #7,D5
+            SUB.B   D2,D5
+            BNE     NO_ADD_TOGETHER
+            BRA     ADD_TOGETHER
+
+*****************************************************************************
+* void JumpUsingAddressTableRegMode(6bit Register-Mode)
+*                            D1
+* Unsure what to leave in the registers
+* Currently leaves nothing in registers
+*****************************************************************************
+JumpUsingAddressTableRegMode
+            MOVEM.L D0-D5/A1,-(SP)
+            
+            * preping D2/D3 for mode/register
+            CLR     D2
+            CLR     D3
+            MOVE.B  D1,D2
+            MOVE.B  D1,D3
+            
+            * get mode
+            MOVE    #3,D4
+            LSR.B   D4,D3
+            
+            * get register
+            MOVE    #5,D4
+            LSL.B   D4,D2
+            LSR.B   D4,D2
+            
+            * check if Mode is 0 - 6
+            MOVE.B  #7,D5
+            SUB.B   D2,D5
+            BNE     NO_ADD_TOGETHER
+            BRA     ADD_TOGETHER
+            
+*****************************************************************************
+* Helpers for the JumpAddressTable Functions
+*****************************************************************************
+* get jump value for Word/Long Address OR data
+ADD_TOGETHER            
+            LEA     AddressTable,A1
+            CLR     D0
+            ADD.W   D2,D0
+            ADD.W   D3,D0
+            MULS.W  #4,D0
+            ADD.W   A1,D0
+            MOVEA.W D0,A1
+            BRA     END_JumpAddressTable
+
+* get jump value for NON-Word/Long Address OR Data
+NO_ADD_TOGETHER
+            LEA     AddressTable,A1
+            ADD.W   D2,D0
+            MULS.W  #4,D0
+            ADD.W   A1,D0
+            MOVEA.W D0,A1
+            BRA     END_JumpAddressTable
+            
+END_JumpAddressTable
+            MOVEM.L (SP)+,D0-D5/A1
+            RTS
 
 *****************************************************************************
 * void Func_MoveInstructionPointer(number of words)
@@ -1413,6 +1519,7 @@ NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
+
 
 
 
