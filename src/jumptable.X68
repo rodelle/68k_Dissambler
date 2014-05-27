@@ -17,20 +17,9 @@ Main    ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Func_Print
 
-* TEMP DEFINITIONS
-Func_Dn         EQU     0     * 000 xxx 0
-Func_An         EQU     1     * 001 xxx 1
-Func_An_i       EQU     2     * 010 xxx 2
-Func_An_ip      EQU     3     * 011 xxx 3
-Func_An_im      EQU     4     * 100 xxx 4
-Func_Junk       EQU     5     * 101 xxx 5-
-Func_Junk_2     EQU     6     * 110 xxx 6-
-Func_Word_A     EQU     7     * 111 000 7
-Func_Long_A     EQU     8     * 111 001 8
-Func_Junk_3     EQU     9     * 111 010 9-
-Func_Junk_4     EQU     10    * 111 011 10-
-Func_Data       EQU     11    * 111 100 11
-* END TEMP DEFINITIONS
+        CLR     D1
+        MOVE.B  #5,D1
+        JSR     Func_Dn
 
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
@@ -91,11 +80,11 @@ AddressTable
         DC.L    Func_An_ip  * 011 xxx 3
         DC.L    Func_An_im  * 100 xxx 4
         DC.L    Func_Junk   * 101 xxx 5-
-        DC.L    Func_Junk_2 * 110 xxx 6-
+        DC.L    Func_Junk   * 110 xxx 6-
         DC.L    Func_Word_A * 111 000 7
         DC.L    Func_Long_A * 111 001 8
-        DC.L    Func_Junk_3 * 101 xxx 9-
-        DC.L    Func_Junk_4 * 110 xxx 10-
+        DC.L    Func_Junk   * 101 xxx 9-
+        DC.L    Func_Junk   * 110 xxx 10-
         DC.L    Func_Data   * 111 100 11
 
 
@@ -1427,6 +1416,85 @@ Func_NO_OP
         MOVEM.L  (SP)+,D1    * restore
         RTS
 
+*****************************************************************************
+* Func_Dn(Register)
+*         D1
+* Prints Dn address
+*****************************************************************************
+Func_Dn
+        MOVEM.L     D0-D1,-(SP)
+        CLR         D0
+        MOVE.B      D1,D0
+        CLR         D1
+        MOVE.L      DATA_REG,D1
+        JSR         Func_Print
+        MOVE.B      D0,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1
+        RTS
+
+*****************************************************************************
+* Func_An(Register)
+*         D1
+* Prints An address
+*****************************************************************************
+Func_An
+        RTS
+
+*****************************************************************************
+* Func_An_i(Register)
+*           D1
+* Prints (An) address
+*****************************************************************************
+Func_An_i
+        RTS
+
+*****************************************************************************
+* Func_An_ip(Register)
+*            D1
+* Prints (An)+ address
+*****************************************************************************
+Func_An_ip
+        RTS
+
+*****************************************************************************
+* Func_An_im(Register)
+*            D1
+* Prints -(An) address
+*****************************************************************************
+Func_An_im
+        RTS
+
+*****************************************************************************
+* Func_Word_A(Address)
+*             D1
+* Prints xxx.W address
+*****************************************************************************
+Func_Word_A
+        RTS
+
+*****************************************************************************
+* Func_Long_A(Address)
+*             D1
+* Prints xxx.L address
+*****************************************************************************
+Func_Long_A
+        RTS
+
+*****************************************************************************
+* Func_Data(Data)
+*           D1
+* Prints #<data>
+*****************************************************************************
+Func_Data
+        RTS
+        
+*****************************************************************************
+* Func_Data()
+* Dummy Return
+*****************************************************************************
+Func_Junk
+        RTS
 
 
 *****************************************************************************
@@ -1472,6 +1540,16 @@ NEG_MSG         DC.B    'NEG.*   <ea>',CR,LF,0
 MOVEM_MSG       DC.B    'MOVEM.* <list>/<ea>,<ea>/<list>',CR,LF,0
 RTS_MSG         DC.B    'RTS',CR,LF,0
 
+
+* Address print outs
+DATA_REG        DC.B    'D',0
+ADDRESS_REG     DC.B    'A',0
+PAR_OPEN        DC.B    '(',0
+PAR_CLOSE       DC.B    ')',0
+PLUS            DC.B    '+',0
+MINUS           DC.B    '-',0
+POUND           DC.B    '#',0
+MONEY           DC.B    '$',0
 
 
 * opcodes loaded into memory
