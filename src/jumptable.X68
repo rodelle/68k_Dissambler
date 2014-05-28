@@ -20,6 +20,7 @@ Main    ORG     $1000   * first instruction of program
         CLR     D1
         MOVE.B  #5,D1
         JSR     Func_Dn
+        JSR     Func_An
 
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
@@ -1426,9 +1427,12 @@ Func_Dn
         CLR         D0
         MOVE.B      D1,D0
         CLR         D1
-        MOVE.L      DATA_REG,D1
+        MOVE.L      #DATA_REG,D1
         JSR         Func_Print
-        MOVE.B      D0,D1
+        CLR         D1
+        MOVE.L      #ZERO,D1
+        MULS.W      #2,D0
+        ADD.L       D0,D1
         JSR         Func_Print
         MOVEM.L     (SP)+,D0-D1
         RTS
@@ -1439,6 +1443,18 @@ Func_Dn
 * Prints An address
 *****************************************************************************
 Func_An
+        MOVEM.L     D0-D1,-(SP)
+        CLR         D0
+        MOVE.B      D1,D0
+        CLR         D1
+        MOVE.L      #ADDRESS_REG,D1
+        JSR         Func_Print
+        CLR         D1
+        MOVE.L      #ZERO,D1
+        MULS.W      #2,D0
+        ADD.L       D0,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1
         RTS
 
 *****************************************************************************
@@ -1550,7 +1566,17 @@ PLUS            DC.B    '+',0
 MINUS           DC.B    '-',0
 POUND           DC.B    '#',0
 MONEY           DC.B    '$',0
+SPACE           DC.B    ' ',0
 
+* Number Table 
+ZERO            DC.B    '0',0
+ONE             DC.B    '1',0
+TWO             DC.B    '2',0
+THREE           DC.B    '3',0
+FOUR            DC.B    '4',0
+FIVE            DC.B    '5',0
+SIX             DC.B    '6',0
+SEVEN           DC.B    '7',0
 
 * opcodes loaded into memory
 * output should be in the same order
@@ -1613,6 +1639,7 @@ NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
+
 
 
 
