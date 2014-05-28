@@ -17,6 +17,11 @@ Main    ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Func_Print
 
+        CLR     D1
+        MOVE.B  #5,D1
+        JSR     Func_Dn
+        JSR     Func_An
+
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
         MOVE.L  #NoMoreOpcodes,A6
@@ -66,12 +71,119 @@ JumpTable
         DC.L    Func_SHIFT_ROTATE
         DC.L    Func_NO_OP
 
+*****************************************************************************
+* Address Table
+* jump table for determining addressing modes and registers
+* based on 6 bits, 3 for mode and 3 for address
+* Instructions are stored as longwords in memory
+*****************************************************************************
+AddressTable
+        DC.L    Func_Dn     * 000 xxx 0
+        DC.L    Func_An     * 001 xxx 1
+        DC.L    Func_An_i   * 010 xxx 2
+        DC.L    Func_An_ip  * 011 xxx 3
+        DC.L    Func_An_im  * 100 xxx 4
+        DC.L    Func_Junk   * 101 xxx 5-
+        DC.L    Func_Junk   * 110 xxx 6-
+        DC.L    Func_Word_A * 111 000 7
+        DC.L    Func_Long_A * 111 001 8
+        DC.L    Func_Junk   * 101 xxx 9-
+        DC.L    Func_Junk   * 110 xxx 10-
+        DC.L    Func_Data   * 111 100 11
 
 
 *****************************************************************************
 * Functions
 *****************************************************************************
 
+
+*****************************************************************************
+* void JumpAddressTableModeReg(6bit Mode-Register)
+*                            D1
+* Unsure what to leave in the registers
+* Currently leaves nothing in registers
+*****************************************************************************
+Func_JumpAddressTableModeReg
+            MOVEM.L D0-D5/A1,-(SP)
+            
+            * preping D2/D3 for mode/register
+            CLR     D2
+            CLR     D3
+            MOVE.B  D1,D2   * Mode
+            MOVE.B  D1,D3   * Register
+            
+            * get mode
+            MOVE    #3,D4   * Shift Mode down into LS 3 bits
+            LSR.B   D4,D2   * Mode
+            
+            * get register
+            MOVE    #5,D4   * Shift non-register bits out
+            LSL.B   D4,D3   * And register into LS 3 bits
+            LSR.B   D4,D3   * Register
+            
+            * check if Mode is 0 - 6
+            MOVE.B  #7,D5
+            SUB.B   D2,D5
+            BNE     NO_ADD_TOGETHER
+            BRA     ADD_TOGETHER
+
+*****************************************************************************
+* void JumpAddressTableRegMode(6bit Register-Mode)
+*                            D1
+* Unsure what to leave in the registers
+* Currently leaves nothing in registers
+*****************************************************************************
+Func_JumpAddressTableRegMode
+            MOVEM.L D0-D5/A1,-(SP)
+            
+            * preping D2/D3 for mode/register
+            CLR     D2
+            CLR     D3
+            MOVE.B  D1,D2
+            MOVE.B  D1,D3
+            
+            * get mode
+            MOVE    #3,D4
+            LSR.B   D4,D3
+            
+            * get register
+            MOVE    #5,D4
+            LSL.B   D4,D2
+            LSR.B   D4,D2
+            
+            * check if Mode is 0 - 6
+            MOVE.B  #7,D5
+            SUB.B   D2,D5
+            BNE     NO_ADD_TOGETHER
+            BRA     ADD_TOGETHER
+            
+*****************************************************************************
+* Helpers for the JumpAddressTable Functions
+*****************************************************************************
+* get jump value for Word/Long Address OR data
+ADD_TOGETHER            
+            LEA     AddressTable,A1
+            CLR     D0
+            ADD.W   D2,D0
+            ADD.W   D3,D0
+            MULS.W  #4,D0
+            ADD.W   A1,D0
+            MOVEA.W D0,A1
+            BRA     Done_Func_JumpAddressTable
+
+* get jump value for NON-Word/Long Address OR Data
+NO_ADD_TOGETHER
+            LEA     AddressTable,A1
+            ADD.W   D2,D0
+            MULS.W  #4,D0
+            ADD.W   A1,D0
+            MOVEA.W D0,A1
+            BRA     Done_Func_JumpAddressTable
+            
+Done_Func_JumpAddressTable
+            * run stuff here before MOVEM command
+            MOVEM.L (SP)+,D0-D5/A1
+            RTS
 
 *****************************************************************************
 * void Func_MoveInstructionPointer(number of words)
@@ -1389,6 +1501,100 @@ Func_NO_OP
         MOVEM.L  (SP)+,D1    * restore
         RTS
 
+*****************************************************************************
+* Func_Dn(Register)
+*         D1
+* Prints Dn address
+*****************************************************************************
+Func_Dn
+        MOVEM.L     D0-D1,-(SP)
+        CLR         D0
+        MOVE.B      D1,D0
+        CLR         D1
+        MOVE.L      #DATA_REG,D1
+        JSR         Func_Print
+        CLR         D1
+        MOVE.L      #ZERO,D1
+        MULS.W      #2,D0
+        ADD.L       D0,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1
+        RTS
+
+*****************************************************************************
+* Func_An(Register)
+*         D1
+* Prints An address
+*****************************************************************************
+Func_An
+        MOVEM.L     D0-D1,-(SP)
+        CLR         D0
+        MOVE.B      D1,D0
+        CLR         D1
+        MOVE.L      #ADDRESS_REG,D1
+        JSR         Func_Print
+        CLR         D1
+        MOVE.L      #ZERO,D1
+        MULS.W      #2,D0
+        ADD.L       D0,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1
+        RTS
+
+*****************************************************************************
+* Func_An_i(Register)
+*           D1
+* Prints (An) address
+*****************************************************************************
+Func_An_i
+        RTS
+
+*****************************************************************************
+* Func_An_ip(Register)
+*            D1
+* Prints (An)+ address
+*****************************************************************************
+Func_An_ip
+        RTS
+
+*****************************************************************************
+* Func_An_im(Register)
+*            D1
+* Prints -(An) address
+*****************************************************************************
+Func_An_im
+        RTS
+
+*****************************************************************************
+* Func_Word_A(Address)
+*             D1
+* Prints xxx.W address
+*****************************************************************************
+Func_Word_A
+        RTS
+
+*****************************************************************************
+* Func_Long_A(Address)
+*             D1
+* Prints xxx.L address
+*****************************************************************************
+Func_Long_A
+        RTS
+
+*****************************************************************************
+* Func_Data(Data)
+*           D1
+* Prints #<data>
+*****************************************************************************
+Func_Data
+        RTS
+        
+*****************************************************************************
+* Func_Data()
+* Dummy Return
+*****************************************************************************
+Func_Junk
+        RTS
 
 
 *****************************************************************************
@@ -1440,6 +1646,26 @@ Q_MSG           DC.B    '?',0
 NEW_LINE        DC.B    CR,LF,0
 
 
+* Address print outs
+DATA_REG        DC.B    'D',0
+ADDRESS_REG     DC.B    'A',0
+PAR_OPEN        DC.B    '(',0
+PAR_CLOSE       DC.B    ')',0
+PLUS            DC.B    '+',0
+MINUS           DC.B    '-',0
+POUND           DC.B    '#',0
+MONEY           DC.B    '$',0
+SPACE           DC.B    ' ',0
+
+* Number Table 
+ZERO            DC.B    '0',0
+ONE             DC.B    '1',0
+TWO             DC.B    '2',0
+THREE           DC.B    '3',0
+FOUR            DC.B    '4',0
+FIVE            DC.B    '5',0
+SIX             DC.B    '6',0
+SEVEN           DC.B    '7',0
 
 * opcodes loaded into memory
 * output should be in the same order
@@ -1520,6 +1746,13 @@ NoMoreOpcodes   DC.W     %1111111111111111
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> james_dev
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
