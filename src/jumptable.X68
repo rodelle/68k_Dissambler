@@ -34,6 +34,9 @@ Loop_Main
 
         * else decode next instruction
         JSR     Func_UseJumpTable
+        
+        MOVE    #NEW_LINE,D1
+        JSR     Func_Print      # print a new line after each instruction
 
         BRA     Loop_Main
 
@@ -196,12 +199,63 @@ Func_MoveInstructionPointer
         MOVEM.L (SP)+,D1 * restore D1
         RTS
 
+
+*****************************************************************************
+* void Func_PrintSizeStandard()
+* expects global variable A5 to be pointing at current opcode
+*****************************************************************************
+Func_PrintSizeStandard
+        MOVEM.L D1-D3,-(SP)
+        
+        CLR.L   D1
+        MOVE.W  (A5),D1     * copy current "PC" into D1
+        MOVE.L  #6,D2       * get bit 6
+        MOVE.L  #2,D3       * to bit 7
+        JSR     Func_GetBits     * store result in D0
+        
+        * print the size string
+        MOVE.L  D0,D1       * move size bits into D1
+        
+        * if D1 is 0, then it is a byte
+        * load 'byte' msg into D0
+        CMP     #0,D1
+        BNE     Word_Func_PrintSize
+        MOVE    #B_MSG,D1
+        BRA     Done_Func_PrintSize
+
+Word_Func_PrintSize
+        * if D1 is 1, then it is a word
+        * load 'word' msg into D0
+        CMP     #1,D1
+        BNE     Long_Func_PrintSize
+        MOVE    #W_MSG,D1
+        BRA     Done_Func_PrintSize
+   
+Long_Func_PrintSize
+        * if D1 is 2, then it is a long
+        * load 'long' msg into D0
+        CMP     #2,D1
+        BNE     Error_Func_PrintSize
+        MOVE    #L_MSG,D1
+        BRA     Done_Func_PrintSize
+
+Error_Func_PrintSize 
+        * else it is an error
+        MOVE    #Q_MSG,D1
+
+Done_Func_PrintSize
+        JSR     Func_Print
+        MOVEM.L (SP)+,D1-D3     
+        RTS
+        
+
 *****************************************************************************
 * void Func_Print(MsgAddress)
 *                 D1
 * prints the contents of memory location specified by D1
 *****************************************************************************
-Func_Print   MOVEM.L D0/A1,-(SP)
+Func_Print
+        MOVEM.L D0/A1,-(SP)
 
         MOVEA   D1,A1
         MOVE.B  #14,D0
@@ -869,6 +923,9 @@ Func_ADD
         * print pseudo assembly
         MOVE    #ADD_MSG,D1
         JSR     Func_Print
+        
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -905,6 +962,9 @@ Func_OR
         * print pseudo assembly
         MOVE    #OR_MSG,D1
         JSR     Func_Print
+
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1176,6 +1236,9 @@ Func_SUB
         MOVE    #SUB_MSG,D1
         JSR     Func_Print
 
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1193,6 +1256,9 @@ Func_CMP
         * print pseudo assembly
         MOVE    #CMP_MSG,D1
         JSR     Func_Print
+
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1302,6 +1368,9 @@ Func_LSR
         MOVE    #LSR_MSG,D1
         JSR     Func_Print
 
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1320,6 +1389,9 @@ Func_LSL
         MOVE    #LSL_MSG,D1
         JSR     Func_Print
 
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1338,6 +1410,9 @@ Func_ASR
         MOVE    #ASR_MSG,D1
         JSR     Func_Print
 
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1355,7 +1430,10 @@ Func_ASL
         * print pseudo assembly
         MOVE    #ASL_MSG,D1
         JSR     Func_Print
-
+        
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1374,6 +1452,9 @@ Func_ROR
         MOVE    #ROR_MSG,D1
         JSR     Func_Print
 
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1392,6 +1473,9 @@ Func_ROL
         MOVE    #ROL_MSG,D1
         JSR     Func_Print
 
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1519,42 +1603,47 @@ Func_Junk
 
 * messages for tracing output
 START_MSG       DC.B    'Jump table example',CR,LF,'------------------',CR,LF,0
-NO_OP_MSG       DC.B    'Error: invalid opcode',CR,LF,0
-MOVE_B_MSG      DC.B    'MOVE.B  <ea>,<ea>',CR,LF,0
-MOVE_W_MSG      DC.B    'MOVE.W  <ea>,<ea>',CR,LF,0
-MOVEA_W_MSG     DC.B    'MOVEA.W <ea>,An',CR,LF,0
-MOVE_L_MSG      DC.B    'MOVE.L  <ea>,<ea>',CR,LF,0
-MOVEA_L_MSG     DC.B    'MOVEA.L <ea>,An',CR,LF,0
-ADD_MSG         DC.B    'ADD.*   <ea>/Dn,Dn/<ea>',CR,LF,0
-ADDA_MSG        DC.B    'ADDA.*  <ea>,An',CR,LF,0
-OR_MSG          DC.B    'OR.*    <ea>/Dn,Dn/<ea>',CR,LF,0
-DIVS_W_MSG      DC.B    'DIVS.W  <ea>,Dn',CR,LF,0
-MULS_W_MSG      DC.B    'MULS.W  <ea>,Dn',CR,LF,0
-DIVS_L_MSG      DC.B    'DIVS.L  <ea>,Dq/Dr:Dq',CR,LF,0
-MULS_L_MSG      DC.B    'MULS.L  <ea>,Dl/Dh-Dl',CR,LF,0
-SUB_MSG         DC.B    'SUB.*   <ea>/Dn,Dn/<ea>',CR,LF,0
-SUBQ_MSG        DC.B    'SUBQ.*  #<data>,<ea>',CR,LF,0
-CMP_MSG         DC.B    'CMP.*   <ea>,Dn',CR,LF,0
-EOR_MSG         DC.B    'EOR.*   Dn,<ea>',CR,LF,0
-BCS_MSG         DC.B    'BCS     (addr)',CR,LF,0
-BVC_MSG         DC.B    'BVC     (addr)',CR,LF,0
-BGE_MSG         DC.B    'BGE     (addr)',CR,LF,0
-BLT_MSG         DC.B    'BLT     (addr)',CR,LF,0
-BRA_MSG         DC.B    'BRA     (addr)',CR,LF,0
-LSR_MSG         DC.B    'LSR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-LSL_MSG         DC.B    'LSL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ASR_MSG         DC.B    'ASR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ASL_MSG         DC.B    'ASL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ROR_MSG         DC.B    'ROR.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-ROL_MSG         DC.B    'ROL.*   Dx/#<data>/<ea>,Dy/Dy/-',CR,LF,0
-BCLR_MSG        DC.B    'BCLR.*  Dn/#<data>,<ea>/Dn',CR,LF,0
-ORI_MSG         DC.B    'ORI.*   #<data>,<ea>',CR,LF,0
-CMPI_MSG        DC.B    'CMPI.*  #<data>,<ea>',CR,LF,0
-JSR_MSG         DC.B    'JSR     <ea>',CR,LF,0
-LEA_MSG         DC.B    'LEA     <ea>,An',CR,LF,0
-NEG_MSG         DC.B    'NEG.*   <ea>',CR,LF,0
-MOVEM_MSG       DC.B    'MOVEM.* <list>/<ea>,<ea>/<list>',CR,LF,0
-RTS_MSG         DC.B    'RTS',CR,LF,0
+NO_OP_MSG       DC.B    'Error: invalid opcode',0
+MOVE_B_MSG      DC.B    'MOVE.B',0
+MOVE_W_MSG      DC.B    'MOVE.W',0
+MOVEA_W_MSG     DC.B    'MOVEA.W',0
+MOVE_L_MSG      DC.B    'MOVE.L',0
+MOVEA_L_MSG     DC.B    'MOVEA.L',0
+ADD_MSG         DC.B    'ADD.',0
+ADDA_MSG        DC.B    'ADDA.*',0
+OR_MSG          DC.B    'OR.',0
+DIVS_W_MSG      DC.B    'DIVS.W',0
+MULS_W_MSG      DC.B    'MULS.W',0
+DIVS_L_MSG      DC.B    'DIVS.L',0
+MULS_L_MSG      DC.B    'MULS.L',0
+SUB_MSG         DC.B    'SUB.',0
+SUBQ_MSG        DC.B    'SUBQ.*',0
+CMP_MSG         DC.B    'CMP.',0
+EOR_MSG         DC.B    'EOR.*',0
+BCS_MSG         DC.B    'BCS',0
+BVC_MSG         DC.B    'BVC',0
+BGE_MSG         DC.B    'BGE',0
+BLT_MSG         DC.B    'BLT',0
+BRA_MSG         DC.B    'BRA',0
+LSR_MSG         DC.B    'LSR.',0
+LSL_MSG         DC.B    'LSL.',0
+ASR_MSG         DC.B    'ASR.',0
+ASL_MSG         DC.B    'ASL.',0
+ROR_MSG         DC.B    'ROR.',0
+ROL_MSG         DC.B    'ROL.',0
+BCLR_MSG        DC.B    'BCLR.*',0
+ORI_MSG         DC.B    'ORI.*',0
+CMPI_MSG        DC.B    'CMPI.*',0
+JSR_MSG         DC.B    'JSR',0
+LEA_MSG         DC.B    'LEA',0
+NEG_MSG         DC.B    'NEG.*',0
+MOVEM_MSG       DC.B    'MOVEM.*',0
+RTS_MSG         DC.B    'RTS',0
+B_MSG           DC.B    'B',0
+W_MSG           DC.B    'W',0
+L_MSG           DC.B    'L',0
+Q_MSG           DC.B    '?',0
+NEW_LINE        DC.B    CR,LF,0
 
 
 * Address print outs
@@ -1585,14 +1674,22 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
                 DC.W     %0010000001000000      * MOVEA.L
                 DC.W     %0011000000000000      * MOVE.W
                 DC.W     %0011000001000000      * MOVEA.W
-                DC.W     %1101000000000000      * ADD
+                DC.W     %1101000010000000      * ADD.L
+                DC.W     %1101000000000000      * ADD.B
+                DC.W     %1101000001000000      * ADD.W
                 DC.W     %1101000011000000      * ADDA
-                DC.W     %1000000000000000      * OR
+                DC.W     %1000000000000000      * OR.B
+                DC.W     %1000000001000000      * OR.W
+                DC.W     %1000000010000000      * OR.L
                 DC.W     %1000000011000000      * DIVS.W
                 DC.W     %1100000000000000      * MULS.W
-                DC.W     %1001000000000000      * SUB
+                DC.W     %1001000000000000      * SUB.B
+                DC.W     %1001000001000000      * SUB.W
+                DC.W     %1001000010000000      * SUB.L
                 DC.W     %0101000000000000      * SUBQ
-                DC.W     %1011000000000000      * CMP
+                DC.W     %1011000000000000      * CMP.B
+                DC.W     %1011000001000000      * CMP.W
+                DC.W     %1011000010000000      * CMP.L
                 DC.W     %1011000100000000      * EOR
                 DC.W     %0110010100000000      * BCS
                 DC.W     %0110100000000000      * BVC
@@ -1639,21 +1736,3 @@ NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
