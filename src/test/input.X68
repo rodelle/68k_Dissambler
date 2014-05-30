@@ -14,7 +14,7 @@ START    ORG    $1000
 NoPreferenceDissambler
 NPD_DoWhile
     JSR     GetStartEndAddress  * Grab ending and starting address from user
-    * JSR   BeginDissambly      * Ending and starting address are assigned, begin loop
+    * JSR     BeginDissasembly    * Ending and starting address are assigned, begin loop
                                 * parsing each opcode
     JSR     PromptForReinput    * Ask the user if they want to dissamble another program
 
@@ -191,7 +191,7 @@ RLPH_DoWhile        * individually mask and print each hex bit
 RLPH_Done
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
-    
+
 *****************************************************************************
 * PrintLiteral(wordIndex)
 * Args: D0 ($<size><index>)
@@ -319,8 +319,3 @@ kRestartPrompt
     DC.B 'Would you like to dissamble another program (y/n)? ',0
 
     END START
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
