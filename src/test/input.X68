@@ -39,6 +39,7 @@ NPD_ProgramDone
 *     "Would you like to restart the program (y/n)?" n => D0 = 1
 *****************************************************************************
 PromptForReinput
+    MOVEM.L D1-D2, -(SP) * Save used registers
     MOVE.L #kRestartPrompt,D0
     JSR PrintMessage
     
@@ -53,14 +54,14 @@ PromptForReinput
     SUB.B   #89,D1 * compare to 'Y'
     BEQ     PFRRL_ReturnTrue
     
-    BRA PFRRL_ReturnFalse * else use says no
-    
-PFRRL_ReturnFalse
-    MOVE #1,D0
-    RTS
+    MOVE    #1,D0  * user said no, return false
+    BRA     PFRRL_Done
     
 PFRRL_ReturnTrue
-    MOVE #0,D0
+    MOVE    #0,D0  * user said yes, return true
+    
+PFRRL_Done
+    MOVEM.L (SP)+, D1-D2 * Restore used registers
     RTS
     
 *****************************************************************************
@@ -143,7 +144,7 @@ PrintNewline
 *     ValueFromHexAscii(51) = $3 * The ascii value of '3' is 51
 *****************************************************************************
 ValueFromHexadecimal
-    MOVEM.L D2, -(SP)   * save registers
+    MOVEM.L D1, -(SP)   * save registers
     CMP.B   #58,D1      * Ascii Value '9' is at 57
     BLT     VFHRL_ParseNumber
     BRA     VFHRL_ParseLetter
@@ -155,7 +156,7 @@ VFHRL_ParseLetter
     SUB.B   #55,D1      * Ascii value 'A' = 65
 VFHRL_Done
     MOVE.L  D1,D0
-    MOVEM.L (SP)+, D2   * restore used registers
+    MOVEM.L (SP)+, D1   * restore used registers
     RTS
 
 *****************************************************************************
