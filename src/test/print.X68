@@ -8,164 +8,176 @@
 CR      EQU     $0D
 LF      EQU     $0A    
 
-sA      EQU     $10A
-sD      EQU     $10D
-sDot    EQU     $110
-sHash   EQU     $111
-sDollar EQU     $112
-sPercent EQU    $113
-sPlus   EQU     $114
-sMinus  EQU     $115
-sLParen EQU     $116
-sRParen EQU     $117
-sSpace  EQU     $118
-sComma  EQU     $119
+* Ascii Table Reference
+* A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+* 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F 50 51 52 53 54 55 56 57 58 59 5A
 
-sNewLine EQU    $200
-sOR     EQU     $201
+* _  !  "  #  $  %  &  '  (  )  *  +  ,  -  .  /
+* 20 21 22 23 24 25 26 27 28 29 2A 2B 2C 2D 2E 2F
 
-sADD    EQU     $300
-sBCC    EQU     $301
-sBCS    EQU     $302
-sBVC    EQU     $303
-sBGE    EQU     $304
-sBLT    EQU     $305
-sBRA    EQU     $306
-sCMP    EQU     $307
-sEOR    EQU     $308
-sROR    EQU     $309
-sROL    EQU     $30A
-sLSR    EQU     $30B
-sLSL    EQU     $30C
-sASL    EQU     $30D
-sASR    EQU     $30E
-sSUB    EQU     $30F
-sORI    EQU     $310
-sJSR    EQU     $311
-sLEA    EQU     $312
-sRTS    EQU     $313
-sNEG    EQU     $314
+* 0  1  2  3  4  5  6  7  8  9
+* 30 31 32 33 34 35 36 37 38 39
 
-sADDA   EQU     $400
-sMOVE   EQU     $401
-sBCLR   EQU     $402
-sDIVS   EQU     $403
-sSUBQ   EQU     $404
-sMULS   EQU     $405
-sCMPI   EQU     $406
+sA      EQU     $41000000
+sD      EQU     $44000000
+sDot    EQU     $2E000000
+sHash   EQU     $23000000
+sDollar EQU     $24000000
+sPercent EQU    $25000000
+sPlus   EQU     $2B000000
+sMinus  EQU     $2D000000
+sLParen EQU     $28000000
+sRParen EQU     $29000000
+sSpace  EQU     $20000000
+sComma  EQU     $2C000000
 
-sMOVEA   EQU    $500
-sMOVEM   EQU    $501
+sOR     EQU     $4F520000
+
+sADD    EQU     $41444400
+sBCC    EQU     $42434300
+sBCS    EQU     $42435300
+sBVC    EQU     $42564300
+sBGE    EQU     $42474500
+sBLT    EQU     $424C5400
+sBRA    EQU     $42524100
+sCMP    EQU     $434D5000
+sEOR    EQU     $454F5200
+sROR    EQU     $524F5200
+sROL    EQU     $524F4C00
+sLSR    EQU     $4C535200
+sLSL    EQU     $4C534C00
+sASL    EQU     $41534C00
+sASR    EQU     $41535200
+sSUB    EQU     $53554200
+sORI    EQU     $4F524900
+sJSR    EQU     $4A535200
+sLEA    EQU     $4C454100
+sRTS    EQU     $52545300
+sNEG    EQU     $4E454700
+
+sADDA   EQU     $41444441
+sMOVE   EQU     $4D4F5645
+sBCLR   EQU     $42434C52
+sDIVS   EQU     $44495653
+sSUBQ   EQU     $53554251
+sMULS   EQU     $4D554C53
+sCMPI   EQU     $434D5049
 
 START    ORG    $1000
     
 ProgramStart
-    MOVE.L  #kStartMessage,D0 * load start message as arg1
+    MOVE.L  #kStartMessage,D0   * load start message as arg1
     JSR     PrintMessage
 
-    MOVE    #sHash,D0
-    JSR     PrintLiteral
+    MOVE.L  #sHash,D1
+    JSR     PrintWord
     
-    MOVE    #sDollar,D0
-    JSR     PrintLiteral
+    MOVE.L  #sDollar,D1
+    JSR     PrintWord
     
-    MOVE.L  #$deadbeef,D0 * print out literal "DEADBEEF"
-    MOVE    #8,D1
+    MOVE.L  #$deadbeef,D1       * print out literal "DEADBEEF"
+    MOVE    #8,D2
     JSR     PrintHexadecimal
     
-    MOVE    #sNewLine,D0
-    JSR PrintLiteral
+    JSR     PrintNewline
 
-    MOVE    #sMove,D0
-    JSR     PrintLiteral
+    *****************************************************
+    * Prints "MOVE D3,(A4)+"
+    *****************************************************
+    MOVE.L  #sMove,D1           * prints "MOVE"
+    JSR     PrintWord
     
-    MOVE    #sSpace,D0
-    JSR PrintLiteral
-    
-    MOVE    #sLParen,D0
-    JSR     PrintLiteral
-    
-    MOVE    #sD,D0
-    JSR PrintLiteral
+    MOVE.L  #$20443300,D1       * prints " D3"
+    JSR     PrintWord
 
-    MOVE    #5,D0
-    MOVE    #1,D1
-    JSR PrintHexadecimal
+    MOVE.L  #$2C284134,D1       * prints ",(A4"
+    JSR     PrintWord
+       
+    MOVE.L  #$292B0000,D1       * prints ")+"
+    JSR     PrintWord
 
-    MOVE    #sRParen,D0
-    JSR     PrintLiteral
+    JSR     PrintNewline
+    *****************************************************
     
-    MOVE    #sPlus,D0
-    JSR     PrintLiteral
-    
-    MOVE    #sComma,D0
-    JSR     PrintLiteral
-    
-    MOVE    #sD,D0
-    JSR PrintLiteral
+    MOVE.L  #sOR,D1             * print out literal "OR"
+    JSR     PrintWord
 
-    MOVE    #0,D0
-    MOVE    #1,D1
-    JSR PrintHexadecimal    * prints out MOVE (D5)+,D0
+    JSR     PrintNewline
+    
+    MOVE.L  #sADD,D1            * print out literal "ADD"
+    JSR     PrintWord
 
-    MOVE    #sNewLine,D0
-    JSR PrintLiteral
+    MOVE.L  #sSpace,D1
+    JSR     PrintWord
 
-    MOVE    #sOR,D0 * print out literal "ADD"
-    JSR PrintLiteral
+    MOVE.L  #sBRA,D1            * print out literal "BRA"
+    JSR PrintWord
     
-    MOVE    #sNewLine,D0
-    JSR PrintLiteral
+    MOVE.L  #sSpace,D1
+    JSR     PrintWord
     
-    MOVE    #sMOVEA,D0 * print out literal "MOVEA"
-    JSR PrintLiteral
+    MOVE.L  #sNEG,D1            * print out literal "NEG"
+    JSR     PrintWord
 
-    MOVE    #sNewLine,D0
-    JSR PrintLiteral
+    JSR     PrintNewline
     
-    MOVE    #sADD,D0 * print out literal "ADD"
-    JSR PrintLiteral
-
-    MOVE    #sSpace,D0
-    JSR PrintLiteral
-
-    MOVE    #sBRA,D0 * print out literal "BRA"
-    JSR PrintLiteral
+    MOVE.L  #sADDA,D1           * print out literal "ADDA"
+    JSR     PrintWord
     
-    MOVE    #sSpace,D0
-    JSR PrintLiteral
+    MOVE.L  #sSpace,D1
+    JSR     PrintWord
     
-    MOVE    #sNEG,D0 * print out literal "NEG"
-    JSR PrintLiteral
-
-    MOVE    #sNewLine,D0
-    JSR PrintLiteral
+    MOVE.L  #sBCLR,D1           * print out literal "BCLR"
+    JSR     PrintWord
     
-    MOVE    #sADDA,D0 * print out literal "ADDA"
-    JSR PrintLiteral
+    MOVE.L  #sSpace,D1
+    JSR     PrintWord
     
-    MOVE    #sSpace,D0
-    JSR PrintLiteral
-    
-    MOVE    #sBCLR,D0 * print out literal "BCLR"
-    JSR PrintLiteral
-    
-    MOVE    #sSpace,D0
-    JSR PrintLiteral
-    
-    MOVE    #sCMPI,D0 * print out literal "CMPI"
-    JSR PrintLiteral
+    MOVE.L  #sCMPI,D1           * print out literal "CMPI"
+    JSR     PrintWord
     
 Done
     MOVE    #kGoodbyeMessage,D0
     JSR     PrintMessage
 
-    MOVE.B  #9,D0 * quits program
+    MOVE.B  #9,D0               * quits program
     TRAP    #15
 
 *****************************************************************************
-* PrintHexadecimal(number, size)
-* Args: D0 (the number to print), D1 (how many numbers to print)     
+* PrintWord(word)
+* Args: D1 (ascii values of words)
+* Prints the word using each byte of the argument as an ascii value
+* ex. PrintWord($41444400) prints out "ADD"
+*                 A D D x
+*     PrintWord($2C284134) prints out ",(A4"
+*                 , ( A 4
+*****************************************************************************  
+PrintWord
+    MOVE    #kStringBuffer,A0
+    MOVE.L  #0,(A0)+
+    MOVE.L  #0,(A0)+
+    MOVE.L  #0,(A0)+
+    SUB     #12,A0
+    MOVE.L  D1,(A0)
+    MOVE.L  A0,D0
+    JSR     PrintMessage
+    RTS
+
+*****************************************************************************
+* PrintNewline()
+* Args: None
+* Prints a literal newline
+*****************************************************************************
+PrintNewline
+    MOVEM.L D0, -(SP) * Save used registers
+    MOVE.L #kNewline,D0
+    JSR PrintMessage
+    MOVEM.L (SP)+, D0 * Restore used registers
+    RTS
+
+*****************************************************************************
+* void PrintHexadecimal(number, size)
+* Args: D1 (the number to print), D2 (how many numbers to print)     
 * Prints the hexadecimal number stored in D0. The size is used to print or 
 * omit trailing zeros;
 * ex. PrintHexadecimal($AFE1, 4) prints "AFE1"
@@ -174,19 +186,36 @@ Done
 *****************************************************************************
 PrintHexadecimal    
     MOVEM.L D1-D7, -(SP)    * save registers
-    MOVE.L  D0,D7   * save the register
-    MOVE    D1,D6   * counter
+    MOVE.L  D1,D7   * save the register
+    MOVE    D2,D6   * counter
     
-    SUB     #1,D1
-    ASL.L   #2,D1   * offset to the correct hex bit
-    MOVE    #4,D2   * pass the size of a hex bit to GetBits
+    SUB     #1,D2
+    ASL.L   #2,D2   * offset to the correct hex bit
+    MOVE    #4,D3   * pass the size of a hex bit to GetBits
     
 RLPH_DoWhile        * individually mask and print each hex bit
-    MOVE.L  D7,D0   
+    MOVE.L  D7,D1
     JSR     GetBits
-    ADD     #$100,D0 * 1 character string literal
-    JSR     PrintLiteral
-    SUB.L   #4,D1   * get the offset to the next hex bit
+    MOVE    D0,D1
+    CMP     #10,D1  
+    BGE     RLPH_ToAsciiLetter  * if (hexBit >= $A)
+                                * else
+    ADD     #48,D1  * add 48 to convert number to ascii
+    BRA RLPH_Continue
+
+RLPH_ToAsciiLetter
+    ADD     #55,D1  * add 55 to convert $A to 'A'
+                    * ascii value of 'A' is 65, 65-10 = 55
+                    
+    BRA RLPH_Continue
+    
+RLPH_Continue
+    ASL.L   #8,D1
+    ASL.L   #8,D1
+    ASL.L   #8,D1   * put number in index 0 of string
+    JSR     PrintWord * print the letter
+    
+    SUB.L   #4,D2   * get the offset to the next hex bit
     
     SUB     #1,D6
     BEQ RLPH_Done   * (while --D6 != 0)
@@ -195,71 +224,31 @@ RLPH_DoWhile        * individually mask and print each hex bit
 RLPH_Done
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
-    
+        
 *****************************************************************************
-* PrintLiteral(wordIndex)
-* Args: D0 ($<size><index>)
-* Prints the word using the size and index to look up values in a
-* pre-initialized 2d array of words.
-* ex. PrintLiteral($30A) prints out the 10th, 3 letter word, or "ROL"
-*     Words have been assigned user-friendly constants for your pleasure.
-*     Passing in sMOVE as an argument to PrintLiteral prints out "MOVE", etc.
-*****************************************************************************
-PrintLiteral
-    MOVEM.L D1-D7, -(SP)    * save registers
-    MOVE.L  D0,D7           * save D0
-    MOVE.L  #8,D1
-    MOVE.L  #4,D2
-    JSR     GetBits         * get the number of characters in the word
-    MOVE.L  D0,D6
-    
-    MOVE.L   D7,D0          * restore the original argument
-    MOVE.L  #0,D1
-    MOVE    #8,D2
-    JSR     GetBits         * get the array index containg the correct string
-    MOVE    #2,D2
-    
-    * D6 contains the number of characters in the word
-    * D0 contains the array index
-    * D2 contains 2, the size of the index into the string array
-    
-    LEA     StringLiterals,A0
-    MULU    D6,D2           * get index into correct string array
-    ADD.L   D2,A0           * access the correct string array
-    MOVEA  (A0),A0          * get the string array    
-    
-    * if numCharacters == 0, numCharacters++
-*    CMP     #0,D6       
-*    BNE     RLPL_Endif
-*    ADD     #1,D6           * Add 1 if using StringLiterals0 for numbers    
-*RLPL_Endif
-    
-    ADD     #1,D6           * add one for the null terminator
-    MULU    D6,D0           * get the correct array index
-    ADD     D0,A0           * access the correct string in the array
-    
-    MOVE    A0,D0           * arg0 for PrintMessage
-    MOVEM.L (SP)+, D1-D7    * restore registers
-    JSR     PrintMessage    * print the word
-    RTS
-    
-*****************************************************************************
-* GetBits(value, lowerBit, numBits)
-* Args: D0 (value), D1(lowerBit), D2(numBits)
+* int GetBits(value, lowerBit, numBits)
+* D0          D1     D2        D3
 * Returns the bits from value[lowerBit] to value[lowerBit + numBits]
-* ex. GetBits(1111 0110 0111, 3, 5) = 1111 [0110 0]111 = 01100
+*
+* ex. Func_GetBits( 0000111101100111 , LSB = 3 , length = 5 )
+*   extracts:       FEDCBA98^^^^^210
+*   so D0 will be:          01100
 *****************************************************************************
 GetBits
-    MOVEM.L D1-D7, -(SP)    * save registers
-    CLR     D3
-    MOVE.L  #1,D3
-    ASL.L   D2,D3
-    SUB.L   #1,D3       * create the bit mask
-    LSR.L   D1,D0       * discard lower bits of the value
-    AND.L   D3,D0       * mask off the higher bits of the value
-                        * store the value in the return register
-    MOVEM.L (SP)+, D1-D7    * restore registers
-    RTS
+    MOVEM.L  D1-D4,-(SP)    * save D4 so it can be used by the function
+    MOVE.L  D1,D0       * store initial value in return register
+
+    * bit mask set up
+    CLR     D4
+    MOVE.L  #1,D4
+    LSL     D3,D4       * calculate 2^n (n = number of bits)
+    SUB     #1,D4       * create the bit mask with 2^n-1
+
+    LSR.L   D2,D0       * shift right, discarding lower bits
+    AND.L   D4,D0       * mask out higher bits
+
+    MOVEM.L  (SP)+,D1-D4    * restore used register(s)
+    RTS 
 
 *****************************************************************************
 * void PrintMessage(String* message)
@@ -277,50 +266,17 @@ PrintMessage        * void PrintMessage(String* message)
 
 kStartMessage
     DC.B    'These function allows users to print from a set of literal ',CR,LF
-    DC.B    'word by passing in an index or to print a hexadecimal string'
-    DC.B    CR,LF,CR,LF,0,0
+    DC.B    'word by passing in a value containing the ascii values of',CR,LF
+    DC.B    'of each character to be printed',CR,LF
+    DC.B    CR,LF,0,0
 
 kGoodbyeMessage
     DC.B    CR,LF,'Goodbye!',0
 
-StringLiterals1
-    DC.B    '0',0,'1',0,'2',0,'3',0,'4',0,'5',0,'6',0,'7',0
-    DC.B    '8',0,'9',0,'A',0,'B',0,'C',0,'D',0,'E',0,'F',0
-    DC.B    '.',0,'#',0,'$',0,'%',0,'+',0,'-',0,'(',0,')',0
-    DC.B    ' ',0,',',0
+kNewline
+    DC.B    CR,LF,0,0
 
-StringLiterals2
-    DC.B    CR,LF,0
-    DC.B    'OR',0
-
-StringLiterals3
-    DC.B    'ADD',0,'BCC',0,'BCS',0,'BVC',0,'BGE',0
-    DC.B    'BLT',0,'BRA',0,'CMP',0,'EOR',0,'ROR',0
-    DC.B    'ROL',0,'LSR',0,'LSL',0,'ASL',0,'ASR',0
-    DC.B    'SUB',0,'ORI',0,'JSR',0,'LEA',0,'RTS',0
-    DC.B    'NEG',0
-    
-StringLiterals4
-    DC.B    'ADDA',0,'MOVE',0,'BCLR',0,'DIVS',0
-    DC.B    'SUBQ',0,'MULS',0,'CMPI',0
-     
-StringLiterals5
-    DC.B    'MOVEA',0
-    DC.B    'MOVEM',0,0
-
-StringLiterals 
-    DC.W 0 * 0 character words
-    DC.W StringLiterals1 * numbers and symbols
-    DC.W StringLiterals2 * 2 character words
-    DC.W StringLiterals3 * 3 character words
-    DC.W StringLiterals4 * 4 character words
-    DC.W StringLiterals5 * 5 character words
-
+kStringBuffer
+    DS  12
 
     END START
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
