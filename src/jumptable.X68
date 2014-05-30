@@ -1738,21 +1738,6 @@ NoMoreOpcodes   DC.W     %1111111111111111
         END    Main        * last line of source
 
 
-
-
-
-
-
-
-
-
-<<<<<<< HEAD
-=======
-
-
-
-
->>>>>>> james_dev
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
