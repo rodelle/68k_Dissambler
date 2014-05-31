@@ -1,7 +1,23 @@
 *****************************************************************************
-* Title      : Op-code Decoding
+* Title      : Disassembler
 * Written by : No Preference
-* Date       : 5/22/14
+* Date       : 5/30/14
+*  
+* 68000 Machine Code Disassembler
+*****************************************************************************
+*
+* Global variables:
+*   A5 - target instruction pointer.
+*        points to the current machine code in memory, for disassembly.
+*   A6 - final target machine code in memory
+*
+* Subroutine conventions:
+*   Parameters   - pass using Func_MyFunc(D1, D2, ...)
+*   Return       - return through D0
+*   Preservation - all Dn and An registers that are modified must be saved
+*                  at entry on the stack, and restored from the stack before
+*                  RTS (D0 and A5 are exceptions).
+* 
 *****************************************************************************
 
 * print constants
@@ -33,7 +49,7 @@ Loop_Main
         BEQ     Done_Main
 
         * else decode next instruction
-        JSR     Func_UseJumpTable
+        JSR     Func_JumpOpcodeTable
         
         MOVE    #NEW_LINE,D1
         JSR     Func_Print      # print a new line after each instruction
@@ -48,12 +64,12 @@ Done_Main
 
 
 *****************************************************************************
-* Jump Table
+* Opcode Table
 * top level jump table determines first step function
 * based on 4 MSBs of opcode
 * Instructions are stored as longwords in memory
 *****************************************************************************
-JumpTable
+OpcodeTable
         DC.L    Func_BCLR_ORI_CMPI
         DC.L    Func_MOVE_B
         DC.L    Func_MOVE_MOVEA_L
@@ -202,48 +218,55 @@ Func_MoveInstructionPointer
 
 *****************************************************************************
 * void Func_PrintSizeStandard()
-* expects global variable A5 to be pointing at current opcode
+* expects global variable A5 to be pointing at current opcode.
+*
+* prints the size for instructions who fit the following configuration:
+* bits 7,6         (where 6 and 7 are of the first opcode word)
+*      0,0 = byte
+*      0,1 = word
+*      1,0 = long
+*      1,1 = ?   (error)
 *****************************************************************************
 Func_PrintSizeStandard
         MOVEM.L D1-D3,-(SP)
         
         CLR.L   D1
-        MOVE.W  (A5),D1     * copy current "PC" into D1
-        MOVE.L  #6,D2       * get bit 6
-        MOVE.L  #2,D3       * to bit 7
-        JSR     Func_GetBits     * store result in D0
+        MOVE.W  (A5),D1         * copy current "PC" into D1
+        MOVE.L  #6,D2           * get bit 6
+        MOVE.L  #2,D3           * to bit 7
+        JSR     Func_GetBits    * store result in D0
         
         * print the size string
-        MOVE.L  D0,D1       * move size bits into D1
+        MOVE.L  D0,D1           * move size bits into D1
         
         * if D1 is 0, then it is a byte
         * load 'byte' msg into D0
         CMP     #0,D1
-        BNE     Word_Func_PrintSize
+        BNE     Word_Func_PrintSizeStandard
         MOVE    #B_MSG,D1
-        BRA     Done_Func_PrintSize
+        BRA     Done_Func_PrintSizeStandard
 
-Word_Func_PrintSize
+Word_Func_PrintSizeStandard
         * if D1 is 1, then it is a word
         * load 'word' msg into D0
         CMP     #1,D1
-        BNE     Long_Func_PrintSize
+        BNE     Long_Func_PrintSizeStandard
         MOVE    #W_MSG,D1
-        BRA     Done_Func_PrintSize
+        BRA     Done_Func_PrintSizeStandard
    
-Long_Func_PrintSize
+Long_Func_PrintSizeStandard
         * if D1 is 2, then it is a long
         * load 'long' msg into D0
         CMP     #2,D1
-        BNE     Error_Func_PrintSize
+        BNE     Error_Func_PrintSizeStandard
         MOVE    #L_MSG,D1
-        BRA     Done_Func_PrintSize
+        BRA     Done_Func_PrintSizeStandard
 
-Error_Func_PrintSize 
+Error_Func_PrintSizeStandard 
         * else it is an error
         MOVE    #Q_MSG,D1
 
-Done_Func_PrintSize
+Done_Func_PrintSizeStandard
         JSR     Func_Print
         MOVEM.L (SP)+,D1-D3     
         RTS
@@ -266,10 +289,10 @@ Func_Print
 
 
 *****************************************************************************
-* void Func_UseJumpTable()
+* void Func_JumpOpcodeTable()
 * expects global variable A5 to contain current address location
 *****************************************************************************
-Func_UseJumpTable
+Func_JumpOpcodeTable
         MOVEM.L D0-D3/A1,-(SP)     * save registers that will be modified
 
         * get the 4 MSBits of the address
@@ -282,7 +305,7 @@ Func_UseJumpTable
         * multiply nibble by 4 to get longword offset
         * into the func table (DC.L)
         LSL.L   #2,D0
-        LEA     JumpTable,A1    * get the func table address
+        LEA     OpcodeTable,A1    * get the func table address
         ADDA.L  D0,A1           * offset into table
         MOVEA.L (A1),A1         * dereference offset
         JSR     (A1)            * dereference and call function
@@ -302,16 +325,16 @@ Func_UseJumpTable
 *****************************************************************************
 Func_GetBits
         MOVEM.L  D4,-(SP)    * save D4 so it can be used by the function
-        MOVE.L  D1,D0       * store initial value in return register
+        MOVE.L  D1,D0        * store initial value in return register
 
         * bit mask set up
         CLR     D4
         MOVE.L  #1,D4
-        LSL     D3,D4       * calculate 2^n (n = number of bits)
-        SUB     #1,D4       * create the bit mask with 2^n-1
+        LSL     D3,D4        * calculate 2^n (n = number of bits)
+        SUB     #1,D4        * create the bit mask with 2^n-1
 
-        LSR     D2,D0       * shift right, discarding lower bits
-        AND.L   D4,D0       * mask out higher bits
+        LSR     D2,D0        * shift right, discarding lower bits
+        AND.L   D4,D0        * mask out higher bits
 
         MOVEM.L  (SP)+,D4    * restore used register(s)
         RTS
@@ -1541,6 +1564,7 @@ Func_An
         MOVEM.L     (SP)+,D0-D1
         RTS
 
+
 *****************************************************************************
 * Func_An_i(Register)
 *           D1
@@ -1548,6 +1572,7 @@ Func_An
 *****************************************************************************
 Func_An_i
         RTS
+
 
 *****************************************************************************
 * Func_An_ip(Register)
@@ -1557,6 +1582,7 @@ Func_An_i
 Func_An_ip
         RTS
 
+
 *****************************************************************************
 * Func_An_im(Register)
 *            D1
@@ -1564,6 +1590,7 @@ Func_An_ip
 *****************************************************************************
 Func_An_im
         RTS
+
 
 *****************************************************************************
 * Func_Word_A(Address)
@@ -1573,6 +1600,7 @@ Func_An_im
 Func_Word_A
         RTS
 
+
 *****************************************************************************
 * Func_Long_A(Address)
 *             D1
@@ -1581,6 +1609,7 @@ Func_Word_A
 Func_Long_A
         RTS
 
+
 *****************************************************************************
 * Func_Data(Data)
 *           D1
@@ -1588,9 +1617,10 @@ Func_Long_A
 *****************************************************************************
 Func_Data
         RTS
-        
+    
+
 *****************************************************************************
-* Func_Data()
+* Func_Junk()
 * Dummy Return
 *****************************************************************************
 Func_Junk
@@ -1600,9 +1630,10 @@ Func_Junk
 *****************************************************************************
 * Data
 *****************************************************************************
+NEW_LINE        DC.B    CR,LF,0
+START_MSG       DC.B    '68k_Disassemlber',CR,LF,'------------------',CR,LF,0
 
-* messages for tracing output
-START_MSG       DC.B    'Jump table example',CR,LF,'------------------',CR,LF,0
+* opcode print outs
 NO_OP_MSG       DC.B    'Error: invalid opcode',0
 MOVE_B_MSG      DC.B    'MOVE.B',0
 MOVE_W_MSG      DC.B    'MOVE.W',0
@@ -1639,12 +1670,12 @@ LEA_MSG         DC.B    'LEA',0
 NEG_MSG         DC.B    'NEG.*',0
 MOVEM_MSG       DC.B    'MOVEM.*',0
 RTS_MSG         DC.B    'RTS',0
+
+* data size types
 B_MSG           DC.B    'B',0
 W_MSG           DC.B    'W',0
 L_MSG           DC.B    'L',0
 Q_MSG           DC.B    '?',0
-NEW_LINE        DC.B    CR,LF,0
-
 
 * Address print outs
 DATA_REG        DC.B    'D',0
