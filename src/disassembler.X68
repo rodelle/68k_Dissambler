@@ -35,9 +35,12 @@ Main    ORG     $1000   * first instruction of program
 
         CLR     D1
         MOVE.B  #5,D1
-        *JSR     Func_Dn
-        *JSR     Func_An
+        JSR     Func_Dn
+        MOVE.B  #3,D1
+        JSR     Func_An
+        MOVE.B  #6,D1
         JSR     Func_An_ip
+        *JSR     Func_Print_Number
 
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
@@ -1538,10 +1541,8 @@ Func_Dn
         MOVE.L      #DATA_REG,D1
         JSR         Func_Print
         CLR         D1
-        MOVE.L      #ZERO,D1
-        MULS.W      #2,D0
-        ADD.L       D0,D1
-        JSR         Func_Print
+        MOVE.B      D0,D1
+        JSR         Func_Print_Number
         MOVEM.L     (SP)+,D0-D1
         RTS
 
@@ -1558,10 +1559,8 @@ Func_An
         MOVE.L      #ADDRESS_REG,D1
         JSR         Func_Print
         CLR         D1
-        MOVE.L      #ZERO,D1
-        MULS.W      #2,D0
-        ADD.L       D0,D1
-        JSR         Func_Print
+        MOVE.B      D0,D1
+        JSR         Func_Print_Number
         MOVEM.L     (SP)+,D0-D1
         RTS
 
@@ -1651,11 +1650,13 @@ Func_Data
 * Prints number
 *****************************************************************************
 Func_Print_Number
-        MOVEM.L     D0-D1,(SP)-
+        MOVEM.L     D0-D1,-(SP)
+        CLR         D0
+        MOVE.B      D1,D0
         CLR         D1
         MOVE.L      #ZERO,D1
         MULS.W      #2,D0
-        ADD.L       D0,D1
+        ADD.W       D0,D1
         JSR         Func_Print
         MOVEM.L     (SP)+,D0-D1        
         RTS
