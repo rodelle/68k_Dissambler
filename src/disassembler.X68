@@ -35,8 +35,9 @@ Main    ORG     $1000   * first instruction of program
 
         CLR     D1
         MOVE.B  #5,D1
-        JSR     Func_Dn
-        JSR     Func_An
+        *JSR     Func_Dn
+        *JSR     Func_An
+        JSR     Func_An_ip
 
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
@@ -1571,24 +1572,49 @@ Func_An
 * Prints (An) address
 *****************************************************************************
 Func_An_i
+        MOVEM.L     D0-D1,-(SP)
+        CLR         D0
+        MOVE.B      D1,D0
+        CLR         D1
+        MOVE.L      #PAR_OPEN,D1
+        JSR         Func_Print
+        CLR         D1
+        MOVE.B      D0,D1
+        JSR         Func_An
+        MOVE.L      #PAR_CLOSE,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1
         RTS
 
 
 *****************************************************************************
 * Func_An_ip(Register)
-*            D1
-* Prints (An)+ address
+*           D1
+* Prints (An)+ Address
 *****************************************************************************
 Func_An_ip
+        MOVEM.L     D0-D1,-(SP)
+        JSR         Func_An_i
+        MOVE.L      #PLUS,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1
         RTS
 
 
 *****************************************************************************
 * Func_An_im(Register)
-*            D1
-* Prints -(An) address
+*           D1
+* Prints -(An) Address
 *****************************************************************************
 Func_An_im
+        MOVEM.L     D0-D1,-(SP)
+        MOVE.B      D1,D0
+        MOVE.L      #MINUS,D1
+        JSR         Func_Print
+        CLR         D1
+        MOVE.B      D0,D1
+        JSR         Func_An_i
+        MOVEM.L     (SP)+,D0-D1
         RTS
 
 
@@ -1618,6 +1644,21 @@ Func_Long_A
 Func_Data
         RTS
     
+
+*****************************************************************************
+* Func_Print_Number(Number)
+*                   D1
+* Prints number
+*****************************************************************************
+Func_Print_Number
+        MOVEM.L     D0-D1,(SP)-
+        CLR         D1
+        MOVE.L      #ZERO,D1
+        MULS.W      #2,D0
+        ADD.L       D0,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D0-D1        
+        RTS
 
 *****************************************************************************
 * Func_Junk()
@@ -1767,3 +1808,10 @@ NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
+
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
