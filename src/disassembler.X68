@@ -32,14 +32,19 @@ LF      EQU     $0A
 Main    ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Func_Print
-
-        CLR     D1
-        MOVE.B  #5,D1
-        JSR     Func_Dn
-        MOVE.B  #3,D1
-        JSR     Func_An
-        MOVE.B  #6,D1
-        JSR     Func_An_ip
+        
+        MOVEA.L #$A000,A5
+        JSR     Func_Long_A
+        JSR     Func_Word_A
+        JSR     Func_Long_A
+        JSR     Done_Main
+        *CLR     D1
+        *MOVE.B  #5,D1
+        *JSR     Func_Dn
+        *MOVE.B  #3,D1
+        *JSR     Func_An
+        *MOVE.B  #6,D1
+        *JSR     Func_An_ip
         *JSR     Func_Print_Number
 
         * test opcodes in memory
@@ -1602,7 +1607,7 @@ Func_An_ip
 
 *****************************************************************************
 * Func_An_im(Register)
-*           D1
+*            D1
 * Prints -(An) Address
 *****************************************************************************
 Func_An_im
@@ -1618,20 +1623,85 @@ Func_An_im
 
 
 *****************************************************************************
-* Func_Word_A(Address)
-*             D1
+* Func_Word_A()
 * Prints xxx.W address
 *****************************************************************************
 Func_Word_A
+        MOVEM.L     D1,-(SP)
+        MOVE.L      #MONEY,D1
+        JSR         Func_Print
+        JSR         Func_HexWord
+        MOVEM.L     (SP)+,D1
         RTS
 
 
 *****************************************************************************
-* Func_Long_A(Address)
-*             D1
+* Func_Long_A()
 * Prints xxx.L address
 *****************************************************************************
 Func_Long_A
+        MOVEM.L     D1,-(SP)
+        MOVE.L      #MONEY,D1
+        JSR         Func_Print
+        JSR         Func_HexWord
+        JSR         Func_HexWord
+        MOVEM.L     (SP)+,D1
+        RTS
+
+
+*****************************************************************************
+* Func_HexWord()
+* Prints a HexWord
+*****************************************************************************
+Func_HexWord
+        MOVEM.L     D1-D2,-(SP)
+        CLR         D1
+        MOVE.B      #1,D1
+        JSR         Func_MoveInstructionPointer
+        MOVE.W      (A5),D1
+        MOVE.B      #3,D2
+        JSR         Func_PrintHexLoop
+        MOVEM.L     (SP)+,D1-D2
+        RTS
+
+*****************************************************************************
+* void Func_PrintHexLoop(Number, StartHighIndex)
+*                        D1      D2
+* Prints a Hex number
+*****************************************************************************
+Func_PrintHexLoop
+        MOVEM.L     D1-D4,-(SP)
+        MOVE.L      D1,D4
+        MULS.W      #4,D2
+        MOVE.B      #4,D3
+        BRA         HexLoop
+
+HexLoop
+        JSR         Func_GetBits
+        CLR         D1
+        MOVE.B      D0,D1
+        JSR         Func_Print_Number
+        MOVE.L      D4,D1
+        SUB.B       #4,D2
+        CMP.B       #-4,D2
+        BNE         HexLoop
+        MOVEM.L     (SP)+,D1-D4
+        RTS
+
+
+*****************************************************************************
+* Func_PrintHex(Number, HexPlace)
+*               D1      D2
+* Gets the HexNumber in a given position from the Number
+*****************************************************************************
+Func_PrintHex
+        MOVEM.L     D1-D3,-(SP)
+        MULS.W      #4,D2
+        MOVE.B      #4,D3
+        JSR         Func_GetBits
+        MOVE.B      D0,D1
+        JSR         Func_Print
+        MOVEM.L     (SP)+,D1-D3
         RTS
 
 
@@ -1739,6 +1809,14 @@ FOUR            DC.B    '4',0
 FIVE            DC.B    '5',0
 SIX             DC.B    '6',0
 SEVEN           DC.B    '7',0
+EIGHT           DC.B    '8',0
+NINE            DC.B    '9',0
+TEN             DC.B    'A',0
+ELEVEN          DC.B    'B',0
+TWELVE          DC.B    'C',0
+THIRTEEN        DC.B    'D',0
+FOURTEEN        DC.B    'E',0
+FIFTEEN         DC.B    'F',0
 
 * opcodes loaded into memory
 * output should be in the same order
@@ -1809,6 +1887,7 @@ NoMoreOpcodes   DC.W     %1111111111111111
 
 
         END    Main        * last line of source
+
 
 
 
