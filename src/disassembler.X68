@@ -32,10 +32,19 @@ LF      EQU     $0A
 Main    ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Func_Print
+
+        CLR     D1        
+        MOVE.B  #$F,D0
+        MOVE.B  #$EE,D1
+        MOVE.W  #$DDD,D2
+        MOVE.W  #$CCCC,D3
+        MOVE.W  #$AAA,D3
+        MOVE.L  #$BBBBB,D4
         
         MOVEA.L #$A000,A5
         JSR     Func_Long_A
-        JSR     Func_Word_A
+        MOVE.L  #0,D1
+        JSR     Func_Data
         JSR     Func_Long_A
         JSR     Done_Main
         *CLR     D1
@@ -1706,11 +1715,50 @@ Func_PrintHex
 
 
 *****************************************************************************
-* Func_Data(Data)
-*           D1
+* Func_WordData()
 * Prints #<data>
 *****************************************************************************
+Func_WordData
+        MOVEM.L     D1,-(SP)
+        MOVE.L      #POUND,D1
+        JSR         Func_Print
+        JSR         Func_Word_A
+        MOVEM.L     (SP)+,D1
+        RTS
+        
+        
+*****************************************************************************
+* Func_LongData()
+* Prints #<data>
+*****************************************************************************
+Func_LongData
+        MOVEM.L     D1,-(SP)
+        MOVE.L      #POUND,D1
+        JSR         Func_Print
+        JSR         Func_Long_A
+        MOVEM.L     (SP)+,D1
+        RTS
+        
+        
+*****************************************************************************
+* Func_Data(Size)
+*           D1
+* (D1 == 0) == Word || (D1 != 0) == Long
+* Prints #<data>
+* !! Can logic for when Word vs Long !!
+*****************************************************************************
 Func_Data
+        MOVEM.L     D1,-(SP)
+        CMP.B       #0,D1
+        BEQ         WORD
+        BNE         LONG
+WORD
+        JSR         Func_WordData
+        MOVEM.L     (SP)+,D1
+        RTS
+LONG
+        JSR         Func_LongData
+        MOVEM.L     (SP)+,D1
         RTS
     
 
