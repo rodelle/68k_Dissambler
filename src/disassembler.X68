@@ -33,28 +33,27 @@ Main    ORG     $1000   * first instruction of program
         MOVE    #START_MSG,D1
         JSR     Func_Print
 
-        CLR     D1        
-        MOVE.B  #$F,D0
-        MOVE.B  #$EE,D1
-        MOVE.W  #$DDD,D2
-        MOVE.W  #$CCCC,D3
-        MOVE.W  #$AAA,D3
-        MOVE.L  #$BBBBB,D4
+        CLR     D1
+        CLR     D2
         
-        MOVEA.L #$A000,A5
-        JSR     Func_Long_A
-        MOVE.L  #0,D1
-        JSR     Func_Data
-        JSR     Func_Long_A
-        JSR     Done_Main
-        *CLR     D1
-        *MOVE.B  #5,D1
-        *JSR     Func_Dn
-        *MOVE.B  #3,D1
-        *JSR     Func_An
-        *MOVE.B  #6,D1
-        *JSR     Func_An_ip
-        *JSR     Func_Print_Number
+        MOVE.B  #%111100,D1
+        MOVE.B  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+
+        *CLR     D1        
+        *MOVE.B  #$F,D0
+        *MOVE.B  #$EE,D1
+        *MOVE.W  #$DDD,D2
+        *MOVE.W  #$CCCC,D3
+        *MOVE.W  #$AAA,D3
+        *MOVE.L  #$BBBBB,D4
+        
+        *MOVEA.L #$A000,A5
+        *JSR     Func_Long_A
+        *MOVE.L  #1,D1
+        *JSR     Func_Data
+        *JSR     Func_Long_A
+        *JSR     Done_Main
 
         * test opcodes in memory
         MOVE.L  #FirstOpcode,A5
@@ -132,13 +131,16 @@ AddressTable
 
 
 *****************************************************************************
-* void JumpAddressTableModeReg(6bit Mode-Register)
-*                            D1
+* void JumpAddressTableModeReg(6bit Mode-Register, size)
+*                              D1                  D2
 * Unsure what to leave in the registers
 * Currently leaves nothing in registers
 *****************************************************************************
 Func_JumpAddressTableModeReg
-            MOVEM.L D0-D5/A1,-(SP)
+            MOVEM.L D0-D6/A1,-(SP)
+            
+            CLR     D6
+            MOVE.B  D2,D6
             
             * preping D2/D3 for mode/register
             CLR     D2
@@ -162,13 +164,16 @@ Func_JumpAddressTableModeReg
             BRA     ADD_TOGETHER
 
 *****************************************************************************
-* void JumpAddressTableRegMode(6bit Register-Mode)
-*                            D1
+* void JumpAddressTableRegMode(6bit Register-Mode, size)
+*                              D1                  D2
 * Unsure what to leave in the registers
 * Currently leaves nothing in registers
 *****************************************************************************
 Func_JumpAddressTableRegMode
-            MOVEM.L D0-D5/A1,-(SP)
+            MOVEM.L D0-D6/A1,-(SP)
+            
+            CLR     D6
+            MOVE.B  D2,D6
             
             * preping D2/D3 for mode/register
             CLR     D2
@@ -215,8 +220,11 @@ NO_ADD_TOGETHER
             BRA     Done_Func_JumpAddressTable
             
 Done_Func_JumpAddressTable
-            * run stuff here before MOVEM command
-            MOVEM.L (SP)+,D0-D5/A1
+            CLR     D2
+            MOVE.B  D6,D2
+            MOVEA.L (A1),A1
+            JSR     (A1)
+            MOVEM.L (SP)+,D0-D6/A1
             RTS
 
 *****************************************************************************
@@ -1741,24 +1749,25 @@ Func_LongData
         
         
 *****************************************************************************
-* Func_Data(Size)
-*           D1
-* (D1 == 0) == Word || (D1 != 0) == Long
+* Func_Data(Dummy, Size)
+*           D1     D2
+* (D2 == 0) == Word || (D2 != 0) == Long
 * Prints #<data>
 * !! Can logic for when Word vs Long !!
 *****************************************************************************
 Func_Data
-        MOVEM.L     D1,-(SP)
-        CMP.B       #0,D1
+        MOVEM.L     D1-D2,-(SP)
+        * Needs to get size here
+        CMP.B       #0,D2
         BEQ         WORD
         BNE         LONG
 WORD
         JSR         Func_WordData
-        MOVEM.L     (SP)+,D1
+        MOVEM.L     (SP)+,D1-D2
         RTS
 LONG
         JSR         Func_LongData
-        MOVEM.L     (SP)+,D1
+        MOVEM.L     (SP)+,D1-D2
         RTS
     
 
