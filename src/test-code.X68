@@ -51,11 +51,36 @@ Start   ORG     $7FC0    ; first instruction of program
         MOVEA.W -(A1),A7
         MOVEA.W (A1)+,A7
        
-        
         **** ADD ****
+        ADD.L   #$32423F,D0
+        ADD.L   (A4),D1
+        ADD.L   $34564,D2
+        ADD.L   D3,D0
+        ADD.L   D6,(A5)
+        
+        ADD.W   (A5),D5
+        ADD.W   D6,D7
+        ADD.W   D1,$ABCD
+        
+        ADD.B   #$45,$5555
+        ADD.B   D3,D4
+        ADD.B   (A5),D0
+        
         **** ADDA ****
+        ADDA.L  #$F452,A6
+        ADDA.L  $234546,A5
+        ADDA.L  (A4)+,A5
+        
+        ADDA.W  (A5),A5
+        ADDA.W  D0,A5        
+        ADDA.W  -(A3),A3
+        
+        
         **** SUB ****
+
         **** SUBQ ****
+
+
         MOVE.B  #9,D0       ; terminate program
         TRAP    #15
 
