@@ -18,42 +18,42 @@ LF      EQU     $0A
 * 0  1  2  3  4  5  6  7  8  9
 * 30 31 32 33 34 35 36 37 38 39
 
-sA      EQU     $41000000
-sD      EQU     $44000000
-sDot    EQU     $2E000000
-sHash   EQU     $23000000
-sDollar EQU     $24000000
-sPercent EQU    $25000000
-sPlus   EQU     $2B000000
-sMinus  EQU     $2D000000
-sLParen EQU     $28000000
-sRParen EQU     $29000000
-sSpace  EQU     $20000000
-sComma  EQU     $2C000000
+sA      EQU     $41
+sD      EQU     $44
+sDot    EQU     $2E
+sHash   EQU     $23
+sDollar EQU     $24
+sPercent EQU    $25
+sPlus   EQU     $2B
+sMinus  EQU     $2D
+sLParen EQU     $28
+sRParen EQU     $29
+sSpace  EQU     $20
+sComma  EQU     $2C
 
-sOR     EQU     $4F520000
+sOR     EQU     $4F52
 
-sADD    EQU     $41444400
-sBCC    EQU     $42434300
-sBCS    EQU     $42435300
-sBVC    EQU     $42564300
-sBGE    EQU     $42474500
-sBLT    EQU     $424C5400
-sBRA    EQU     $42524100
-sCMP    EQU     $434D5000
-sEOR    EQU     $454F5200
-sROR    EQU     $524F5200
-sROL    EQU     $524F4C00
-sLSR    EQU     $4C535200
-sLSL    EQU     $4C534C00
-sASL    EQU     $41534C00
-sASR    EQU     $41535200
-sSUB    EQU     $53554200
-sORI    EQU     $4F524900
-sJSR    EQU     $4A535200
-sLEA    EQU     $4C454100
-sRTS    EQU     $52545300
-sNEG    EQU     $4E454700
+sADD    EQU     $414444
+sBCC    EQU     $424343
+sBCS    EQU     $424353
+sBVC    EQU     $425643
+sBGE    EQU     $424745
+sBLT    EQU     $424C54
+sBRA    EQU     $425241
+sCMP    EQU     $434D50
+sEOR    EQU     $454F52
+sROR    EQU     $524F52
+sROL    EQU     $524F4C
+sLSR    EQU     $4C5352
+sLSL    EQU     $4C534C
+sASL    EQU     $41534C
+sASR    EQU     $415352
+sSUB    EQU     $535542
+sORI    EQU     $4F5249
+sJSR    EQU     $4A5352
+sLEA    EQU     $4C4541
+sRTS    EQU     $525453
+sNEG    EQU     $4E4547
 
 sADDA   EQU     $41444441
 sMOVE   EQU     $4D4F5645
@@ -66,101 +66,216 @@ sCMPI   EQU     $434D5049
 START    ORG    $1000
     
 ProgramStart
-    MOVE.L  #kStartMessage,D0   * load start message as arg1
-    JSR     PrintMessage
+    *MOVE.L  #kStartMessage,D1   * load start message as arg1
+    *JSR     PrintMessage
 
-    MOVE.L  #sHash,D1
-    JSR     PrintWord
+    JSR     ResetStringBuffer
+    MOVE.L  #sOR,D1
+    MOVE.B  #2,D2
+    JSR     AddWordToStringBuffer
+    JSR     AddWordToStringBuffer
+    JSR     InvalidateStringBuffer  * InvalidateStringBuffer was called
+    JSR     PrintStringBuffer       * this print call prints out "Invalid Opcode"
+    JSR     PrintNewline
     
+    JSR     ResetStringBuffer
     MOVE.L  #sDollar,D1
-    JSR     PrintWord
-    
+    JSR     AddWordToStringBuffer
+     * PrintStringBuffer was not called, nothing is printed
+
+    JSR     ResetStringBuffer    
     MOVE.L  #$deadbeef,D1       * print out literal "DEADBEEF"
     MOVE    #8,D2
     JSR     PrintHexadecimal
+    JSR     PrintStringBuffer
     
     JSR     PrintNewline
 
     *****************************************************
     * Prints "MOVE D3,(A4)+"
     *****************************************************
-    MOVE.L  #sMove,D1           * prints "MOVE"
-    JSR     PrintWord
+    JSR     ResetStringBuffer
     
-    MOVE.L  #$20443300,D1       * prints " D3"
-    JSR     PrintWord
+    MOVE.L  #sMove,D1           * prints "MOVE"
+    MOVE.B  #4,D2
+    JSR     AddWordToStringBuffer
+    
+    MOVE.L  #$204433,D1         * prints " D3"
+    MOVE.B  #3,D2
+    JSR     AddWordToStringBuffer
 
     MOVE.L  #$2C284134,D1       * prints ",(A4"
-    JSR     PrintWord
+    MOVE.B  #4,D2
+    JSR     AddWordToStringBuffer
        
-    MOVE.L  #$292B0000,D1       * prints ")+"
-    JSR     PrintWord
+    MOVE.L  #$292B,D1           * prints ")+"
+    MOVE.B  #2,D2
+    JSR     AddWordToStringBuffer
 
+    JSR     PrintStringBuffer
     JSR     PrintNewline
     *****************************************************
     
+    MOVE.B  #2,D2
     MOVE.L  #sOR,D1             * print out literal "OR"
-    JSR     PrintWord
+    JSR     AddWordToStringBuffer
 
     JSR     PrintNewline
     
+    *****************************************************
+    * 3 Letter words
+    *****************************************************
+    JSR     ResetStringBuffer
     MOVE.L  #sADD,D1            * print out literal "ADD"
-    JSR     PrintWord
+    MOVE.B  #3,D2
+    JSR     AddWordToStringBuffer
 
     MOVE.L  #sSpace,D1
-    JSR     PrintWord
+    MOVE.B  #1,D2
+    JSR     AddWordToStringBuffer
 
     MOVE.L  #sBRA,D1            * print out literal "BRA"
-    JSR PrintWord
+    MOVE.B  #3,D2
+    JSR AddWordToStringBuffer
     
     MOVE.L  #sSpace,D1
-    JSR     PrintWord
+    MOVE.B  #1,D2
+    JSR     AddWordToStringBuffer
     
     MOVE.L  #sNEG,D1            * print out literal "NEG"
-    JSR     PrintWord
-
+    MOVE.B  #3,D2
+    JSR     AddWordToStringBuffer
+    JSR     PrintStringBuffer
+    
     JSR     PrintNewline
     
+    *****************************************************
+    * 4 letter words
+    *****************************************************
+    JSR     ResetStringBuffer
+    MOVE.B  #4,D2               * 4 letter words
     MOVE.L  #sADDA,D1           * print out literal "ADDA"
-    JSR     PrintWord
+    JSR     AddWordToStringBuffer
     
-    MOVE.L  #sSpace,D1
-    JSR     PrintWord
+    JSR     PrintSpace
     
     MOVE.L  #sBCLR,D1           * print out literal "BCLR"
-    JSR     PrintWord
-    
-    MOVE.L  #sSpace,D1
-    JSR     PrintWord
+    MOVE.B  #4,D2    
+    JSR     AddWordToStringBuffer
+
+    JSR     PrintSpace
     
     MOVE.L  #sCMPI,D1           * print out literal "CMPI"
-    JSR     PrintWord
+    MOVE.B  #4,D2
+    JSR     AddWordToStringBuffer
+    *****************************************************
     
 Done
-    MOVE    #kGoodbyeMessage,D0
+    MOVE    #kGoodbyeMessage,D1
     JSR     PrintMessage
 
     MOVE.B  #9,D0               * quits program
     TRAP    #15
 
 *****************************************************************************
-* PrintWord(word)
-* Args: D1 (ascii values of words)
+* void PrintStringBuffer()
+* Args: none
+* Prints the current contents of the string buffer to the screen
+* Does not print the word if InvalidateStringBuffer was called prior to this
+*   function.
+*****************************************************************************
+PrintStringBuffer
+    MOVEM.L D0-D2/A0, -(SP) * Save used registers
+    MOVE    #kStringBuffer,A0
+    MOVE.L  A0,D0
+    MOVE.L  (A0),D1
+    LSR.L   #8,D1
+    LSR.L   #8,D1
+    LSR.L   #8,D1
+    BEQ     PSB_PrintInvalid            * if valid bit is not set, do not print
+    ADD     #2,A0           * ignore valid
+    MOVE.L  A0,D1
+    JSR     PrintMessage
+    BRA     PSB_Done
+PSB_PrintInvalid
+    MOVE.L  #kInvalidOpcode,D1
+    JSR     PrintMessage
+ 
+PSB_Done
+    MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
+    RTS
+ 
+*****************************************************************************
+* void InvalidateStringBuffer()
+* Args: none
+* Invalidates the string buffer so that its contents will not be printed.
+*****************************************************************************   
+InvalidateStringBuffer
+    MOVE    #kStringBuffer,A0
+    MOVE.L  #$0,(A0)       * set the valid bit to false
+    RTS
+ 
+*****************************************************************************
+* void ResetStringBuffer()
+* Args: none
+* Resets the contents of the string buffer and sets the valid bit to true
+*****************************************************************************    
+ResetStringBuffer
+    MOVEM.L A0, -(SP) * Save used registers
+    MOVE    #kStringBuffer,A0
+    MOVE.L  #$01000000,(A0)+    * sets valid bit and first 2 chars
+    MOVE.L  #0,(A0)+
+    MOVE.L  #0,(A0)+
+    MOVE.L  #0,(A0)+
+    MOVE.L  #0,(A0)+
+    
+    MOVE.W  #kStringBufferIndex,A0
+    MOVE.W  #0,(A0)
+    
+    MOVEM.L (SP)+, A0 * Restore used registers
+    RTS
+
+*****************************************************************************
+* void AddWordToStringBuffer(word, numChars)
+* Args: D1 (ascii values of words), D2 (number of characters
 * Prints the word using each byte of the argument as an ascii value
-* ex. PrintWord($41444400) prints out "ADD"
+* ex. AddWordToStringBuffer($41444400) prints out "ADD"
 *                 A D D x
-*     PrintWord($2C284134) prints out ",(A4"
+*     AddWordToStringBuffer($2C284134) prints out ",(A4"
 *                 , ( A 4
 *****************************************************************************  
-PrintWord
+AddWordToStringBuffer
+    MOVEM.L D0-D7/A0-A1, -(SP) * Save used registers
+    MOVE    D2,D4
+        
+    MOVE    #kStringBufferIndex,A1
+    MOVE    (A1),D5     * D5 contains the size of the string
+    MOVE    D4,D6       * save the amount being added size
+    
     MOVE    #kStringBuffer,A0
-    MOVE.L  #0,(A0)+
-    MOVE.L  #0,(A0)+
-    MOVE.L  #0,(A0)+
-    SUB     #12,A0
-    MOVE.L  D1,(A0)
-    MOVE.L  A0,D0
-    JSR     PrintMessage
+    ADD     #2,A0       * ignore valid bits
+    ADD     D5,A0       * offset to the end of the string
+    
+AWTS_While
+    CMP     #0,D4       * while (index != 0)
+    BEQ     AWTS_EndWhile  
+    
+    MOVE    D4,D2
+    SUB     #1,D2
+    MULS    #8,D2       * get the bit number
+    MOVE    #8,D3       * read the byte
+    JSR     GetBits
+    
+    MOVE.B  D0,(A0)+
+    
+    SUB     #1,D4       * index --
+    BRA AWTS_While      
+    
+AWTS_EndWhile
+
+    ADD     D6,D5       * add to the size of the string
+    MOVE    D5,(A1)     * save the new string size
+    MOVEM.L (SP)+, D0-D7/A0-A1 * Restore used registers
     RTS
 
 *****************************************************************************
@@ -170,9 +285,22 @@ PrintWord
 *****************************************************************************
 PrintNewline
     MOVEM.L D0, -(SP) * Save used registers
-    MOVE.L #kNewline,D0
+    MOVE.L #kNewline,D1
     JSR PrintMessage
     MOVEM.L (SP)+, D0 * Restore used registers
+    RTS
+
+*****************************************************************************
+* PrintSpace()
+* Args: None
+* Prints a literal newline
+*****************************************************************************
+PrintSpace
+    MOVEM.L D1-D2, -(SP) * Save used registers
+    MOVE.L  #sSpace,D1
+    MOVE.B  #1,D2
+    JSR     AddWordToStringBuffer
+    MOVEM.L (SP)+, D1-D2 * Restore used registers
     RTS
 
 *****************************************************************************
@@ -210,10 +338,10 @@ RLPH_ToAsciiLetter
     BRA RLPH_Continue
     
 RLPH_Continue
-    ASL.L   #8,D1
-    ASL.L   #8,D1
-    ASL.L   #8,D1   * put number in index 0 of string
-    JSR     PrintWord * print the letter
+    MOVE    D2,D4   * save D2
+    MOVE    #1,D2   * adding 1 character to string buffer
+    JSR     AddWordToStringBuffer * print the letter
+    MOVE    D4,D2   * restore D2
     
     SUB.L   #4,D2   * get the offset to the next hex bit
     
@@ -252,17 +380,23 @@ GetBits
 
 *****************************************************************************
 * void PrintMessage(String* message)
-* Args: D0(message)
-* Loads the value stored in D0 as an address and calls Trap task #14
+* Args: D1(message)
+* Loads the value stored in D1 as an address and calls Trap task #14
 *   to print out its contents as a string
 *****************************************************************************
 PrintMessage        * void PrintMessage(String* message)
     MOVEM.L D1-D7, -(SP)    * save registers
-    MOVEA.L D0,A1   * load address of message from argument 1
+    MOVEA.L D1,A1   * load address of message from argument 1
     MOVE.B  #14,D0  * print contents of A1
     TRAP    #15     
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
+
+kStringBuffer
+    DS  20
+    
+kStringBufferIndex
+    DS  4
 
 kStartMessage
     DC.B    'These function allows users to print from a set of literal ',CR,LF
@@ -270,13 +404,19 @@ kStartMessage
     DC.B    'of each character to be printed',CR,LF
     DC.B    CR,LF,0,0
 
+kInvalidOpCode
+    DC.B    'Invalid Opcode',0
+
 kGoodbyeMessage
     DC.B    CR,LF,'Goodbye!',0
 
 kNewline
     DC.B    CR,LF,0,0
 
-kStringBuffer
-    DS  12
-
     END START
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
