@@ -1714,17 +1714,36 @@ CMPI_DONE
 * void Func_NEG()
 *****************************************************************************
 Func_NEG
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #NEG_MSG,D1
         JSR     Func_Print
 
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Get mode/reg and print
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -1750,17 +1769,32 @@ Func_MOVEM
 * void Func_JSR()
 *****************************************************************************
 Func_JSR
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #JSR_MSG,D1
         JSR     Func_Print
+        
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Get and Print mode/reg
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -1768,17 +1802,44 @@ Func_JSR
 * void Func_LEA()
 *****************************************************************************
 Func_LEA
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #LEA_MSG,D1
         JSR     Func_Print
 
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+        
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+        
+        * Get source mode/reg and print
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+        
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Get address register
+        MOVE.L  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        ADD.B   #%100,D0
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -3237,6 +3298,7 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
 NoMoreOpcodes   DC.W     %1111111111111111
 
     END         START
+
 
 
 
