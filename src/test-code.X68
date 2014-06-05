@@ -52,7 +52,7 @@ Start   ORG     $7FC0    ; first instruction of program
         MOVEA.W (A1)+,A7
        
         **** ADD ****
-        ADD.L   #$32423F,D0
+        *ADD.L   #$32423F,D0
         ADD.L   (A4),D1
         ADD.L   $34564,D2
         ADD.L   D3,D0
@@ -62,7 +62,7 @@ Start   ORG     $7FC0    ; first instruction of program
         ADD.W   D6,D7
         ADD.W   D1,$ABCD
         
-        ADD.B   #$45,$5555
+        *ADD.B   #$45,$5555
         ADD.B   D3,D4
         ADD.B   (A5),D0
         
@@ -85,6 +85,7 @@ Start   ORG     $7FC0    ; first instruction of program
         TRAP    #15
 
         END     Start       ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~

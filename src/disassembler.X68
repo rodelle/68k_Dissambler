@@ -54,7 +54,7 @@ Main    ORG     $1000   * first instruction of program
         *JSR     Done_Main
 
         MOVE.L  #$7FC0,A5
-        MOVE.L  #$802E,A6
+        MOVE.L  #$805C,A6
 
         * test opcodes in memory
         *MOVE.L  #FirstOpcode,A5
@@ -1139,20 +1139,13 @@ Func_ADD
         MOVE.W  (A5),D4
 
         * determin data first or second
-        MOVE.L  #7,D2
+        MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     Func_GetBits
         
         CMP.B   #0,D0
         BNE     Func_ADD_DataFirst
         BEQ     Func_ADD_DataSecond
-
-        * increment A5 by 1 word
-        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
-
-        MOVEM.L  (SP)+,D1-D4    * restore
-        RTS
 
 Func_ADD_DataFirst
         * Print Data Register
@@ -1177,6 +1170,7 @@ Func_ADD_DataFirst
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
+        BRA     ADD_Done
         
 Func_ADD_DataSecond
         * Print destination effective address
@@ -1201,12 +1195,20 @@ Func_ADD_DataSecond
         JSR     Func_GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
+        BRA     ADD_Done
+        
+ADD_Done
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+        MOVEM.L  (SP)+,D1-D4    * restore
+        RTS
 
 *****************************************************************************
 * void Func_ADDA()
 *****************************************************************************
 Func_ADDA
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #ADDA_MSG,D1
@@ -1228,13 +1230,6 @@ Func_ADDA
         CMP.B   #0,D0
         BNE     Func_ADDA_W
         BEQ     Func_ADDA_L
-
-        * increment A5 by 1 word
-        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
-
-        MOVEM.L  (SP)+,D1    * restore
-        RTS
 
 Func_ADDA_W
         CLR     D1
@@ -1261,6 +1256,7 @@ Func_ADDA_W
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
+        BRA     ADDA_Done
 
 Func_ADDA_L
         MOVE.W  D4,D1
@@ -1286,7 +1282,14 @@ Func_ADDA_L
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
-
+        BRA     ADDA_Done
+        
+ADDA_Done
+        * increment A5 by 1 word
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        JSR     Func_MoveInstructionPointer
+        MOVEM.L  (SP)+,D1-D4    * restore
+        RTS
 
 *****************************************************************************
 * void Func_OR()
