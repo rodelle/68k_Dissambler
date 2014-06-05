@@ -1397,17 +1397,84 @@ OR_Done
 * void Func_BCLR()
 *****************************************************************************
 Func_BCLR
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #BCLR_MSG,D1
         JSR     Func_Print
 
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Get destination mode
+        MOVE.L  #3,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        
+        CMP.B   #0,D0
+        BEQ     BCLR_DataDestination
+        BRA     BCLR_OtherDestination
+        
+BCLR_DataDestination
+        *Print size/space
+        MOVE.L  #L_MSG,D1
+        JSR     Func_Print
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+        BRA     BCLR_SourceBranch
+
+BCLR_OtherDestination
+        *Print size/space
+        MOVE.L  #B_MSG,D1
+        JSR     Func_Print
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+        BRA     BCLR_SourceBranch
+        
+BCLR_SourceBranch
+        MOVE.L  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        CMP.B   #2,D0
+        BEQ     BCLR_ImmediateSource
+        CMP.B   #6,D0
+        BEQ     BCLR_DataSource
+        * ELSE Not valid
+
+BCLR_DataSource
+        * Gets register for source
+        MOVE.L  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+        BRA     BCLR_DONE
+
+BCLR_ImmediateSource
+        * Gets immediate data
+        JSR     Func_WordData
+        BRA     BCLR_DONE
+
+BCLR_DONE
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+
+        * Prints destination
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -1415,17 +1482,57 @@ Func_BCLR
 * void Func_ORI()
 *****************************************************************************
 Func_ORI
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #ORI_MSG,D1
         JSR     Func_Print
 
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Print immediate data
+        MOVE.L  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #2,D3
+        JSR     Func_GetBits
+        CMP.L   #0,D0
+        BEQ     PRINT_LONGWORD
+        CMP.L   #1,D0
+        BEQ     PRINT_WORD
+        CMP.L   #2,D0
+        BEQ     PRINT_WORD
+        * Not 0/1/2 then incorrect command
+
+PRINT_LONGWORD        
+        JSR     Func_LongData
+        BRA     ORI_DONE
+
+PRINT_WORD
+        JSR     Func_WordData
+        BRA     ORI_DONE
+
+ORI_DONE
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -1438,6 +1545,47 @@ Func_CMPI
         * print pseudo assembly
         MOVE    #CMPI_MSG,D1
         JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Print immediate data
+        MOVE.L  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #2,D3
+        JSR     Func_GetBits
+        CMP.L   #0,D0
+        BEQ     PRINT_LONGWORD_CMPI
+        CMP.L   #1,D0
+        BEQ     PRINT_WORD_CMPI
+        CMP.L   #2,D0
+        BEQ     PRINT_WORD_CMPI
+        * Not 0/1/2 then incorrect command
+
+PRINT_LONGWORD_CMPI 
+        JSR     Func_LongData
+        BRA     CMPI_DONE
+
+PRINT_WORD_CMPI
+        JSR     Func_WordData
+        BRA     CMPI_DONE
+
+CMPI_DONE
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1610,6 +1758,9 @@ Func_BCS
         MOVE    #BCS_MSG,D1
         JSR     Func_Print
 
+        * Jump to Label Printer
+        JSR     Func_PrintLabel
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1627,6 +1778,9 @@ Func_BVC
         * print pseudo assembly
         MOVE    #BVC_MSG,D1
         JSR     Func_Print
+
+        * Jump to Label Printer
+        JSR     Func_PrintLabel
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1646,6 +1800,9 @@ Func_BGE
         MOVE    #BGE_MSG,D1
         JSR     Func_Print
 
+        * Jump to Label Printer
+        JSR     Func_PrintLabel
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1664,6 +1821,9 @@ Func_BLT
         MOVE    #BLT_MSG,D1
         JSR     Func_Print
 
+        * Jump to Label Printer
+        JSR     Func_PrintLabel
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -1672,60 +1832,25 @@ Func_BLT
         RTS
 
 
+
 *****************************************************************************
 * void Func_BRA()
 *****************************************************************************
 Func_BRA
-        MOVEM.L  D1-D4,-(SP)    * save D1
+        MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #BRA_MSG,D1
         JSR     Func_Print
 
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-        
-        * Print space
-        MOVE.L  #SPACE,D1
-        JSR     Func_Print
-        
-        * Get Displacement
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     Func_GetBits
-        
-        * If displacement == 00
-        CMP.L   #0,D0
-        BEQ     DISPLACEMENT_WORD
-        
-        * If displacement == FF
-        CMP.L   #$FF,D0
-        BEQ     DISPLACEMENT_LONG
-        
-        * Else
-        MOVE.B  D0,D1
-        LSL     #4,D1
-        LSR     #4,D1
-        JSR     Func_Print_Number
-        MOVE.B  D0,D1
-        LSR     #4,D1
-        JSR     Func_Print_Number
-        BRA     BRA_DONE
-        
-DISPLACEMENT_WORD
-        
-        BRA     BRA_DONE
+        * Jump to Label Printer
+        JSR     Func_PrintLabel
 
-DISPLACEMENT_LONG
-        BRA     BRA_DONE
-
-BRA_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1-D4    * restore
+        MOVEM.L  (SP)+,D1    * restore
         RTS
 
 
@@ -2430,6 +2555,58 @@ Func_Junk
 
 
 *****************************************************************************
+* Func_PrintLabel()
+* Dummy Return
+*****************************************************************************
+Func_PrintLabel
+        MOVEM.L     D1-D4,-(SP)
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+        
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+        
+        * Get Displacement
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        
+        * If displacement == 00
+        CMP.L   #0,D0
+        BEQ     DISPLACEMENT_WORD
+        
+        * If displacement == FF
+        CMP.L   #$FF,D0
+        BEQ     DISPLACEMENT_LONG
+        
+        * Else
+        MOVE.B  D0,D1
+        LSL     #4,D1
+        LSR     #4,D1
+        JSR     Func_Print_Number
+        MOVE.B  D0,D1
+        LSR     #4,D1
+        JSR     Func_Print_Number
+        BRA     LABEL_DONE
+        
+DISPLACEMENT_WORD
+        JSR     Func_WordData
+        BRA     LABEL_DONE
+
+DISPLACEMENT_LONG
+        JSR     Func_LongData
+        BRA     LABEL_DONE
+
+LABEL_DONE
+        MOVEM.L  (SP)+,D1-D4    * restore
+        RTS
+
+
+
+*****************************************************************************
 * Data
 *****************************************************************************
 NEW_LINE        DC.B    CR,LF,0
@@ -2531,6 +2708,7 @@ NoMoreOpcodes   DC.W    %1111111111111111
 
 
         END    Main        * last line of source
+
 
 
 
