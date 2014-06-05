@@ -29,10 +29,10 @@ NoPreferenceDisassembler
     JSR     PrintMessage
 
 NPD_DoWhile
-    * JSR     GetStartEndAddress  * Grab ending and starting address from user
+    JSR     GetStartEndAddress  * Grab ending and starting address from user
     
-    MOVE.L  #firstopcode,A5
-    MOVE.L  #nomoreopcodes,A6
+    *MOVE.L  #firstopcode,A5
+    *MOVE.L  #nomoreopcodes,A6
     
     JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                 * parsing each opcode
@@ -1914,6 +1914,7 @@ SUBQ_CONTINUE
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
+        MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
@@ -3237,65 +3238,6 @@ TWELVE          DC.B    'C',0
 THIRTEEN        DC.B    'D',0
 FOURTEEN        DC.B    'E',0
 FIFTEEN         DC.B    'F',0
-
-* opcodes loaded into memory
-* output should be in the same order
-FirstOpcode     DC.W     %0001000000000000      * MOVE.B
-*                DC.W     %0010000000000000      * MOVE.L
-*                DC.W     %0010000001000000      * MOVEA.L
-*                DC.W     %0011000000000000      * MOVE.W
-*                DC.W     %0011000001000000      * MOVEA.W
-*                DC.W     %1101000000000000      * ADD
-*                DC.W     %1101000011000000      * ADDA
-*                DC.W     %1000000000000000      * OR
-*                DC.W     %1000000011000000      * DIVS.W
-*                DC.W     %1100000000000000      * MULS.W
-*                DC.W     %1001000000000000      * SUB
-*                DC.W     %0101000000000000      * SUBQ
-*                DC.W     %1011000000000000      * CMP
-*                DC.W     %1011000100000000      * EOR
-                DC.W     %0110010100000000      * BCS
-                DC.W     %0110100000000000      * BVC
-                DC.W     %0110110000000000      * BGE
-                DC.W     %0110110100000000      * BLT
-                DC.W     %0110000000000000      * BRA
-                DC.W     %1110000000001000      * LSR
-                DC.W     %1110001011000000      * LSR <ea>
-                DC.W     %1110000100001000      * LSL
-                DC.W     %1110001111000000      * LSL <ea>
-                DC.W     %1110000000000000      * ASR
-                DC.W     %1110000011000000      * ASR <ea>
-                DC.W     %1110000100000000      * ASL
-                DC.W     %1110000111000000      * ASL <ea>
-                DC.W     %1110000000011000      * ROR
-                DC.W     %1110011011000000      * ROR <ea>
-                DC.W     %1110000100011000      * ROL
-                DC.W     %1110011111000000      * ROL <ea>
-                DC.W     %0000000110000000      * BCLR Dn,<ea>
-                DC.W     %0000100010000000      * BCLR Dn,Dn
-                DC.W     %0000000000000000      * ORI
-                DC.W     %0000110000000000      * CMPI
-                DC.W     %0100000111000000      * LEA
-                DC.W     %0100111010000000      * JSR
-                DC.W     %0100111001000000      * RTS
-                DC.W     %0100110000000000      * MULS.L
-                DC.W     %0000100000000000      *    MULS.L (cont)
-                DC.W     %0100110001000000      * DIVS.L
-                DC.W     %0000100000000000      *    DIVS.L (cont)
-                DC.W     %0100100010000000      * MOVEM
-                DC.W     %0100100010000000      *    MOVEM (cont)
-                DC.W     %0100010000000000      * NEG
-                DC.W     %0111000000000000      * bad op (based on first 4 bits)
-                DC.W     %1010000000000000      * bad op (based on first 4 bits)
-                DC.W     %1111000000000000      * bad op (based on first 4 bits)
-                DC.W     %0110111100000000      * bad op (variation of Bcc)
-                DC.W     %0110000100000000      * bad op (variation of Bcc)
-                DC.W     %0110001000000000      * bad op (variation of Bcc)
-                DC.W     %0110001100000000      * bad op (variation of Bcc)
-                DC.W     %0110010000000000      * bad op (variation of Bcc)
-                DC.W     %1110000000010000      * bad op (variation of RO*/AS*/LS*)
-                DC.W     %1110010011000000      * bad op (variation of RO*/AS*/LS*)
-NoMoreOpcodes   DC.W     %1111111111111111
 
     END         START
 
