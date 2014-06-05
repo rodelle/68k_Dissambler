@@ -81,12 +81,12 @@ Start   ORG     $7FC0    ; first instruction of program
         SUB.B   D6,(A4)
         
         **** SUB.W ****
-        SUB.W   #$ABCD,D3
+        * SUB.W   #$FFFF,D3 * ASSEMBLES TO SUBI
         SUB.W   (A1)+,D4
 
         **** SUB.L ****
-        SUB.B   (A4),D2
-        SUB.B   D1,$424242
+        SUB.L   (A4),D2
+        SUB.L   D1,$424242
 
         **** SUBQ.B ****
         SUBQ.B  #$4,(A1)
@@ -100,10 +100,20 @@ Start   ORG     $7FC0    ; first instruction of program
         SUBQ.L  #$1,$44000
         SUBQ.L  #$1,D2
 
-        MOVE.B  #9,D0       ; terminate program
-        TRAP    #15
-
+        DC.W    %0111000000000000      * bad op (based on first 4 bits)
+        DC.W    %1010000000000000      * bad op (based on first 4 bits)
+        DC.W    %1111000000000000      * bad op (based on first 4 bits)
+        DC.W    %0110111100000000      * bad op (variation of Bcc)
+        DC.W    %0110000100000000      * bad op (variation of Bcc)
+        DC.W    %0110001000000000      * bad op (variation of Bcc)
+        DC.W    %0110001100000000      * bad op (variation of Bcc)
+        DC.W    %0110010000000000      * bad op (variation of Bcc)
+        DC.W    %1110000000010000      * bad op (variation of RO*/AS*/LS*)
+        DC.W    %1110010011000000      * bad op (variation of RO*/AS*/LS*)
+                
         END     Start       ; last line of source
+
+
 
 
 
