@@ -26,10 +26,10 @@
 START    ORG    $1000
 NoPreferenceDisassembler
     MOVE    #START_MSG,D1
-    JSR     Func_Print
+    JSR     PrintMessage
 
 NPD_DoWhile
-    JSR     GetStartEndAddress  * Grab ending and starting address from user
+    * JSR     GetStartEndAddress  * Grab ending and starting address from user
     
     MOVE.L  #firstopcode,A5
     MOVE.L  #nomoreopcodes,A6
@@ -413,13 +413,22 @@ Done_Func_PrintSizeStandard
 * prints the contents of memory location specified by D1
 *****************************************************************************
 Func_Print
-        MOVEM.L D0/A1,-(SP)
+        MOVEM.L D0-D7/A1,-(SP)
 
+        * d1 contains null terminated string
         MOVEA   D1,A1
-        MOVE.B  #14,D0
-        TRAP    #15
-
-        MOVEM.L (SP)+,D0/A1
+        CLR.L   D1
+Loop_Func_Print
+        MOVE.B  (A1)+,D1
+        CMP     #0,D1
+        BEQ     Done_Func_Print
+        
+        MOVE.L  #1,D2
+        JSR     AddWordToStringBuffer               
+        BRA     Loop_Func_Print
+        
+Done_Func_Print
+        MOVEM.L (SP)+,D0-D7/A1
         RTS
 
 
@@ -1788,45 +1797,45 @@ Func_BRA
         MOVE    #BRA_MSG,D1
         JSR     Func_Print
 
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-        
-        * Print space
-        MOVE.L  #SPACE,D1
-        JSR     Func_Print
-        
-        * Get Displacement
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     Func_GetBits
-        
-        * If displacement == 00
-        CMP.L   #0,D0
-        BEQ     DISPLACEMENT_WORD
-        
-        * If displacement == FF
-        CMP.L   #$FF,D0
-        BEQ     DISPLACEMENT_LONG
-        
-        * Else
-        MOVE.B  D0,D1
-        LSL     #4,D1
-        LSR     #4,D1
-        JSR     Func_Print_Number
-        MOVE.B  D0,D1
-        LSR     #4,D1
-        JSR     Func_Print_Number
-        BRA     BRA_DONE
-        
-DISPLACEMENT_WORD
-        
-        BRA     BRA_DONE
-
-DISPLACEMENT_LONG
-        BRA     BRA_DONE
-
-BRA_DONE
+*        * Gets address
+*        MOVE.W  (A5),D1
+*        MOVE.W  (A5),D4
+*        
+*        * Print space
+*        MOVE.L  #SPACE,D1
+*        JSR     Func_Print
+*        
+*        * Get Displacement
+*        MOVE.L  #0,D2
+*        MOVE.L  #6,D3
+*        JSR     Func_GetBits
+*        
+*        * If displacement == 00
+*        CMP.L   #0,D0
+*        BEQ     DISPLACEMENT_WORD
+*        
+*        * If displacement == FF
+*        CMP.L   #$FF,D0
+*        BEQ     DISPLACEMENT_LONG
+*        
+*        * Else
+*        MOVE.B  D0,D1
+*        LSL     #4,D1
+*        LSR     #4,D1
+*        JSR     Func_Print_Number
+*        MOVE.B  D0,D1
+*        LSR     #4,D1
+*        JSR     Func_Print_Number
+*        BRA     BRA_DONE
+*        
+*DISPLACEMENT_WORD
+*        
+*        BRA     BRA_DONE
+*
+*DISPLACEMENT_LONG
+*        BRA     BRA_DONE
+*
+*BRA_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2921,23 +2930,23 @@ FIFTEEN         DC.B    'F',0
 * opcodes loaded into memory
 * output should be in the same order
 FirstOpcode     DC.W     %0001000000000000      * MOVE.B
-                DC.W     %0010000000000000      * MOVE.L
-                DC.W     %0010000001000000      * MOVEA.L
-                DC.W     %0011000000000000      * MOVE.W
-                DC.W     %0011000001000000      * MOVEA.W
-                DC.W     %1101000000000000      * ADD
-                DC.W     %1101000011000000      * ADDA
-                DC.W     %1000000000000000      * OR
-                DC.W     %1000000011000000      * DIVS.W
-                DC.W     %1100000000000000      * MULS.W
-                DC.W     %1001000000000000      * SUB
-                DC.W     %0101000000000000      * SUBQ
-                DC.W     %1011000000000000      * CMP
-                DC.W     %1011000100000000      * EOR
-                DC.W     %0110010100000000      * BCS
-                DC.W     %0110100000000000      * BVC
-                DC.W     %0110110000000000      * BGE
-                DC.W     %0110110100000000      * BLT
+*                DC.W     %0010000000000000      * MOVE.L
+*                DC.W     %0010000001000000      * MOVEA.L
+*                DC.W     %0011000000000000      * MOVE.W
+*                DC.W     %0011000001000000      * MOVEA.W
+*                DC.W     %1101000000000000      * ADD
+*                DC.W     %1101000011000000      * ADDA
+*                DC.W     %1000000000000000      * OR
+*                DC.W     %1000000011000000      * DIVS.W
+*                DC.W     %1100000000000000      * MULS.W
+*                DC.W     %1001000000000000      * SUB
+*                DC.W     %0101000000000000      * SUBQ
+*                DC.W     %1011000000000000      * CMP
+*                DC.W     %1011000100000000      * EOR
+*                DC.W     %0110010100000000      * BCS
+*                DC.W     %0110100000000000      * BVC
+*                DC.W     %0110110000000000      * BGE
+*                DC.W     %0110110100000000      * BLT
                 DC.W     %0110000000000000      * BRA
                 DC.W     %1110000000001000      * LSR
                 DC.W     %1110001011000000      * LSR <ea>
@@ -2978,6 +2987,7 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
 NoMoreOpcodes   DC.W     %1111111111111111
 
     END         START
+
 
 
 
