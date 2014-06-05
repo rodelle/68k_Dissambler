@@ -2896,6 +2896,7 @@ Func_PrintLabel
         JSR     Func_Print
         
         * Get Displacement
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
@@ -3117,9 +3118,9 @@ MULS_W_MSG      DC.B    'MULS.W',0
 DIVS_L_MSG      DC.B    'DIVS.L',0
 MULS_L_MSG      DC.B    'MULS.L',0
 SUB_MSG         DC.B    'SUB.',0
-SUBQ_MSG        DC.B    'SUBQ.*',0
+SUBQ_MSG        DC.B    'SUBQ.',0
 CMP_MSG         DC.B    'CMP.',0
-EOR_MSG         DC.B    'EOR.*',0
+EOR_MSG         DC.B    'EOR.',0
 BCS_MSG         DC.B    'BCS',0
 BVC_MSG         DC.B    'BVC',0
 BGE_MSG         DC.B    'BGE',0
@@ -3131,13 +3132,13 @@ ASR_MSG         DC.B    'ASR.',0
 ASL_MSG         DC.B    'ASL.',0
 ROR_MSG         DC.B    'ROR.',0
 ROL_MSG         DC.B    'ROL.',0
-BCLR_MSG        DC.B    'BCLR.*',0
-ORI_MSG         DC.B    'ORI.*',0
-CMPI_MSG        DC.B    'CMPI.*',0
+BCLR_MSG        DC.B    'BCLR.',0
+ORI_MSG         DC.B    'ORI.',0
+CMPI_MSG        DC.B    'CMPI.',0
 JSR_MSG         DC.B    'JSR',0
 LEA_MSG         DC.B    'LEA',0
-NEG_MSG         DC.B    'NEG.*',0
-MOVEM_MSG       DC.B    'MOVEM.*',0
+NEG_MSG         DC.B    'NEG.',0
+MOVEM_MSG       DC.B    'MOVEM.',0
 RTS_MSG         DC.B    'RTS',0
 
 * data size types
@@ -3192,10 +3193,10 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
 *                DC.W     %0101000000000000      * SUBQ
 *                DC.W     %1011000000000000      * CMP
 *                DC.W     %1011000100000000      * EOR
-*                DC.W     %0110010100000000      * BCS
-*                DC.W     %0110100000000000      * BVC
-*                DC.W     %0110110000000000      * BGE
-*                DC.W     %0110110100000000      * BLT
+                DC.W     %0110010100000000      * BCS
+                DC.W     %0110100000000000      * BVC
+                DC.W     %0110110000000000      * BGE
+                DC.W     %0110110100000000      * BLT
                 DC.W     %0110000000000000      * BRA
                 DC.W     %1110000000001000      * LSR
                 DC.W     %1110001011000000      * LSR <ea>
@@ -3236,6 +3237,7 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
 NoMoreOpcodes   DC.W     %1111111111111111
 
     END         START
+
 
 
 
