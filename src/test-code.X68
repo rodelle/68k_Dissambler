@@ -23,6 +23,11 @@ Start   ORG     $7FC0    ; first instruction of program
         MOVEA.L -(A3),A3
         MOVEA.L (A3)+,A3
 
+        **** LEA ****
+        LEA     (A5),A5
+        LEA     $34512,A6
+        LEA     $320,A6
+
         **** MOVE.B ****        
         MOVE.B  D2,D2
         MOVE.B  #$23,(A6)
@@ -83,6 +88,8 @@ Start   ORG     $7FC0    ; first instruction of program
         **** SUB.W ****
         * SUB.W   #$FFFF,D3 * ASSEMBLES TO SUBI
         SUB.W   (A1)+,D4
+        SUB.W   D4,(A4)
+
 
         **** SUB.L ****
         SUB.L   (A4),D2
@@ -100,6 +107,78 @@ Start   ORG     $7FC0    ; first instruction of program
         SUBQ.L  #$1,$44000
         SUBQ.L  #$1,D2
 
+        **** Bcc/BRA ****
+        BCS     bcs_label
+        BVC     bvc_label
+        BGE     bge_label
+        BLT     blt_label
+        BRA     bra_label
+
+        **** OR.B ****
+        OR.B    (A4),D4
+        OR.B    D2,$5600
+        
+        **** OR.W ****
+        OR.W    #$FACE,D6
+        OR.W    D3,D0
+        
+        **** OR.L ****
+        OR.L    (A1),D1
+        OR.L    -(A3),D4
+        
+        **** ORI.B ****
+        
+        **** ORI.W ****
+        
+        **** ORI.L ****        
+        
+        **** MULS.W ****
+        MULS.W  $5432,D1
+        MULS.W  #$ACE,D5
+
+        **** DIVS.W ****
+        DIVS.W  D2,D1
+        DIVS.W  (A4),D5
+
+        **** CMP.B ****
+        
+        **** CMP.W ****
+        
+        **** CMP.L ****    
+
+        **** CMPI.B ****
+        
+        **** CMPI.W ****
+        
+        **** CMPI.L ****    
+        
+        **** EOR.B ****
+        
+        **** EOR.W ****
+        
+        **** EOR.L ****
+
+        **** NEG.B ****
+        
+        **** NEG.W ****
+        
+        **** NEG.L ****
+        
+        **** BCLR.B ****
+        
+        **** BCLR.L ****
+
+        **** JSR ****
+
+        **** RTS ****        
+        
+*        ro*
+*        as*
+*        ls*
+*        movem
+        
+        
+        **** Error opcodes ****
         DC.W    %0111000000000000      * bad op (based on first 4 bits)
         DC.W    %1010000000000000      * bad op (based on first 4 bits)
         DC.W    %1111000000000000      * bad op (based on first 4 bits)
@@ -110,6 +189,19 @@ Start   ORG     $7FC0    ; first instruction of program
         DC.W    %0110010000000000      * bad op (variation of Bcc)
         DC.W    %1110000000010000      * bad op (variation of RO*/AS*/LS*)
         DC.W    %1110010011000000      * bad op (variation of RO*/AS*/LS*)
+
+bcs_label
+        DC.W    0
+bvc_label
+        DC.W    0
+bge_label
+        DC.W    0
+blt_label
+        DC.W    0
+bra_label
+        DC.W    0
+jsr_label
+        DC.W    0
                 
         END     Start       ; last line of source
 
