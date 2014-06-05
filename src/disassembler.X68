@@ -54,7 +54,7 @@ Main    ORG     $1000   * first instruction of program
         *JSR     Done_Main
 
         MOVE.L  #$7FC0,A5
-        MOVE.L  #$7FDA,A6
+        MOVE.L  #$802E,A6
 
         * test opcodes in memory
         *MOVE.L  #FirstOpcode,A5
@@ -1121,7 +1121,7 @@ Func_MOVE_B
 * void Func_ADD()
 *****************************************************************************
 Func_ADD
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #ADD_MSG,D1
@@ -1130,13 +1130,77 @@ Func_ADD
         * print the size string (standard is in bits 6-7)
         JSR     Func_PrintSizeStandard
 
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * determin data first or second
+        MOVE.L  #7,D2
+        MOVE.L  #1,D3
+        JSR     Func_GetBits
+        
+        CMP.B   #0,D0
+        BNE     Func_ADD_DataFirst
+        BEQ     Func_ADD_DataSecond
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
+Func_ADD_DataFirst
+        * Print Data Register
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Print destination effective address
+        CLR     D1
+        MOVE.W  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+Func_ADD_DataSecond
+        * Print destination effective address
+        CLR     D1
+        MOVE.W  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Print Data Register
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
 
 *****************************************************************************
 * void Func_ADDA()
@@ -1148,12 +1212,80 @@ Func_ADDA
         MOVE    #ADDA_MSG,D1
         JSR     Func_Print
 
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * determin data first or second
+        MOVE.L  #8,D2
+        MOVE.L  #1,D3
+        JSR     Func_GetBits
+        
+        CMP.B   #0,D0
+        BNE     Func_ADDA_W
+        BEQ     Func_ADDA_L
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
+
+Func_ADDA_W
+        CLR     D1
+        MOVE.W  D4,D1
+
+        * Gets and prints the <ea> parameter for ADDA.W
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the An parameter for ADDA.W
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        ADD.L   #%001000,D0     * adds mode for An
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
+Func_ADDA_L
+        MOVE.W  D4,D1
+
+        * Gets and prints the <ea> parameter for ADDA.L
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #1,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the An parameter for ADDA.L
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        ADD.L   #%001000,D0     * adds mode for An
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
 
 
 *****************************************************************************
