@@ -36,9 +36,7 @@ Main    ORG     $1000   * first instruction of program
         CLR     D1
         CLR     D2
         
-        MOVE.B  #%111100,D1
-        MOVE.B  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+
 
         *CLR     D1        
         *MOVE.B  #$F,D0
@@ -55,9 +53,12 @@ Main    ORG     $1000   * first instruction of program
         *JSR     Func_Long_A
         *JSR     Done_Main
 
+        MOVE.L  #$7FC0,A5
+        MOVE.L  #$7FDC,A6
+
         * test opcodes in memory
-        MOVE.L  #FirstOpcode,A5
-        MOVE.L  #NoMoreOpcodes,A6
+        *MOVE.L  #FirstOpcode,A5
+        *MOVE.L  #NoMoreOpcodes,A6
 
 Loop_Main
         CMP.L   A5,A6   * compare starting address to ending address
@@ -213,6 +214,7 @@ ADD_TOGETHER
 * get jump value for NON-Word/Long Address OR Data
 NO_ADD_TOGETHER
             LEA     AddressTable,A1
+            CLR     D0
             ADD.W   D2,D0
             MULS.W  #4,D0
             ADD.W   A1,D0
@@ -222,6 +224,7 @@ NO_ADD_TOGETHER
 Done_Func_JumpAddressTable
             CLR     D2
             MOVE.B  D6,D2
+            MOVE.L  D3,D1       * move register into D1
             MOVEA.L (A1),A1
             JSR     (A1)
             MOVEM.L (SP)+,D0-D6/A1
@@ -877,17 +880,47 @@ Done_Func_ROL_ROR
 * void Func_MOVEA_L()
 *****************************************************************************
 Func_MOVEA_L
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #MOVEA_L_MSG,D1
         JSR     Func_Print
+        
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Gets and prints the <ea> parameter for MOVEA.L
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #1,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the An parameter for MOVEA.L
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        ADD.L   #%001000,D0     * adds mode for An
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -900,6 +933,35 @@ Func_MOVE_L
         * print pseudo assembly
         MOVE    #MOVE_L_MSG,D1
         JSR     Func_Print
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Gets and prints the <ea> parameter for MOVE.L
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #1,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the An parameter for MOVE.L
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableRegMode
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -918,6 +980,36 @@ Func_MOVEA_W
         * print pseudo assembly
         MOVE    #MOVEA_W_MSG,D1
         JSR     Func_Print
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Gets and prints the <ea> parameter for MOVEA.L
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the An parameter for MOVEA.L
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        ADD.L   #%001000,D0     * adds mode for An
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1856,6 +1948,7 @@ MINUS           DC.B    '-',0
 POUND           DC.B    '#',0
 MONEY           DC.B    '$',0
 SPACE           DC.B    ' ',0
+COMMA           DC.B    ',',0
 
 * Number Table 
 ZERO            DC.B    '0',0
@@ -1877,73 +1970,27 @@ FIFTEEN         DC.B    'F',0
 
 * opcodes loaded into memory
 * output should be in the same order
-FirstOpcode     DC.W     %0001000000000000      * MOVE.B
-                DC.W     %0010000000000000      * MOVE.L
-                DC.W     %0010000001000000      * MOVEA.L
-                DC.W     %0011000000000000      * MOVE.W
-                DC.W     %0011000001000000      * MOVEA.W
-                DC.W     %1101000010000000      * ADD.L
-                DC.W     %1101000000000000      * ADD.B
-                DC.W     %1101000001000000      * ADD.W
-                DC.W     %1101000011000000      * ADDA
-                DC.W     %1000000000000000      * OR.B
-                DC.W     %1000000001000000      * OR.W
-                DC.W     %1000000010000000      * OR.L
-                DC.W     %1000000011000000      * DIVS.W
-                DC.W     %1100000000000000      * MULS.W
-                DC.W     %1001000000000000      * SUB.B
-                DC.W     %1001000001000000      * SUB.W
-                DC.W     %1001000010000000      * SUB.L
-                DC.W     %0101000000000000      * SUBQ
-                DC.W     %1011000000000000      * CMP.B
-                DC.W     %1011000001000000      * CMP.W
-                DC.W     %1011000010000000      * CMP.L
-                DC.W     %1011000100000000      * EOR
-                DC.W     %0110010100000000      * BCS
-                DC.W     %0110100000000000      * BVC
-                DC.W     %0110110000000000      * BGE
-                DC.W     %0110110100000000      * BLT
-                DC.W     %0110000000000000      * BRA
-                DC.W     %1110000000001000      * LSR
-                DC.W     %1110001011000000      * LSR <ea>
-                DC.W     %1110000100001000      * LSL
-                DC.W     %1110001111000000      * LSL <ea>
-                DC.W     %1110000000000000      * ASR
-                DC.W     %1110000011000000      * ASR <ea>
-                DC.W     %1110000100000000      * ASL
-                DC.W     %1110000111000000      * ASL <ea>
-                DC.W     %1110000000011000      * ROR
-                DC.W     %1110011011000000      * ROR <ea>
-                DC.W     %1110000100011000      * ROL
-                DC.W     %1110011111000000      * ROL <ea>
-                DC.W     %0000000110000000      * BCLR Dn,<ea>
-                DC.W     %0000100010000000      * BCLR Dn,Dn
-                DC.W     %0000000000000000      * ORI
-                DC.W     %0000110000000000      * CMPI
-                DC.W     %0100000111000000      * LEA
-                DC.W     %0100111010000000      * JSR
-                DC.W     %0100111001000000      * RTS
-                DC.W     %0100110000000000      * MULS.L
-                DC.W     %0000100000000000      *    MULS.L (cont)
-                DC.W     %0100110001000000      * DIVS.L
-                DC.W     %0000100000000000      *    DIVS.L (cont)
-                DC.W     %0100100010000000      * MOVEM
-                DC.W     %0100100010000000      *    MOVEM (cont)
-                DC.W     %0100010000000000      * NEG
-                DC.W     %0111000000000000      * bad op (based on first 4 bits)
-                DC.W     %1010000000000000      * bad op (based on first 4 bits)
-                DC.W     %1111000000000000      * bad op (based on first 4 bits)
-                DC.W     %0110111100000000      * bad op (variation of Bcc)
-                DC.W     %0110000100000000      * bad op (variation of Bcc)
-                DC.W     %0110001000000000      * bad op (variation of Bcc)
-                DC.W     %0110001100000000      * bad op (variation of Bcc)
-                DC.W     %0110010000000000      * bad op (variation of Bcc)
-                DC.W     %1110000000010000      * bad op (variation of RO*/AS*/LS*)
-                DC.W     %1110010011000000      * bad op (variation of RO*/AS*/LS*)
-NoMoreOpcodes   DC.W     %1111111111111111
+FirstOpcode     * MOVEA.L
+                DC.W    $267C
+                DC.W    $04C5
+                DC.W    $D770
+                DC.W    $2240
+                DC.W    $2C78
+                DC.W    $4000
+                DC.W    $2E53
+                * MOVEA.W
+                DC.W    $307C
+                DC.W    $04C5
+                DC.W    $3A40
+                DC.W    $3878
+                DC.W    $1000
+                DC.W    $3453
+                * MOVE.L
+NoMoreOpcodes   DC.W    %1111111111111111
 
 
         END    Main        * last line of source
+
 
 
 
