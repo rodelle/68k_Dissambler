@@ -54,7 +54,7 @@ Main    ORG     $1000   * first instruction of program
         *JSR     Done_Main
 
         MOVE.L  #$7FC0,A5
-        MOVE.L  #$7FDC,A6
+        MOVE.L  #$7FDA,A6
 
         * test opcodes in memory
         *MOVE.L  #FirstOpcode,A5
@@ -926,6 +926,7 @@ Func_MOVEA_L
 
 *****************************************************************************
 * void Func_MOVE_L()
+* NEED TO CHECK FOR #<Data>
 *****************************************************************************
 Func_MOVE_L
         MOVEM.L  D1,-(SP)    * save D1
@@ -942,7 +943,7 @@ Func_MOVE_L
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Gets and prints the <ea> parameter for MOVE.L
+        * Gets and prints the Source parameter for MOVE.L
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
@@ -954,7 +955,7 @@ Func_MOVE_L
         MOVE.L  #COMMA,D1
         JSR     Func_Print
         
-        * Gets and prints the An parameter for MOVE.L
+        * Gets and prints the Destination parameter for MOVE.L
         CLR.L   D1
         MOVE.W  D4,D1
         MOVE.L  #6,D2
@@ -1021,6 +1022,7 @@ Func_MOVEA_W
 
 *****************************************************************************
 * void Func_MOVE_W()
+* NEED TO CHECK FOR #<Data>
 *****************************************************************************
 Func_MOVE_W
         MOVEM.L  D1,-(SP)    * save D1
@@ -1028,6 +1030,35 @@ Func_MOVE_W
         * print pseudo assembly
         MOVE    #MOVE_W_MSG,D1
         JSR     Func_Print
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Gets and prints the source parameter for MOVE.W
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the destination parameter for MOVE.W
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableRegMode
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1039,6 +1070,7 @@ Func_MOVE_W
 
 *****************************************************************************
 * void Func_MOVE_B()
+* NEED TO CHECK FOR #<Data>
 *****************************************************************************
 Func_MOVE_B
         MOVEM.L  D1,-(SP)    * save D1
@@ -1046,6 +1078,36 @@ Func_MOVE_B
         * print pseudo assembly
         MOVE    #MOVE_B_MSG,D1
         JSR     Func_Print
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Gets and prints the source parameter for MOVE.B
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        MOVE.L  #0,D2
+        JSR     Func_JumpAddressTableModeReg
+        
+        * Print comma
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        
+        * Gets and prints the destination parameter for MOVE.B
+        CLR.L   D1
+        MOVE.W  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableRegMode
+
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1

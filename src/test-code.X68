@@ -16,6 +16,12 @@ Start   ORG     $7FC0    ; first instruction of program
         MOVE.L  D1,$4567
         MOVE.L  $6543,D0
         MOVE.L  -(A2),D3
+        
+        MOVE.W  D1,D2
+        
+        MOVE.B  D1,D2
+        
+        
         **** MOVEA ****
         **** ADD ****
         **** ADDA ****
