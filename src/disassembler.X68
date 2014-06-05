@@ -2175,8 +2175,7 @@ Func_LSR
         MOVE    #LSR_MSG,D1
         JSR     Func_Print
 
-        * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     Func_PrintRotate
         
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2196,8 +2195,7 @@ Func_LSL
         MOVE    #LSL_MSG,D1
         JSR     Func_Print
 
-        * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     Func_PrintRotate
         
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2217,8 +2215,7 @@ Func_ASR
         MOVE    #ASR_MSG,D1
         JSR     Func_Print
 
-        * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     Func_PrintRotate
         
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2238,8 +2235,7 @@ Func_ASL
         MOVE    #ASL_MSG,D1
         JSR     Func_Print
         
-        * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     Func_PrintRotate
         
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2259,9 +2255,8 @@ Func_ROR
         MOVE    #ROR_MSG,D1
         JSR     Func_Print
 
-        * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
-        
+        JSR     Func_PrintRotate
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2280,8 +2275,7 @@ Func_ROL
         MOVE    #ROL_MSG,D1
         JSR     Func_Print
 
-        * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     Func_PrintRotate        
         
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2604,6 +2598,85 @@ LABEL_DONE
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
+
+*****************************************************************************
+* Func_PrintRotate()
+* Dummy Return
+*****************************************************************************
+Func_PrintRotate
+        MOVEM.L     D1-D4,-(SP)
+
+        * print the size string (standard is in bits 6-7)
+        JSR     Func_PrintSizeStandard
+        
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     Func_Print
+        
+        * Check for memory rotate XXX <ea>
+        MOVE.L  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #2,D3
+        JSR     Func_GetBits
+        CMP.B   #3,D0
+        BEQ     ROTATE_MEMORY
+        
+        * Get source
+        MOVE.L  D4,D1
+        MOVE.L  #5,D2
+        MOVE.L  #1,D3
+        JSR     Func_GetBits
+        CMP.B   #0,D0
+        BEQ     ROTATE_DATA
+        BRA     ROTATE_REG
+        
+ROTATE_DATA
+        MOVE.L  #POUND,D1
+        JSR     Func_Print
+        MOVE.L  #MONEY,D1
+        JSR     Func_Print
+        MOVE.L  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_Print_Number
+        BRA     ROTATE_CONTINUE
+        
+ROTATE_REG
+        MOVE.L  D4,D1
+        MOVE.L  #9,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+        BRA     ROTATE_CONTINUE
+        
+ROTATE_MEMORY
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+
+ROTATE_CONTINUE
+        MOVE.L  #COMMA,D1
+        JSR     Func_Print
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #3,D3
+        JSR     Func_GetBits
+        MOVE.L  D0,D1
+        JSR     Func_JumpAddressTableModeReg
+        
+ROTATE_DONE
+        MOVEM.L  (SP)+,D1-D4    * restore
+        RTS
 
 
 *****************************************************************************
