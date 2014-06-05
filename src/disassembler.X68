@@ -1958,51 +1958,9 @@ Func_BRA
         MOVE    #BRA_MSG,D1
         JSR     Func_Print
 
-<<<<<<< HEAD
         * Jump to Label Printer
         JSR     Func_PrintLabel
 
-=======
-*        * Gets address
-*        MOVE.W  (A5),D1
-*        MOVE.W  (A5),D4
-*        
-*        * Print space
-*        MOVE.L  #SPACE,D1
-*        JSR     Func_Print
-*        
-*        * Get Displacement
-*        MOVE.L  #0,D2
-*        MOVE.L  #6,D3
-*        JSR     Func_GetBits
-*        
-*        * If displacement == 00
-*        CMP.L   #0,D0
-*        BEQ     DISPLACEMENT_WORD
-*        
-*        * If displacement == FF
-*        CMP.L   #$FF,D0
-*        BEQ     DISPLACEMENT_LONG
-*        
-*        * Else
-*        MOVE.B  D0,D1
-*        LSL     #4,D1
-*        LSR     #4,D1
-*        JSR     Func_Print_Number
-*        MOVE.B  D0,D1
-*        LSR     #4,D1
-*        JSR     Func_Print_Number
-*        BRA     BRA_DONE
-*        
-*DISPLACEMENT_WORD
-*        
-*        BRA     BRA_DONE
-*
-*DISPLACEMENT_LONG
-*        BRA     BRA_DONE
-*
-*BRA_DONE
->>>>>>> origin/Integration
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -3278,6 +3236,7 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
 NoMoreOpcodes   DC.W     %1111111111111111
 
     END         START
+
 
 
 
