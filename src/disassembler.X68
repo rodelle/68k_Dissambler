@@ -42,7 +42,7 @@ NPD_DoWhile
 
         MOVEA.L  #$7FC0,A5
         MOVEA.L  #$80BC,A6
-
+        
         JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                     * parsing each opcode
         JSR     PromptForReinput    * Ask the user if they want to dissamble another program
@@ -61,9 +61,11 @@ NPD_ProgramDone
 DisassembleLoop
         CMP.L   A5,A6   * compare starting address to ending address
 
-        * if starting address == ending address, done
-        BEQ     DisassembleDone
-
+        * if starting address == ending address, done      
+        BEQ     DisassembleDone         
+        
+        JSR     PrintProgramCounter * prints the address of the opcode being looked at
+        
         JSR     ResetStringBuffer
 
         * else decode next instruction
@@ -3351,7 +3353,29 @@ PrintSpace
         JSR     AddWordToStringBuffer
         MOVEM.L (SP)+, D1-D2 * Restore used registers
         RTS
+*****************************************************************************
+* void PrintProgramCounter ()
+* Args: none
+* Prints the contents of A5 as a hex address
+* ex. A5 = $7FC0
+*     prints "$00007FC0    "
+*****************************************************************************
+PrintProgramCounter
+        JSR     ResetStringBuffer
+        MOVE    #MONEY,D1               * print dollar sign
+        JSR     AddStringToStringBuffer
+        
+        MOVE.L  A5,D1
+        MOVE    #8,D2
+        JSR     PrintHexadecimal        * print the address
 
+        MOVE    #SPACE,D1
+        JSR     AddStringToStringBuffer 
+        JSR     AddStringToStringBuffer
+        JSR     AddStringToStringBuffer
+        JSR     AddStringToStringBuffer * add spaces
+        
+        JSR     PrintStringBuffer       * print the string
 
 *****************************************************************************
 * void PrintHexadecimal(number, size)
@@ -3950,7 +3974,7 @@ START_MSG
     DC.B    ' | |   | | |  __/ ||  __/ | |  __/ | | | (_|  __/ ',CR,LF
     DC.B    ' |_|   |_|  \___|_| \___|_|  \___|_| |_|\___\___| ',CR,LF,0
 
-kLinesPerScreen EQU  22
+kLinesPerScreen EQU  44 * 22 * 2 to account for printing program counter
 gPrintCount
         DS  2
 
@@ -3977,7 +4001,7 @@ kRestartPrompt
     DC.B 'Would you like to dissamble another program (y/n)? ',0
     
 kContinuePrompt
-    DC.B 'Press any key to coninue',CR,LF,0
+    DC.B 'Press any key to continue',CR,LF,0
 
 * opcode print outs
 MOVE_B_MSG      DC.B    'MOVE.B',0
