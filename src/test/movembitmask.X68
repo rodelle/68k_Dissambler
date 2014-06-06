@@ -7,96 +7,160 @@
 *-----------------------------------------------------------
     ORG    $1000
 START:                  ; first instruction of program
+        JSR     ResetStringBuffer
+        MOVE.L  #%1110100011001101,D1
+        JSR     PostIncrementMovemBitMask
+        JSR     PrintStringBuffer
+        
+        JSR     PrintNewline
+        
+        JSR     ResetStringBuffer
+        MOVE.L  #%1110100011001101,D1
+        JSR     PreDecrementMovemBitMask
+        JSR     PrintStringBuffer
 
-    MOVE    #%11111111,D1
-    MOVE    #0,D2
-    MOVE    #DataRegisterStrings,D3
-    JSR     ResetStringBuffer
-    JSR     PrintRegistersFromBitMask
-
-    MOVE    #1,D2
-    MOVE    #AddressRegisterStrings,D3
-    JSR     PrintRegistersFromBitMask
-    JSR     PrintStringBuffer
-    SIMHALT
+        SIMHALT
     
+*****************************************************************************
+* PostIncrementMovemBitMask
+* Args: D1 (bit mask)
+* Traverses the bit mask and add the associated register to the bit mask
+* ex.   BitMask - 1  1  1  0  1  0  0  0  1  1  0  0  1  1  0  1 
+*                 A7 A6 A5 A4 A3 A2 A1 A0 D7 D6 D5 D4 D3 D2 D1 D0
+*       prints - D0/D2/D3/D6/D7/A3/A5/A6/A7                 
+*****************************************************************************
+PostIncrementMovemBitMask
+        MOVEM   D0-D3,-(SP)
+        MOVE    #0,D2       * printing first half of registers
+        MOVE    #DataRegisterStrings,D3
+        JSR     PrintRegistersFromBitMask
+
+        LSR     #8,D1       * read the left half of the bit mask
+        MOVE    D0,D2       * may or may not have previously printed registers
+        MOVE    #AddressRegisterStrings,D3
+        JSR     PrintRegistersFromBitMask
+        MOVEM   (SP)+,D0-D3
+        RTS
+
+*****************************************************************************
+* PreDecrementMovemBitMask
+* Args: D1 (bit mask)
+* Traverses the bit mask and add the associated register to the bit mask
+* ex.   BitMask - 1  1  1  0  1  0  0  0  1  1  0  0  1  1  0  1 
+*                 D0 D1 D2 D3 D4 D5 D6 D7 A0 A1 A2 A3 A4 A5 A6 A7
+*       prints - A7/A5/A4/A1/A0/D4/D2/D1/D0
+*****************************************************************************
+PreDecrementMovemBitMask
+        MOVEM   D0-D7,-(SP)    
+        MOVE    #0,D2       * printing first half of registers
+        MOVE    #ReversedAddressRegisterStrings,D3
+        JSR     PrintRegistersFromBitMask
+
+        LSR     #8,D1       * read the left half of the bit mask
+        MOVE    D0,D2       * may or may not have previously printed registers
+        MOVE    #ReversedDataRegisterStrings,D3
+        JSR     PrintRegistersFromBitMask
+        MOVEM   (SP)+,D0-D7
+        RTS
+
+
 *****************************************************************************
 * PrintRegistersFromBitMask
 * Args: D1 (bit mask), D2 (isFirst), D3 (registerStrings)
 * Traverses the bit mask and add the associated register to the bit mask
 *****************************************************************************
 PrintRegistersFromBitMask
-    MOVEM   D0-D7/A0-A6,-(SP)
+        MOVEM   D1-D7/A0-A6,-(SP)
 
-    MOVE    D3,A0
-    MOVE    #8,D7
-    
-    MOVE    D1,-(SP)
-    MOVE    D2,D5
-    CLR     D6
+        MOVE    D3,A0
+        MOVE    #8,D7
+        
+        MOVE    D1,-(SP)
+        MOVE    D2,D5
+        CLR     D6
     
 PRFBM_While
-    CMP     #0,D7
-    BEQ     PRFBM_Done
-    
-    MOVE.L  A0,D4           * D4 contains the pointer to the register string
-    ADD     #4,A0           * go to the next register
-    
-    MOVE    (SP)+,D1        * restore the bit mask
-    MOVE    #0,D2           * bit 0
-    MOVE    #1,D3               
-    JSR     Func_GetBits    * mask the value, D0 contains the bit value
-    
-    LSR     #1,D1           * look at the next bit
-    MOVEM   D1,-(SP)        * save the bit mask
-    SUB     #1,D7           * bitCounter --
-    CMP     #0,D0           * if the bit is not set, continue
-    BEQ     PRFBM_While
-    
-    BNE     PRFBM_AddSlash
+        CMP     #0,D7
+        BEQ     PRFBM_Done
+        
+        MOVE.L  A0,D4           * D4 contains the pointer to the register string
+        ADD     #4,A0           * go to the next register
+        
+        MOVE    (SP)+,D1        * restore the bit mask
+        MOVE    #0,D2           * bit 0
+        MOVE    #1,D3               
+        JSR     Func_GetBits    * mask the value, D0 contains the bit value
+        
+        LSR     #1,D1           * look at the next bit
+        MOVEM   D1,-(SP)        * save the bit mask
+        SUB     #1,D7           * bitCounter --
+        CMP     #0,D0           * if the bit is not set, continue
+        BEQ     PRFBM_While
+        
+        BNE     PRFBM_AddSlash
 PRFBM_AddSlashContinue
 
-    ADD     #1,D6       * printedRegisters++
-    MOVE.L  D4,D1       * move the register into arg1
-    MOVE.B  #3,D2
-    JSR     Func_Print  * add the register string to the string buffer
-    BRA PRFBM_While
+        ADD     #1,D6       * printedRegisters++
+        MOVE.L  D4,D1       * move the register string into arg1
+        JSR     Func_Print  * add the register string to the string buffer
+        BRA     PRFBM_While
     
 PRFBM_AddSlash
     
-    CMP     #0,D6   * if this is the first printed register
-    ADD     D5,D6   * && isFirst == 0
-    BEQ     PRFBM_AddSlashContinue
-    
-    MOVE    #$2F,D1 * ascii slash
-    MOVE    #1,D2   
-    JSR     AddWordToStringBuffer * add the slash to the string buffer
-    BRA     PRFBM_AddSlashContinue
+        CMP     #0,D6   * if this is the first printed register
+        ADD     D5,D6   * && previouslyPrintedRegisters == 0
+        BEQ     PRFBM_AddSlashContinue * don't add the trailing slash
+        
+        MOVE    #SLASH,D1 
+        JSR     Func_Print  * adds a slash to the string buffer
+        BRA     PRFBM_AddSlashContinue
     
 PRFBM_Done
-    MOVEM   (SP)+,D1
-    MOVEM   (SP)+,D0-D7/A0-A6
-    RTS
+        MOVE    D6,D0   * return the number of registers printed
+        MOVEM   (SP)+,D1
+        MOVEM   (SP)+,D1-D7/A0-A6
+        RTS
 
 DataRegisterStrings
-    DC.B    'D0',0,0
-    DC.B    'D1',0,0
-    DC.B    'D2',0,0
-    DC.B    'D3',0,0
-    DC.B    'D4',0,0
-    DC.B    'D5',0,0
-    DC.B    'D6',0,0
-    DC.B    'D7',0,0
+        DC.B    'D0',0,0
+        DC.B    'D1',0,0
+        DC.B    'D2',0,0
+        DC.B    'D3',0,0
+        DC.B    'D4',0,0
+        DC.B    'D5',0,0
+        DC.B    'D6',0,0
+        DC.B    'D7',0,0
+    
+ReversedDataRegisterStrings
+        DC.B    'D7',0,0
+        DC.B    'D6',0,0
+        DC.B    'D5',0,0
+        DC.B    'D4',0,0
+        DC.B    'D3',0,0
+        DC.B    'D2',0,0
+        DC.B    'D1',0,0
+        DC.B    'D0',0,0
     
 AddressRegisterStrings
-    DC.B    'A0',0,0
-    DC.B    'A1',0,0
-    DC.B    'A2',0,0
-    DC.B    'A3',0,0
-    DC.B    'A4',0,0
-    DC.B    'A5',0,0
-    DC.B    'A6',0,0
-    DC.B    'A7',0,0
+        DC.B    'A0',0,0
+        DC.B    'A1',0,0
+        DC.B    'A2',0,0
+        DC.B    'A3',0,0
+        DC.B    'A4',0,0
+        DC.B    'A5',0,0
+        DC.B    'A6',0,0
+        DC.B    'A7',0,0
+    
+ReversedAddressRegisterStrings
+        DC.B    'A7',0,0
+        DC.B    'A6',0,0
+        DC.B    'A5',0,0
+        DC.B    'A4',0,0
+        DC.B    'A3',0,0
+        DC.B    'A2',0,0
+        DC.B    'A1',0,0
+        DC.B    'A0',0,0
+
 
 *****************************************************************************
 * Opcode Table
@@ -3131,6 +3195,7 @@ POUND           DC.B    '#',0
 MONEY           DC.B    '$',0
 SPACE           DC.B    ' ',0
 COMMA           DC.B    ',',0
+SLASH           DC.B    '/',0
 
 * Number Table 
 ZERO            DC.B    '0',0
@@ -3151,6 +3216,7 @@ FOURTEEN        DC.B    'E',0
 FIFTEEN         DC.B    'F',0
 
     END         START
+
 
 
 
