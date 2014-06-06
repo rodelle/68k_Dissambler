@@ -3531,16 +3531,9 @@ LABEL_DONE
 Func_PrintRotate
         MOVEM.L     D1-D4,-(SP)
 
-        * print the size string (standard is in bits 6-7)
-        JSR     PrintSizeStandard
-
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-
-        * Print space
-        MOVE.L  #SPACE,D1
-        JSR     AddStringToStringBuffer
 
         * Check for memory rotate XXX <ea>
         MOVE.L  D4,D1
@@ -3549,6 +3542,13 @@ Func_PrintRotate
         JSR     GetBits
         CMP.B   #3,D0
         BEQ     ROTATE_MEMORY
+
+        * print the size string (standard is in bits 6-7)
+        JSR     PrintSizeStandard
+
+        * Print space
+        MOVE.L  #SPACE,D1
+        JSR     AddStringToStringBuffer
 
         * Get source
         MOVE.L  D4,D1
@@ -3582,6 +3582,9 @@ ROTATE_REG
         BRA     ROTATE_CONTINUE
 
 ROTATE_MEMORY
+        MOVE.L  #SPACE,D1
+        JSR     AddStringToStringBuffer
+
         * Checks for invalid address
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -4114,6 +4117,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
