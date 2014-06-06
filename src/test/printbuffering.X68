@@ -1,9 +1,8 @@
 *****************************************************************************
-* Title      : Disassembler
+* Title      : Print Buffering
 * Written by : No Preference
-* Date       : 5/30/14
-*
-* 68000 Machine Code Disassembler
+* Date       : 6/6/2014
+* Prints 20 words then prompts the user to continue printing.
 *****************************************************************************
 *
 * Global variables:
@@ -29,19 +28,18 @@
 
 START    ORG    $1000
 
-NoPreferenceDisassembler        
-
+NoPreferenceDisassembler
         MOVE    #START_MSG,D1
-        JSR     PrintMessage
+        JSR     PrintMessage       
 
-NPD_DoWhile        
         MOVE    #gPrintCount,A0
-        MOVE    #0,(A0) * set the number of currently printed lines to 0
-        
+        MOVE    #0,(A0)
+
+NPD_DoWhile
         * JSR     GetStartEndAddress  * Grab ending and starting address from user
 
         MOVEA.L  #$7FC0,A5
-        MOVEA.L  #$80BC,A6
+        MOVEA.L  #$80D0,A6
 
         JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                     * parsing each opcode
@@ -77,8 +75,6 @@ DisassembleLoop
 
 DisassembleDone
         RTS
-
-
 
 *****************************************************************************
 *****************************************************************************
@@ -191,6 +187,9 @@ PromptToContinue
         
         MOVEM.L (SP)+, D0-D2 * Restore used registers
         RTS
+
+kContinuePrompt
+        DC.B 'Press any key to coninue',CR,LF,0
 
 *****************************************************************************
 * GetStartEndAddress()
@@ -1102,21 +1101,7 @@ Func_MOVE_L
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Checks for invalid address
-        MOVE.L  #6,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetRegMode
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     MOVE_L_DONE
-
         * Gets and prints the Source parameter for MOVE.L
-        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1137,7 +1122,6 @@ Func_MOVE_L
         MOVE.L  D0,D1
         JSR     JumpAddressTableRegMode
 
-MOVE_L_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1213,21 +1197,7 @@ Func_MOVE_W
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Checks for invalid address
-        MOVE.L  #6,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetRegMode
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     MOVE_W_DONE
-
         * Gets and prints the source parameter for MOVE.W
-        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1248,7 +1218,6 @@ Func_MOVE_W
         MOVE.L  D0,D1
         JSR     JumpAddressTableRegMode
 
-MOVE_W_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1262,7 +1231,7 @@ MOVE_W_DONE
 * NEED TO CHECK FOR #<Data>
 *****************************************************************************
 Func_MOVE_B
-        MOVEM.L  D1-D4,-(SP)    * save D1
+        MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #MOVE_B_MSG,D1
@@ -1276,21 +1245,7 @@ Func_MOVE_B
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Checks for invalid address
-        MOVE.L  #6,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetRegMode
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     MOVE_B_DONE
-
         * Gets and prints the source parameter for MOVE.B
-        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1311,12 +1266,12 @@ Func_MOVE_B
         MOVE.L  D0,D1
         JSR     JumpAddressTableRegMode
 
-MOVE_B_DONE
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1-D4    * restore
+        MOVEM.L  (SP)+,D1    * restore
         RTS
 
 
@@ -1351,22 +1306,9 @@ Func_ADD
         BEQ     Func_ADD_DataSecond
 
 Func_ADD_DataFirst
-
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnData
-        CMP.B   #0,D0
-        BNE     ADD_Done
-
         * Print Data Register
-        MOVE.L  D4,D1
+        CLR.L   D1
+        MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1378,7 +1320,8 @@ Func_ADD_DataFirst
         JSR     AddStringToStringBuffer
 
         * Print destination effective address
-        MOVE.L  D4,D1
+        CLR     D1
+        MOVE.W  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1389,7 +1332,8 @@ Func_ADD_DataFirst
 
 Func_ADD_DataSecond
         * Print destination effective address
-        MOVE.L  D4,D1
+        CLR     D1
+        MOVE.W  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1402,7 +1346,8 @@ Func_ADD_DataSecond
         JSR     AddStringToStringBuffer
 
         * Print Data Register
-        MOVE.L  D4,D1
+        CLR.L   D1
+        MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1449,7 +1394,8 @@ Func_ADDA_W
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        MOVE.L  D4,D1
+        CLR     D1
+        MOVE.W  D4,D1
 
         * Gets and prints the <ea> parameter for ADDA.W
         MOVE.L  #0,D2
@@ -1464,7 +1410,8 @@ Func_ADDA_W
         JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for ADDA.W
-        MOVE.L  D4,D1
+        CLR.L   D1
+        MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1482,7 +1429,8 @@ Func_ADDA_L
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        MOVE.L  D4,D1
+        CLR     D1
+        MOVE.W  D4,D1
 
         * Gets and prints the <ea> parameter for ADDA.L
         MOVE.L  #0,D2
@@ -1497,7 +1445,8 @@ Func_ADDA_L
         JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for ADDA.L
-        MOVE.L  D4,D1
+        CLR.L   D1
+        MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1545,20 +1494,8 @@ Func_OR
         BRA     Func_OR_DataSecond
 
 Func_OR_DataFirst
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnData
-        CMP.B   #0,D0
-        BNE     OR_Done
-
         * Print Data Register
+        CLR.L   D1
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
@@ -1571,6 +1508,7 @@ Func_OR_DataFirst
         JSR     AddStringToStringBuffer
 
         * Print destination effective address
+        CLR     D1
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -1582,19 +1520,6 @@ Func_OR_DataFirst
 
 
 Func_OR_DataSecond
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAn
-        CMP.B   #0,D0
-        BNE     OR_Done
-
         * Print destination effective address
         CLR     D1
         MOVE.L  D4,D1
@@ -1641,19 +1566,6 @@ Func_BCLR
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     BCLR_FINISHED
-
         * Get destination mode
         MOVE.L  #3,D2
         MOVE.L  #3,D3
@@ -1688,8 +1600,7 @@ BCLR_SourceBranch
         BEQ     BCLR_ImmediateSource
         CMP.B   #6,D0
         BEQ     BCLR_DataSource
-        * CALL INVALIDATE?
-        BRA     BCLR_FINISHED
+        * ELSE Not valid
 
 BCLR_DataSource
         * Gets register for source
@@ -1718,7 +1629,6 @@ BCLR_DONE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-BCLR_FINISHED
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1740,19 +1650,6 @@ Func_ORI
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     ORI_FINISHED
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1790,7 +1687,6 @@ ORI_DONE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-ORI_FINISHED
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1812,19 +1708,6 @@ Func_CMPI
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     CMPI_FINISHED
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1862,7 +1745,7 @@ CMPI_DONE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-CMPI_FINISHED
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1884,19 +1767,6 @@ Func_NEG
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-    
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     NEG_DONE
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1913,7 +1783,6 @@ Func_NEG
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-NEG_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1926,102 +1795,17 @@ NEG_DONE
 * void Func_MOVEM()
 *****************************************************************************
 Func_MOVEM
-        MOVEM.L  D1-D4,-(SP)    * save D1
+        MOVEM.L  D1,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #MOVEM_MSG,D1
         JSR     AddStringToStringBuffer
 
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-
-        MOVE.L  #SPACE,D1
-        JSR     AddStringToStringBuffer
-
-        * Check Direction
-        MOVE.L  D4,D1
-        MOVE.L  #10,D2
-        MOVE.L  #1,D3
-        JSR     GetBits
-        CMP.B   #0,D0
-        BEQ     MOVEM_IN
-        BNE     MOVEM_OUT
-
-MOVEM_IN
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnDataAnp
-        CMP.B   #0,D0
-        BNE     MOVEM_DONE
-        
-        * print MOVEM registers
-        MOVE.L  #1,D1
-        JSR     MoveInstructionPointer
-        CLR     D1
-        MOVE.W  (A5),D1
-        JSR     PreDecrementMovemBitMask
-        
-        MOVE.L  #COMMA,D1
-        JSR     AddStringToStringBuffer
-        
-        * print effective address
-        MOVE.L  D4,D1
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-        
-        BRA     MOVEM_DONE
-
-MOVEM_OUT
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnDataAnm
-        CMP.B   #0,D0
-        BNE     MOVEM_DONE
-        
-        * print effective address
-        MOVE.L  D4,D1
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-        
-        MOVE.L  #COMMA,D1
-        JSR     AddStringToStringBuffer
-        
-        * print MOVEM registers
-        MOVE.L  #1,D1
-        JSR     MoveInstructionPointer
-        CLR     D1
-        MOVE.W  (A5),D1
-        JSR     PreDecrementMovemBitMask
-        
-        BRA     MOVEM_DONE
-
-MOVEM_DONE
-        * increment A5 by 1 words
-        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
+        * increment A5 by 2 words
+        MOVE.L  #2,D1   * put 2 in D1 for parameter 1
         JSR     MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1-D4    * restore
+        MOVEM.L  (SP)+,D1    * restore
         RTS
 
 
@@ -2072,19 +1856,6 @@ Func_LEA
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnDataAnpAnm
-        CMP.B   #0,D0
-        BNE     LEA_DONE
-
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
@@ -2104,11 +1875,10 @@ Func_LEA
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
-        ADD.B   #%1000,D0
+        ADD.B   #%100,D0
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-LEA_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2148,19 +1918,6 @@ Func_SUBQ
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckData
-        CMP.B   #0,D0
-        BNE     SUBQ_DONE
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -2205,7 +1962,6 @@ SUBQ_CONTINUE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-SUBQ_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2352,19 +2108,6 @@ Func_SUB
         BRA     Func_SUB_DataSecond
 
 Func_SUB_DataFirst
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnData
-        CMP.B   #0,D0
-        BNE     SUB_DONE
-
         * Print Data Register
         CLR.L   D1
         MOVE.L  D4,D1
@@ -2485,19 +2228,6 @@ Func_EOR
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnData
-        CMP.B   #0,D0
-        BNE     EOR_DONE
-
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
 
@@ -2524,7 +2254,6 @@ Func_EOR
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-EOR_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2546,19 +2275,6 @@ Func_MULS_W
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAn
-        CMP.B   #0,D0
-        BNE     MULS_W_DONE
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -2583,7 +2299,6 @@ Func_MULS_W
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-MULS_W_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2610,20 +2325,7 @@ Func_DIVS_W
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAn
-        CMP.B   #0,D0
-        BNE     DIVS_W_DONE
-
-        * Get/Print mode/reg for source
+        * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -2642,7 +2344,6 @@ Func_DIVS_W
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-DIVS_W_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -3240,6 +2941,11 @@ PSB_Done
         MOVE    D0,(A0)             * save the number of printed lines
         MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
         RTS
+        
+kLinesPerScreen EQU  22
+
+gPrintCount
+        DS  2
 
 *****************************************************************************
 * void InvalidateStringBuffer()
@@ -3529,26 +3235,12 @@ ROTATE_REG
         BRA     ROTATE_CONTINUE
 
 ROTATE_MEMORY
-        * Checks for invalid address
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     GetModeReg
-        MOVE.L  D1,D2
-        MOVE.L  D0,D1
-        CLR     D0
-        JSR     CheckAnDnData
-        CMP.B   #0,D0
-        BNE     ROTATE_DONE
-
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
-        BRA     ROTATE_DONE
 
 ROTATE_CONTINUE
         MOVE.L  #COMMA,D1
@@ -3566,270 +3258,118 @@ ROTATE_DONE
 
 
 *****************************************************************************
-* int CheckAn(3-bit mode, 3-bit reg)
-* D0          D1          D2
+* CheckAn(3-bit mode, 3-bit reg)
+*         D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAn
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%001,D1
         BNE     CheckAnDone
-        ADD.B   #1,D0
-        JSR     InvalidateStringBuffer
+        * jump to invalidate function
 CheckAnDone     
         MOVEM.L (SP)+,D1-D2
         RTS
 
 
 *****************************************************************************
-* int CheckDn(3-bit mode, 3-bit reg)
-* D0          D1          D2
+* CheckDn(3-bit mode, 3-bit reg)
+*         D1          D2
 * Dummy Return
 *****************************************************************************
 CheckDn
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%000,D1
         BNE     CheckDnDone
-        ADD.B   #1,D0
-        JSR     InvalidateStringBuffer
+        * jump to invalidate function
 CheckDnDone     
         MOVEM.L (SP)+,D1-D2
         RTS
 
 
 *****************************************************************************
-* int CheckData(3-bit mode, 3-bit reg)
-* DO            D1          D2
+* CheckData(3-bit mode, 3-bit reg)
+*           D1          D2
 * Dummy Return
 *****************************************************************************
 CheckData
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%111,D1
-        BEQ     CheckDataReg
+        BNE     CheckDataReg
         BRA     CheckDataDone
 CheckDataReg
         CMP.B   #%100,D2
-        BNE     CheckDataDone
-        ADD.B   #1,D0
-        JSR     InvalidateStringBuffer
+        * jump to invalidate function
 CheckDataDone     
         MOVEM.L (SP)+,D1-D2
         RTS
 
 
 *****************************************************************************
-* int CheckAnp(3-bit mode, 3-bit reg)
-* D0           D1          D2
+* CheckAnp(3-bit mode, 3-bit reg)
+*          D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnp
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%011,D1
         BNE     CheckAnpDone
-        ADD.B   #1,D0
-        JSR     InvalidateStringBuffer
+        * jump to invalidate function
 CheckAnpDone     
         MOVEM.L (SP)+,D1-D2
         RTS
 
 
 *****************************************************************************
-* int CheckAnm(3-bit mode, 3-bit reg)
-* Do           D1          D2
+* CheckAnm(3-bit mode, 3-bit reg)
+*         D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnm
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%100,D1
         BNE     CheckAnmDone
-        ADD.B   #1,D0
-        JSR     InvalidateStringBuffer
+        * jump to invalidate function
 CheckAnmDone     
         MOVEM.L (SP)+,D1-D2
         RTS
 
 
 *****************************************************************************
-* int CheckAnData(3-bit mode, 3-bit reg)
-* D0              D1          D2
+* CheckAnData(3-bit mode, 3-bit reg)
+*         D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnData
+        MOVEM.L D1-D2,-(SP)
         JSR     CheckAn
         JSR     CheckData
         RTS
 
 
 *****************************************************************************
-* int CheckAnDnData(3-bit mode, 3-bit reg)
-* D0                D1          D2
+* CheckAnDnData(3-bit mode, 3-bit reg)
+*         D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnDnData
+        MOVEM.L D1-D2,-(SP)
         JSR     CheckAnData
         JSR     CheckDn
         RTS
         
         
 *****************************************************************************
-* int CheckAnDnDataAnpAnm(3-bit mode, 3-bit reg)
-* D0                      D1          D2
+* CheckAnDnDataAnpAnm(3-bit mode, 3-bit reg)
+*         D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnDnDataAnpAnm
+        MOVEM.L D1-D2,-(SP)
         JSR     CheckAnDnData
         JSR     CheckAnm
         JSR     CheckAnp
-        RTS
-
-
-*****************************************************************************
-* int CheckAnDnDataAnm(3-bit mode, 3-bit reg)
-* D0                   D1          D2
-* Dummy Return
-*****************************************************************************
-CheckAnDnDataAnm
-        JSR     CheckAnDnData
-        JSR     CheckAnm
-        RTS
-        
-        
-*****************************************************************************
-* int CheckAnDnDataAnp(3-bit mode, 3-bit reg)
-* D0                   D1          D2
-* Dummy Return
-*****************************************************************************
-CheckAnDnDataAnp
-        JSR     CheckAnDnData
-        JSR     CheckAnp
-        RTS
-
-*****************************************************************************
-* mode reg GetRegMode(6-bit)
-* D0   D1             D1
-* mode AND reg
-*****************************************************************************
-GetRegMode
-        MOVE.L  D1,D0
-        LSR     #3,D1
-        LSL     #5,D0
-        LSR     #5,D0
-        RTS
-
-
-*****************************************************************************
-* mode reg GetModeReg(6-bit)
-* D0   D1             D1
-* mode AND reg
-*****************************************************************************
-GetModeReg
-        MOVE.L  D1,D0
-        LSR.B   #3,D0
-        LSL.B   #5,D1
-        LSR.B   #5,D1
-        RTS
-
-
-*****************************************************************************
-* PostIncrementMovemBitMask
-* Args: D1 (bit mask)
-* Traverses the bit mask and add the associated register to the bit mask
-* ex.   BitMask - 1  1  1  0  1  0  0  0  1  1  0  0  1  1  0  1 
-*                 A7 A6 A5 A4 A3 A2 A1 A0 D7 D6 D5 D4 D3 D2 D1 D0
-*       prints - D0/D2/D3/D6/D7/A3/A5/A6/A7                 
-*****************************************************************************
-PostIncrementMovemBitMask
-        MOVEM   D0-D3,-(SP)
-        MOVE    #0,D2       * printing first half of registers
-        MOVE    #DataRegisterStrings,D3
-        JSR     PrintRegistersFromBitMask
-
-        LSR     #8,D1       * read the left half of the bit mask
-        MOVE    D0,D2       * may or may not have previously printed registers
-        MOVE    #AddressRegisterStrings,D3
-        JSR     PrintRegistersFromBitMask
-        MOVEM   (SP)+,D0-D3
-        RTS
-
-*****************************************************************************
-* PreDecrementMovemBitMask
-* Args: D1 (bit mask)
-* Traverses the bit mask and add the associated register to the bit mask
-* ex.   BitMask - 1  1  1  0  1  0  0  0  1  1  0  0  1  1  0  1 
-*                 D0 D1 D2 D3 D4 D5 D6 D7 A0 A1 A2 A3 A4 A5 A6 A7
-*       prints - A7/A5/A4/A1/A0/D4/D2/D1/D0
-*****************************************************************************
-PreDecrementMovemBitMask
-        MOVEM   D0-D7,-(SP)    
-        MOVE    #0,D2       * printing first half of registers
-        MOVE    #ReversedAddressRegisterStrings,D3
-        JSR     PrintRegistersFromBitMask
-
-        LSR     #8,D1       * read the left half of the bit mask
-        MOVE    D0,D2       * may or may not have previously printed registers
-        MOVE    #ReversedDataRegisterStrings,D3
-        JSR     PrintRegistersFromBitMask
-        MOVEM   (SP)+,D0-D7
-        RTS
-
-
-*****************************************************************************
-* PrintRegistersFromBitMask
-* Args: D1 (bit mask), D2 (isFirst), D3 (registerStrings)
-* Traverses the bit mask and add the associated register to the bit mask
-*****************************************************************************
-PrintRegistersFromBitMask
-        MOVEM   D1-D7/A0-A6,-(SP)
-
-        MOVE    D3,A0
-        MOVE    #8,D7
-        
-        MOVE    D1,-(SP)
-        MOVE    D2,D5
-        CLR     D6
-    
-PRFBM_While
-        CMP     #0,D7
-        BEQ     PRFBM_Done
-        
-        MOVE.L  A0,D4           * D4 contains the pointer to the register string
-        ADD     #4,A0           * go to the next register
-        
-        MOVE    (SP)+,D1        * restore the bit mask
-        MOVE    #0,D2           * bit 0
-        MOVE    #1,D3               
-        JSR     GetBits    * mask the value, D0 contains the bit value
-        
-        LSR     #1,D1           * look at the next bit
-        MOVEM   D1,-(SP)        * save the bit mask
-        SUB     #1,D7           * bitCounter --
-        CMP     #0,D0           * if the bit is not set, continue
-        BEQ     PRFBM_While
-        
-        BNE     PRFBM_AddSlash
-PRFBM_AddSlashContinue
-
-        ADD     #1,D6       * printedRegisters++
-        MOVE.L  D4,D1       * move the register string into arg1
-        JSR     AddStringToStringBuffer  * add the register string to the string buffer
-        BRA     PRFBM_While
-    
-PRFBM_AddSlash
-    
-        CMP     #0,D6   * if this is the first printed register
-        ADD     D5,D6   * && previouslyPrintedRegisters == 0
-        BEQ     PRFBM_AddSlashContinue * don't add the trailing slash
-        
-        MOVE    #SLASH,D1 
-        JSR     AddStringToStringBuffer  * adds a slash to the string buffer
-        BRA     PRFBM_AddSlashContinue
-    
-PRFBM_Done
-        MOVE    D6,D0   * return the number of registers printed
-        MOVEM   (SP)+,D1
-        MOVEM   (SP)+,D1-D7/A0-A6
-        RTS
-
+        RTS        
 
 
 *****************************************************************************
@@ -3850,46 +3390,6 @@ LF      EQU     $0A
 
 * 0  1  2  3  4  5  6  7  8  9
 * 30 31 32 33 34 35 36 37 38 39
-
-DataRegisterStrings
-        DC.B    'D0',0,0
-        DC.B    'D1',0,0
-        DC.B    'D2',0,0
-        DC.B    'D3',0,0
-        DC.B    'D4',0,0
-        DC.B    'D5',0,0
-        DC.B    'D6',0,0
-        DC.B    'D7',0,0
-    
-ReversedDataRegisterStrings
-        DC.B    'D7',0,0
-        DC.B    'D6',0,0
-        DC.B    'D5',0,0
-        DC.B    'D4',0,0
-        DC.B    'D3',0,0
-        DC.B    'D2',0,0
-        DC.B    'D1',0,0
-        DC.B    'D0',0,0
-    
-AddressRegisterStrings
-        DC.B    'A0',0,0
-        DC.B    'A1',0,0
-        DC.B    'A2',0,0
-        DC.B    'A3',0,0
-        DC.B    'A4',0,0
-        DC.B    'A5',0,0
-        DC.B    'A6',0,0
-        DC.B    'A7',0,0
-    
-ReversedAddressRegisterStrings
-        DC.B    'A7',0,0
-        DC.B    'A6',0,0
-        DC.B    'A5',0,0
-        DC.B    'A4',0,0
-        DC.B    'A3',0,0
-        DC.B    'A2',0,0
-        DC.B    'A1',0,0
-        DC.B    'A0',0,0
 
 sA      EQU     $41
 sD      EQU     $44
@@ -3937,22 +3437,7 @@ sMULS   EQU     $4D554C53
 sCMPI   EQU     $434D5049
 
 NEW_LINE        DC.B    CR,LF,0
-START_MSG
-    DC.B    '    __   ___  _                       _   _       ',CR,LF
-    DC.B    '   / /  / _ \| |                     | \ | |      ',CR,LF
-    DC.B    '  / /_ | (_) | | __                  |  \| | ___  ',CR,LF
-    DC.B    ' |  _ \ > _ <| |/ /                  | . ` |/ _ \ ',CR,LF
-    DC.B    ' | (_) | (_) |   <                   | |\  | (_) |',CR,LF
-    DC.B    '  \___/ \___/|_|\_\_                 |_| \_|\___/ ',CR,LF
-    DC.B    ' |  __ \         / _|                             ',CR,LF
-    DC.B    ' | |__) | __ ___| |_ ___ _ __ ___ _ __   ___ ___  ',CR,LF
-    DC.B    ' |  ___/ ''__/ _ \  _/ _ \ ''__/ _ \ ''_ \ / __/ _ \ ',CR,LF
-    DC.B    ' | |   | | |  __/ ||  __/ | |  __/ | | | (_|  __/ ',CR,LF
-    DC.B    ' |_|   |_|  \___|_| \___|_|  \___|_| |_|\___\___| ',CR,LF,0
-
-kLinesPerScreen EQU  22
-gPrintCount
-        DS  2
+START_MSG       DC.B    '68k_Disassemlber',CR,LF,'------------------',CR,LF,0
 
 kStringBufferSize EQU 128
 kStringBuffer
@@ -3975,9 +3460,6 @@ kEndAddressPrompt
 
 kRestartPrompt
     DC.B 'Would you like to dissamble another program (y/n)? ',0
-    
-kContinuePrompt
-    DC.B 'Press any key to coninue',CR,LF,0
 
 * opcode print outs
 MOVE_B_MSG      DC.B    'MOVE.B',0
@@ -4033,7 +3515,6 @@ POUND           DC.B    '#',0
 MONEY           DC.B    '$',0
 SPACE           DC.B    ' ',0
 COMMA           DC.B    ',',0
-SLASH           DC.B    '/',0
 
 * Number Table
 ZERO            DC.B    '0',0
