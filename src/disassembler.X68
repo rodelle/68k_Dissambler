@@ -1208,6 +1208,7 @@ Func_MOVE_W
         BNE     MOVE_W_DONE
 
         * Gets and prints the source parameter for MOVE.W
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1242,7 +1243,7 @@ MOVE_W_DONE
 * NEED TO CHECK FOR #<Data>
 *****************************************************************************
 Func_MOVE_B
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #MOVE_B_MSG,D1
@@ -1270,6 +1271,7 @@ Func_MOVE_B
         BNE     MOVE_B_DONE
 
         * Gets and prints the source parameter for MOVE.B
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1295,7 +1297,7 @@ MOVE_B_DONE
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
@@ -1345,8 +1347,7 @@ Func_ADD_DataFirst
         BNE     ADD_Done
 
         * Print Data Register
-        CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1358,8 +1359,7 @@ Func_ADD_DataFirst
         JSR     AddStringToStringBuffer
 
         * Print destination effective address
-        CLR     D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1370,8 +1370,7 @@ Func_ADD_DataFirst
 
 Func_ADD_DataSecond
         * Print destination effective address
-        CLR     D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1384,8 +1383,7 @@ Func_ADD_DataSecond
         JSR     AddStringToStringBuffer
 
         * Print Data Register
-        CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1432,8 +1430,7 @@ Func_ADDA_W
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        CLR     D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
 
         * Gets and prints the <ea> parameter for ADDA.W
         MOVE.L  #0,D2
@@ -1448,8 +1445,7 @@ Func_ADDA_W
         JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for ADDA.W
-        CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1467,8 +1463,7 @@ Func_ADDA_L
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        CLR     D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
 
         * Gets and prints the <ea> parameter for ADDA.L
         MOVE.L  #0,D2
@@ -1483,8 +1478,7 @@ Func_ADDA_L
         JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for ADDA.L
-        CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
@@ -1546,7 +1540,6 @@ Func_OR_DataFirst
         BNE     OR_Done
 
         * Print Data Register
-        CLR.L   D1
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
@@ -1559,7 +1552,6 @@ Func_OR_DataFirst
         JSR     AddStringToStringBuffer
 
         * Print destination effective address
-        CLR     D1
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
