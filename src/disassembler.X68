@@ -3583,10 +3583,11 @@ CheckDnDone
 CheckData
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%111,D1
-        BNE     CheckDataReg
+        BEQ     CheckDataReg
         BRA     CheckDataDone
 CheckDataReg
         CMP.B   #%100,D2
+        BNE     CheckDataDone
         ADD.B   #1,D0
         JSR     InvalidateStringBuffer
 CheckDataDone     
@@ -3632,7 +3633,6 @@ CheckAnmDone
 * Dummy Return
 *****************************************************************************
 CheckAnData
-        MOVEM.L D1-D2,-(SP)
         JSR     CheckAn
         JSR     CheckData
         RTS
@@ -3644,7 +3644,6 @@ CheckAnData
 * Dummy Return
 *****************************************************************************
 CheckAnDnData
-        MOVEM.L D1-D2,-(SP)
         JSR     CheckAnData
         JSR     CheckDn
         RTS
@@ -3656,7 +3655,6 @@ CheckAnDnData
 * Dummy Return
 *****************************************************************************
 CheckAnDnDataAnpAnm
-        MOVEM.L D1-D2,-(SP)
         JSR     CheckAnDnData
         JSR     CheckAnm
         JSR     CheckAnp
@@ -3669,7 +3667,6 @@ CheckAnDnDataAnpAnm
 * Dummy Return
 *****************************************************************************
 CheckAnDnDataAnm
-        MOVEM.L D1-D2,-(SP)
         JSR     CheckAnDnData
         JSR     CheckAnm
         RTS
@@ -3681,21 +3678,20 @@ CheckAnDnDataAnm
 * Dummy Return
 *****************************************************************************
 CheckAnDnDataAnp
-        MOVEM.L D1-D2,-(SP)
         JSR     CheckAnDnData
         JSR     CheckAnp
         RTS
 
 *****************************************************************************
-* mode reg GetModeReg(6-bit)
+* mode reg GetRegMode(6-bit)
 * D0   D1             D1
 * mode AND reg
 *****************************************************************************
 GetRegMode
         MOVE.L  D1,D0
-        LSR     #3,D0
-        LSL     #5,D1
-        LSR     #5,D1
+        LSR     #3,D1
+        LSL     #5,D0
+        LSR     #5,D0
         RTS
 
 
@@ -3706,9 +3702,9 @@ GetRegMode
 *****************************************************************************
 GetModeReg
         MOVE.L  D1,D0
-        LSR.B   #3,D1
-        LSL.B   #5,D0
-        LSR.B   #5,D0
+        LSR.B   #3,D0
+        LSL.B   #5,D1
+        LSR.B   #5,D1
         RTS
 
 
