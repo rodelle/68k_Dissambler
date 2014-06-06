@@ -38,10 +38,10 @@ NPD_DoWhile
         MOVE    #gPrintCount,A0
         MOVE    #0,(A0) * set the number of currently printed lines to 0
         
-        * JSR     GetStartEndAddress  * Grab ending and starting address from user
+        JSR     GetStartEndAddress  * Grab ending and starting address from user
 
-        MOVEA.L  #$7FC0,A5
-        MOVEA.L  #$8202,A6
+        *MOVEA.L  #$7FC0,A5
+        *MOVEA.L  #$8202,A6
         
         JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                     * parsing each opcode
@@ -1944,7 +1944,26 @@ Func_MOVEM
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-
+        
+        * print size
+        MOVE.L  #6,D2
+        MOVE.L  #1,D3
+        JSR     GetBits
+        CMP.B   #0,D0
+        BEQ     MOVEM_PRINT_W
+        BRA     MOVEM_PRINT_L
+        
+MOVEM_PRINT_W
+        MOVE.L  #W_MSG,D1
+        JSR     AddStringToStringBuffer
+        BRA     MOVEM_CONTINUE
+        
+MOVEM_PRINT_L
+        MOVE.L  #L_MSG,D1
+        JSR     AddStringToStringBuffer
+        BRA     MOVEM_CONTINUE
+        
+MOVEM_CONTINUE
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
@@ -3816,7 +3835,7 @@ PostIncrementMovemBitMask
 *       prints - A7/A5/A4/A1/A0/D4/D2/D1/D0
 *****************************************************************************
 PreDecrementMovemBitMask
-        MOVEM   D0-D7,-(SP)    
+        MOVEM.L   D0-D7,-(SP)    
         MOVE    #0,D2       * printing first half of registers
         MOVE    #ReversedAddressRegisterStrings,D3
         JSR     PrintRegistersFromBitMask
@@ -3825,7 +3844,7 @@ PreDecrementMovemBitMask
         MOVE    D0,D2       * may or may not have previously printed registers
         MOVE    #ReversedDataRegisterStrings,D3
         JSR     PrintRegistersFromBitMask
-        MOVEM   (SP)+,D0-D7
+        MOVEM.L   (SP)+,D0-D7
         RTS
 
 
@@ -3835,7 +3854,7 @@ PreDecrementMovemBitMask
 * Traverses the bit mask and add the associated register to the bit mask
 *****************************************************************************
 PrintRegistersFromBitMask
-        MOVEM   D1-D7/A0-A6,-(SP)
+        MOVEM.L   D1-D7/A0-A6,-(SP)
 
         MOVE    D3,A0
         MOVE    #8,D7
@@ -3857,7 +3876,7 @@ PRFBM_While
         JSR     GetBits    * mask the value, D0 contains the bit value
         
         LSR     #1,D1           * look at the next bit
-        MOVEM   D1,-(SP)        * save the bit mask
+        MOVEM.W   D1,-(SP)        * save the bit mask
         SUB     #1,D7           * bitCounter --
         CMP     #0,D0           * if the bit is not set, continue
         BEQ     PRFBM_While
@@ -3882,8 +3901,8 @@ PRFBM_AddSlash
     
 PRFBM_Done
         MOVE    D6,D0   * return the number of registers printed
-        MOVEM   (SP)+,D1
-        MOVEM   (SP)+,D1-D7/A0-A6
+        MOVEM.W   (SP)+,D1
+        MOVEM.L   (SP)+,D1-D7/A0-A6
         RTS
 
 
@@ -4117,6 +4136,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
