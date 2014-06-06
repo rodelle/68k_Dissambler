@@ -1847,11 +1847,11 @@ Func_CMPI
         MOVE.L  #2,D3
         JSR     GetBits
         CMP.L   #0,D0
-        BEQ     PRINT_LONGWORD_CMPI
+        BEQ     PRINT_WORD_CMPI
         CMP.L   #1,D0
         BEQ     PRINT_WORD_CMPI
         CMP.L   #2,D0
-        BEQ     PRINT_WORD_CMPI
+        BEQ     PRINT_LONGWORD_CMPI
         * Not 0/1/2 then incorrect command
 
 PRINT_LONGWORD_CMPI
@@ -4113,6 +4113,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
