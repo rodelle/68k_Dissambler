@@ -102,20 +102,18 @@ PRFBM_While
 PRFBM_AddSlashContinue
 
     ADD     #1,D6       * printedRegisters++
-    MOVE.L  D4,D1       * move the register into arg1
-    MOVE.B  #3,D2
+    MOVE.L  D4,D1       * move the register string into arg1
     JSR     Func_Print  * add the register string to the string buffer
-    BRA PRFBM_While
+    BRA     PRFBM_While
     
 PRFBM_AddSlash
     
     CMP     #0,D6   * if this is the first printed register
-    ADD     D5,D6   * && isFirst == 0
-    BEQ     PRFBM_AddSlashContinue
+    ADD     D5,D6   * && previouslyPrintedRegisters == 0
+    BEQ     PRFBM_AddSlashContinue * don't add the trailing slash
     
-    MOVE    #$2F,D1 * ascii slash
-    MOVE    #1,D2   
-    JSR     AddWordToStringBuffer * add the slash to the string buffer
+    MOVE    #SLASH,D1 
+    JSR     Func_Print  * adds a slash to the string buffer
     BRA     PRFBM_AddSlashContinue
     
 PRFBM_Done
@@ -3198,6 +3196,7 @@ POUND           DC.B    '#',0
 MONEY           DC.B    '$',0
 SPACE           DC.B    ' ',0
 COMMA           DC.B    ',',0
+SLASH           DC.B    '/',0
 
 * Number Table 
 ZERO            DC.B    '0',0
