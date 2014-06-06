@@ -392,7 +392,7 @@ Func_PrintSizeStandard
         MOVE.W  (A5),D1         * copy current "PC" into D1
         MOVE.L  #6,D2           * get bit 6
         MOVE.L  #2,D3           * to bit 7
-        JSR     Func_GetBits    * store result in D0
+        JSR     GetBits    * store result in D0
 
         * print the size string
         MOVE.L  D0,D1           * move size bits into D1
@@ -469,7 +469,7 @@ Func_JumpOpcodeTable
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #12,D2      * starting at bit 12
         MOVE.L  #4,D3       * get 4 bits
-        JSR     Func_GetBits     * (returns result in D0)
+        JSR     GetBits     * (returns result in D0)
 
         * multiply nibble by 4 to get longword offset
         * into the func table (DC.L)
@@ -484,29 +484,29 @@ Func_JumpOpcodeTable
 
 
 *****************************************************************************
-* int Func_GetBits(value, lowerBit, numBits)
-* D0               D1     D2        D3
+* int GetBits(value, lowerBit, numBits)
+* D0          D1     D2        D3
 * Returns the bits from value[lowerBit] to value[lowerBit + numBits]
 *
-* ex. Func_GetBits( 0000111101100111 , LSB = 3 , length = 5 )
+* ex.      GetBits( 0000111101100111 , LSB = 3 , length = 5 )
 *   extracts:       FEDCBA98^^^^^210
 *   so D0 will be:          01100
 *****************************************************************************
-Func_GetBits
-        MOVEM.L  D4,-(SP)    * save D4 so it can be used by the function
-        MOVE.L  D1,D0        * store initial value in return register
+GetBits
+    MOVEM.L  D1-D4,-(SP)    * save D4 so it can be used by the function
+    MOVE.L  D1,D0       * store initial value in return register
 
-        * bit mask set up
-        CLR     D4
-        MOVE.L  #1,D4
-        LSL     D3,D4        * calculate 2^n (n = number of bits)
-        SUB     #1,D4        * create the bit mask with 2^n-1
+    * bit mask set up
+    CLR     D4
+    MOVE.L  #1,D4
+    LSL     D3,D4       * calculate 2^n (n = number of bits)
+    SUB     #1,D4       * create the bit mask with 2^n-1
 
-        LSR     D2,D0        * shift right, discarding lower bits
-        AND.L   D4,D0        * mask out higher bits
+    LSR.L   D2,D0       * shift right, discarding lower bits
+    AND.L   D4,D0       * mask out higher bits
 
-        MOVEM.L  (SP)+,D4    * restore used register(s)
-        RTS
+    MOVEM.L  (SP)+,D1-D4    * restore used register(s)
+    RTS
 
 
 *****************************************************************************
@@ -521,7 +521,7 @@ Func_MOVE_MOVEA_L
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #6,D2       * get bit 6
         MOVE.L  #3,D3       * to bit 8
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 1)
         CMP     #1,D0
@@ -553,7 +553,7 @@ Func_MOVE_MOVEA_W
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #6,D2       * get bit 6
         MOVE.L  #3,D3       * to bit 8
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 1)
         CMP     #1,D0
@@ -586,7 +586,7 @@ Func_ADD_ADDA
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #6,D2       * get bit 6
         MOVE.L  #2,D3       * to bit 7
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 3)
         CMP     #3,D0
@@ -618,7 +618,7 @@ Func_OR_DIVS
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #6,D2       * get bit 6
         MOVE.L  #2,D3       * to bit 7
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 3)
         CMP     #3,D0
@@ -678,7 +678,7 @@ Func_Bcc_BRA
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #8,D2       * get bit 8
         MOVE.L  #4,D3       * to bit 11
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 0)
         * then the instruction is BRA
@@ -740,7 +740,7 @@ Func_BCLR_ORI_CMPI
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #7,D2       * get bit 7
         MOVE.L  #2,D3       * to bit 8
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 3)
         * then the instruction is BCLR
@@ -753,7 +753,7 @@ Use_10_11_Func_BCLR_ORI_CMPI
         * else we need to check bits 10 and 11
         MOVE.L  #8,D2      * get bit 8
         MOVE.L  #4,D3       * to bit 11
-        JSR     Func_GetBits   * store result in D0
+        JSR     GetBits   * store result in D0
 
         * if (D0 is 8)
         * then the instruction is BCLR
@@ -800,7 +800,7 @@ Func_MISC
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #6,D2       * get bit 6
         MOVE.L  #3,D3       * to bit 8
-        JSR     Func_GetBits     * store result in D0
+        JSR     GetBits     * store result in D0
 
         * if (D0 contains 7)
         * then the instruction is LEA
@@ -813,7 +813,7 @@ Check_RTS_JSR_Func_MISC
         * else we need to check bits 6 thru 11 for JSR or RTS
         MOVE.L  #6,D2      * get bit 6
         MOVE.L  #6,D3      * to bit 11
-        JSR     Func_GetBits   * store result in D0
+        JSR     GetBits   * store result in D0
 
         * if (D0 is 58)
         * then the instruction is JSR
@@ -879,7 +879,7 @@ Func_SHIFT_ROTATE
         MOVE.W  (A5),D1     * copy current "PC" into D1
         MOVE.L  #6,D2       * get bit 6
         MOVE.L  #2,D3       * to bit 7
-        JSR     Func_GetBits  * store result in D0
+        JSR     GetBits  * store result in D0
 
         * if (D0 contains 3)
         CMP     #3,D0
@@ -897,7 +897,7 @@ Use_9_10_Func_SHIFT_ROTATE
         MOVE.L  #2,D3
 
 Determine_Type_Func_SHIFT_ROTATE
-        JSR     Func_GetBits  * store result in D0
+        JSR     GetBits  * store result in D0
 
         * if (D0 contains 3)
         * it is ROx
@@ -1037,7 +1037,7 @@ Func_MOVEA_L
         * Gets and prints the <ea> parameter for MOVEA.L
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #1,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1051,7 +1051,7 @@ Func_MOVEA_L
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
@@ -1086,7 +1086,7 @@ Func_MOVE_L
         * Gets and prints the Source parameter for MOVE.L
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #1,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1100,7 +1100,7 @@ Func_MOVE_L
         MOVE.W  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableRegMode
 
@@ -1133,7 +1133,7 @@ Func_MOVEA_W
         * Gets and prints the <ea> parameter for MOVEA.L
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1147,7 +1147,7 @@ Func_MOVEA_W
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
@@ -1182,7 +1182,7 @@ Func_MOVE_W
         * Gets and prints the source parameter for MOVE.W
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1196,7 +1196,7 @@ Func_MOVE_W
         MOVE.W  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableRegMode
 
@@ -1230,7 +1230,7 @@ Func_MOVE_B
         * Gets and prints the source parameter for MOVE.B
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1244,7 +1244,7 @@ Func_MOVE_B
         MOVE.W  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableRegMode
 
@@ -1281,7 +1281,7 @@ Func_ADD
         * determin data first or second
         MOVE.L  #8,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         CMP.B   #0,D0
         BNE     Func_ADD_DataFirst
@@ -1293,7 +1293,7 @@ Func_ADD_DataFirst
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1306,7 +1306,7 @@ Func_ADD_DataFirst
         MOVE.W  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1318,7 +1318,7 @@ Func_ADD_DataSecond
         MOVE.W  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1332,7 +1332,7 @@ Func_ADD_DataSecond
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     ADD_Done
@@ -1361,7 +1361,7 @@ Func_ADDA
         * determin data first or second
         MOVE.L  #8,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         CMP.B   #0,D0
         BNE     Func_ADDA_L
@@ -1382,7 +1382,7 @@ Func_ADDA_W
         * Gets and prints the <ea> parameter for ADDA.W
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1396,7 +1396,7 @@ Func_ADDA_W
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
@@ -1417,7 +1417,7 @@ Func_ADDA_L
         * Gets and prints the <ea> parameter for ADDA.L
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #1,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1431,7 +1431,7 @@ Func_ADDA_L
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
@@ -1469,7 +1469,7 @@ Func_OR
         MOVE.L  D4,D1
         MOVE.L  #8,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         CMP.B   #0,D0
         BNE     Func_OR_DataFirst
@@ -1481,7 +1481,7 @@ Func_OR_DataFirst
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1494,7 +1494,7 @@ Func_OR_DataFirst
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1507,7 +1507,7 @@ Func_OR_DataSecond
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -1521,7 +1521,7 @@ Func_OR_DataSecond
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     OR_Done
@@ -1551,7 +1551,7 @@ Func_BCLR
         * Get destination mode
         MOVE.L  #3,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         CMP.B   #0,D0
         BEQ     BCLR_DataDestination
@@ -1577,7 +1577,7 @@ BCLR_SourceBranch
         MOVE.L  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.B   #2,D0
         BEQ     BCLR_ImmediateSource
         CMP.B   #6,D0
@@ -1589,7 +1589,7 @@ BCLR_DataSource
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     BCLR_DONE
@@ -1607,7 +1607,7 @@ BCLR_DONE
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1644,7 +1644,7 @@ Func_ORI
         MOVE.L  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #2,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.L   #0,D0
         BEQ     PRINT_LONGWORD
         CMP.L   #1,D0
@@ -1665,7 +1665,7 @@ ORI_DONE
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1702,7 +1702,7 @@ Func_CMPI
         MOVE.L  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #2,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.L   #0,D0
         BEQ     PRINT_LONGWORD_CMPI
         CMP.L   #1,D0
@@ -1723,7 +1723,7 @@ CMPI_DONE
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1761,7 +1761,7 @@ Func_NEG
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1812,7 +1812,7 @@ Func_JSR
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1845,7 +1845,7 @@ Func_LEA
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -1856,7 +1856,7 @@ Func_LEA
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         ADD.B   #%100,D0
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
@@ -1916,7 +1916,7 @@ Func_SUBQ
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         * If D0 == 0 change to 8
         CMP.L   #0,D0
@@ -1939,7 +1939,7 @@ SUBQ_CONTINUE
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
@@ -2082,7 +2082,7 @@ Func_SUB
         * determin data first or second
         MOVE.L  #8,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         CMP.B   #0,D0
         BNE     Func_SUB_DataFirst
@@ -2094,7 +2094,7 @@ Func_SUB_DataFirst
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2107,7 +2107,7 @@ Func_SUB_DataFirst
         MOVE.W  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -2120,7 +2120,7 @@ Func_SUB_DataSecond
         MOVE.W  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
@@ -2134,7 +2134,7 @@ Func_SUB_DataSecond
         MOVE.W  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     SUB_Done
@@ -2172,7 +2172,7 @@ Func_CMP
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2183,7 +2183,7 @@ Func_CMP
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2220,7 +2220,7 @@ Func_EOR
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2231,7 +2231,7 @@ Func_EOR
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2265,7 +2265,7 @@ Func_MULS_W
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2276,7 +2276,7 @@ Func_MULS_W
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2310,7 +2310,7 @@ Func_DIVS_W
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2321,7 +2321,7 @@ Func_DIVS_W
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2355,7 +2355,7 @@ Func_MULS_L
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2373,7 +2373,7 @@ Func_MULS_L
         * Get size bit
         MOVE.L  #10,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.L   #0,D0
         BEQ     MULS_ONE_DESTINATION
         BRA     MULS_TWO_DESTINATIONS
@@ -2383,7 +2383,7 @@ MULS_ONE_DESTINATION
         MOVE.L  D4,D1
         MOVE.L  #12,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     MULS_DONE
@@ -2393,7 +2393,7 @@ MULS_TWO_DESTINATIONS
         MOVE.L  D4,D1
         MOVE.L  #12,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2405,7 +2405,7 @@ MULS_TWO_DESTINATIONS
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     MULS_DONE
@@ -2441,7 +2441,7 @@ Func_DIVS_L
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2459,7 +2459,7 @@ Func_DIVS_L
         * Get size bit
         MOVE.L  #10,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.L   #0,D0
         BEQ     DIVS_ONE_DESTINATION
         BRA     DIVS_TWO_DESTINATIONS
@@ -2469,7 +2469,7 @@ DIVS_ONE_DESTINATION
         MOVE.L  D4,D1
         MOVE.L  #12,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     DIVS_DONE
@@ -2479,7 +2479,7 @@ DIVS_TWO_DESTINATIONS
         MOVE.L  D4,D1
         MOVE.L  #12,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2491,7 +2491,7 @@ DIVS_TWO_DESTINATIONS
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     DIVS_DONE
@@ -2784,7 +2784,7 @@ Func_PrintHexLoop
         BRA         HexLoop
 
 HexLoop
-        JSR         Func_GetBits
+        JSR         GetBits
         CLR         D1
         MOVE.B      D0,D1
         JSR         Func_Print_Number
@@ -2805,7 +2805,7 @@ Func_PrintHex
         MOVEM.L     D1-D3,-(SP)
         MULS.W      #4,D2
         MOVE.B      #4,D3
-        JSR         Func_GetBits
+        JSR         GetBits
         MOVE.B      D0,D1
         JSR         AddStringToStringBuffer
         MOVEM.L     (SP)+,D1-D3
@@ -2878,12 +2878,14 @@ Func_Print_Number
         MOVEM.L     (SP)+,D0-D1
         RTS
 
+
 *****************************************************************************
 * Func_Junk()
 * Dummy Return
 *****************************************************************************
 Func_Junk
         RTS
+
 
 *****************************************************************************
 * void PrintStringBuffer()
@@ -2909,6 +2911,7 @@ PSB_Done
     MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
     RTS
 
+
 *****************************************************************************
 * void InvalidateStringBuffer()
 * Args: none
@@ -2918,6 +2921,7 @@ InvalidateStringBuffer
     MOVE    #kStringBuffer,A0
     MOVE.L  #$0,(A0)       * set the valid bit to false
     RTS
+
 
 *****************************************************************************
 * void ResetStringBuffer()
@@ -2943,6 +2947,7 @@ RSB_While
 RSB_EndWhile
     MOVEM.L (SP)+, D0/A0 * Restore used registers
     RTS
+
 
 *****************************************************************************
 * void AddWordToStringBuffer(word, numChars)
@@ -2991,6 +2996,7 @@ AWTS_EndWhile
     MOVEM.L (SP)+, D0-D7/A0-A1 * Restore used registers
     RTS
 
+
 *****************************************************************************
 * PrintNewline()
 * Args: None
@@ -3002,6 +3008,7 @@ PrintNewline
     JSR PrintMessage
     MOVEM.L (SP)+, D0-D1 * Restore used registers
     RTS
+
 
 *****************************************************************************
 * PrintSpace()
@@ -3015,6 +3022,7 @@ PrintSpace
     JSR     AddWordToStringBuffer
     MOVEM.L (SP)+, D1-D2 * Restore used registers
     RTS
+
 
 *****************************************************************************
 * void PrintHexadecimal(number, size)
@@ -3066,30 +3074,6 @@ RLPH_Done
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
 
-*****************************************************************************
-* int GetBits(value, lowerBit, numBits)
-* D0          D1     D2        D3
-* Returns the bits from value[lowerBit] to value[lowerBit + numBits]
-*
-* ex. Func_GetBits( 0000111101100111 , LSB = 3 , length = 5 )
-*   extracts:       FEDCBA98^^^^^210
-*   so D0 will be:          01100
-*****************************************************************************
-GetBits
-    MOVEM.L  D1-D4,-(SP)    * save D4 so it can be used by the function
-    MOVE.L  D1,D0       * store initial value in return register
-
-    * bit mask set up
-    CLR     D4
-    MOVE.L  #1,D4
-    LSL     D3,D4       * calculate 2^n (n = number of bits)
-    SUB     #1,D4       * create the bit mask with 2^n-1
-
-    LSR.L   D2,D0       * shift right, discarding lower bits
-    AND.L   D4,D0       * mask out higher bits
-
-    MOVEM.L  (SP)+,D1-D4    * restore used register(s)
-    RTS
 
 *****************************************************************************
 * void PrintMessage(String* message)
@@ -3104,6 +3088,7 @@ PrintMessage        * void PrintMessage(String* message)
     TRAP    #15
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
+
 
 *****************************************************************************
 * Func_PrintLabel()
@@ -3124,7 +3109,7 @@ Func_PrintLabel
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
 
         * If displacement == 00
         CMP.L   #0,D0
@@ -3179,7 +3164,7 @@ Func_PrintRotate
         MOVE.L  D4,D1
         MOVE.L  #6,D2
         MOVE.L  #2,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.B   #3,D0
         BEQ     ROTATE_MEMORY
 
@@ -3187,7 +3172,7 @@ Func_PrintRotate
         MOVE.L  D4,D1
         MOVE.L  #5,D2
         MOVE.L  #1,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         CMP.B   #0,D0
         BEQ     ROTATE_DATA
         BRA     ROTATE_REG
@@ -3200,7 +3185,7 @@ ROTATE_DATA
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_Print_Number
         BRA     ROTATE_CONTINUE
@@ -3209,7 +3194,7 @@ ROTATE_REG
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     ROTATE_CONTINUE
@@ -3218,7 +3203,7 @@ ROTATE_MEMORY
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -3228,13 +3213,14 @@ ROTATE_CONTINUE
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #3,D3
-        JSR     Func_GetBits
+        JSR     GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
 ROTATE_DONE
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
+
 
 
 
