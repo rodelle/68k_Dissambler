@@ -3223,6 +3223,119 @@ ROTATE_DONE
         RTS
 
 
+*****************************************************************************
+* CheckAn(3-bit mode, 3-bit reg)
+*         D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAn
+        MOVEM.L D1-D2,-(SP)
+        CMP.B   #%001,D1
+        BNE     CheckAnDone
+        * jump to invalidate function
+CheckAnDone     
+        MOVEM.L (SP)+,D1-D2
+        RTS
+
+
+*****************************************************************************
+* CheckDn(3-bit mode, 3-bit reg)
+*         D1          D2
+* Dummy Return
+*****************************************************************************
+CheckDn
+        MOVEM.L D1-D2,-(SP)
+        CMP.B   #%000,D1
+        BNE     CheckDnDone
+        * jump to invalidate function
+CheckDnDone     
+        MOVEM.L (SP)+,D1-D2
+        RTS
+
+
+*****************************************************************************
+* CheckData(3-bit mode, 3-bit reg)
+*           D1          D2
+* Dummy Return
+*****************************************************************************
+CheckData
+        MOVEM.L D1-D2,-(SP)
+        CMP.B   #%111,D1
+        BNE     CheckDataReg
+        BRA     CheckDataDone
+CheckDataReg
+        CMP.B   #%100,D2
+        * jump to invalidate function
+CheckDataDone     
+        MOVEM.L (SP)+,D1-D2
+        RTS
+
+
+*****************************************************************************
+* CheckAnp(3-bit mode, 3-bit reg)
+*          D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnp
+        MOVEM.L D1-D2,-(SP)
+        CMP.B   #%011,D1
+        BNE     CheckAnpDone
+        * jump to invalidate function
+CheckAnpDone     
+        MOVEM.L (SP)+,D1-D2
+        RTS
+
+
+*****************************************************************************
+* CheckAnm(3-bit mode, 3-bit reg)
+*         D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnm
+        MOVEM.L D1-D2,-(SP)
+        CMP.B   #%100,D1
+        BNE     CheckAnmDone
+        * jump to invalidate function
+CheckAnmDone     
+        MOVEM.L (SP)+,D1-D2
+        RTS
+
+
+*****************************************************************************
+* CheckAnData(3-bit mode, 3-bit reg)
+*         D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnData
+        MOVEM.L D1-D2,-(SP)
+        JSR     CheckAn
+        JSR     CheckData
+        RTS
+
+
+*****************************************************************************
+* CheckAnDnData(3-bit mode, 3-bit reg)
+*         D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnDnData
+        MOVEM.L D1-D2,-(SP)
+        JSR     CheckAnData
+        JSR     CheckDn
+        RTS
+        
+        
+*****************************************************************************
+* CheckAnDnDataAnpAnm(3-bit mode, 3-bit reg)
+*         D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnDnDataAnpAnm
+        MOVEM.L D1-D2,-(SP)
+        JSR     CheckAnDnData
+        JSR     CheckAnm
+        JSR     CheckAnp
+        RTS        
 
 
 *****************************************************************************
@@ -3395,6 +3508,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
