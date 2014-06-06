@@ -7,6 +7,11 @@
 
 Start   ORG     $7FC0    ; first instruction of program
 
+        **** Generic Invalid Opcodes ****
+        DC.W    %0111000000000000      * bad op (based on first 4 bits)
+        DC.W    %1010000000000000      * bad op (based on first 4 bits)
+        DC.W    %1111000000000000      * bad op (based on first 4 bits)
+
         **** MOVEA.W ****
         MOVEA.W D4,A4
         MOVEA.W #$1C44,A5
@@ -80,8 +85,7 @@ Start   ORG     $7FC0    ; first instruction of program
         * ADD.L   #$32423F,D0 * assembles to addi
 
         **** Invalid ADD ****
-        DC.W    %1101011011101010 * opmode field invalid
-        DC.W    %1101010111010101 * opmode field invalid
+        DC.W    %1101 011 011 101 010 * opmode field invalid
         
         **** ADDA.W ****
         ADDA.W  (A5),A5
@@ -107,8 +111,8 @@ Start   ORG     $7FC0    ; first instruction of program
         SUB.L   D1,$424242
 
         **** Invalid SUB ****
-        DC.W    %1001011011101010 * opmode field invalid
-        DC.W    %1001010111010101 * opmode field invalid
+        DC.W    %1001011011101010 *1001 011 011 101 010 - opmode field invalid
+        DC.W    %1001010111010101 *1001 010 111 010 101 - opmode field invalid
 
         **** SUBQ.B ****
         SUBQ.B  #$4,(A1)
@@ -132,6 +136,17 @@ Start   ORG     $7FC0    ; first instruction of program
         BGE     bge_label
         BLT     blt_label
         BRA     bra_label
+
+        **** Invalid Bcc ****        
+        DC.W    %0110111100000000
+        DC.W    %0110000100000000
+        DC.W    %0110001000000000
+        DC.W    %0110001100000000
+        DC.W    %0110010000000000
+        
+        **** JSR/RTS ****
+        JSR     jsr_label
+        RTS
 
         **** OR.B ****
         OR.B    (A4),D4
@@ -201,52 +216,121 @@ Start   ORG     $7FC0    ; first instruction of program
         DC.W    %0000110010001001 * An can't be destination for CMPI        
 
         **** EOR.B ****
+        EOR.B   D3,D5
+        EOR.B   D2,$1533
+        EOR.B   D6,$00014533
         
         **** EOR.W ****
+        EOR.W   D6,(A3)+
+        EOR.W   D4,-(A3)
         
         **** EOR.L ****
+        EOR.L   D2,$42
+        EOR.L   D6,D6
 
         **** NEG.B ****
+        NEG.B   D4
+        NEG.B   $524
+        NEG.B   (A1)
         
         **** NEG.W ****
+        NEG.W   (A2)
+        NEG.W   (A4)+
+        NEG.W   $0001FACE
         
         **** NEG.L ****
+        NEG.L   $1234ABCD
+        NEG.L   D7
+        NEG.L   -(A3)
         
         **** BCLR.B ****
+        BCLR.B  D4,$4532
+        BCLR.B  D2,(A6)
+        BCLR.B  D5,(A2)+
+        BCLR.B  #$3,$4532
+        BCLR.B  #$7,(A3)
         
         **** BCLR.L ****
-
-        **** JSR ****
+        BCLR.L  D4,D4
+        BCLR.L  D7,D6
+        BCLR.L  #$AF56,D3
 
         **** RTS ****        
+        RTS
+        RTS
+        RTS
         
-*        ro*
-*        as*
-*        ls*
-*        movem
+        **** ROL.B ****
+        ROL.B   #$3,D3
+        ROL.B   D3,D4
         
-        
-        **** LEA ****
-        LEA     12(A5),A5
-        
-        
-        **** Error opcodes ****
-        
+        **** ROL.B ****        
+        ROL.W   D6,D1
+        ROL.W   #$7,D3
 
+        **** ROL.B ****        
+        ROL.L   #$2,D6
+        ROL.L   D4,D4
+        
+        **** ROL ****
+        ROL     (A4)
+        ROL     $00045314
+        
+        **** ROR.B ****
+        ROR.B   #$8,D2
+        ROR.B   D3,D5
+        
+        **** ROR.B ****        
+        ROR.W   D6,D6
+        ROR.W   #$4,D3
 
+        **** ROR.B ****        
+        ROR.L   #$2,D6
+        ROR.L   D1,D5
+        
+        **** ROR ****
+        ROR     (A5)+
+        ROR     $00015311
 
+        **** ASL.B ****
+        ASL.B   #$3,D3
+        ASL.B   D3,D4
+        
+        **** ASL.B ****        
+        ASL.W   D6,D1
+        ASL.W   #$7,D3
 
-        DC.W    %0111000000000000      * bad op (based on first 4 bits)
-        DC.W    %1010000000000000      * bad op (based on first 4 bits)
-        DC.W    %1111000000000000      * bad op (based on first 4 bits)
-        DC.W    %0110111100000000      * bad op (variation of Bcc)
-        DC.W    %0110000100000000      * bad op (variation of Bcc)
-        DC.W    %0110001000000000      * bad op (variation of Bcc)
-        DC.W    %0110001100000000      * bad op (variation of Bcc)
-        DC.W    %0110010000000000      * bad op (variation of Bcc)
+        **** ASL.B ****        
+        ASL.L   #$2,D6
+        ASL.L   D4,D4
+        
+        **** ASL ****
+        ASL     (A4)
+        ASL     $00045314
+        
+        **** ASR.B ****
+        ASR.B   #$8,D2
+        ASR.B   D3,D5
+        
+        **** ASR.B ****        
+        ASR.W   D6,D6
+        ASR.W   #$4,D3
+
+        **** ASR.B ****        
+        ASR.L   #$2,D6
+        ASR.L   D1,D5
+        
+        **** ASR ****
+        ASR     (A5)+
+        ASR     $00015311
+
+        **** Invalid AS/LS/RO ****       
         DC.W    %1110000000010000      * bad op (variation of RO*/AS*/LS*)
         DC.W    %1110010011000000      * bad op (variation of RO*/AS*/LS*)
-
+ 
+*       TODO - movem
+        
+* separate the labels by a word
 bcs_label
         DC.W    0
 bvc_label
@@ -261,7 +345,6 @@ jsr_label
         DC.W    0
                 
         END     Start       ; last line of source
-
 
 
 
