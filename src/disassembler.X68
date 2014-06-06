@@ -31,8 +31,8 @@ NoPreferenceDisassembler
 NPD_DoWhile
     * JSR     GetStartEndAddress  * Grab ending and starting address from user
     
-    MOVE.L  #firstopcode,A5
-    MOVE.L  #nomoreopcodes,A6
+    MOVEA.L  #$7FC0,A5
+    MOVEA.L  #$80D0,A6
     
     JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                 * parsing each opcode
@@ -1441,18 +1441,19 @@ Func_OR
         JSR     Func_Print
         
         * determin data first or second
+        MOVE.L  D4,D1        
         MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     Func_GetBits
         
         CMP.B   #0,D0
         BNE     Func_OR_DataFirst
-        BEQ     Func_OR_DataSecond
+        BRA     Func_OR_DataSecond
         
 Func_OR_DataFirst
         * Print Data Register
         CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     Func_GetBits
@@ -1465,7 +1466,7 @@ Func_OR_DataFirst
         
         * Print destination effective address
         CLR     D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
@@ -1478,7 +1479,7 @@ Func_OR_DataFirst
 Func_OR_DataSecond
         * Print destination effective address
         CLR     D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
@@ -1492,7 +1493,7 @@ Func_OR_DataSecond
         
         * Print Data Register
         CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     Func_GetBits
@@ -1914,6 +1915,8 @@ SUBQ_CONTINUE
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
+        
+        MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
@@ -3307,42 +3310,42 @@ MOVE_W_MSG      DC.B    'MOVE.W',0
 MOVEA_W_MSG     DC.B    'MOVEA.W',0
 MOVE_L_MSG      DC.B    'MOVE.L',0
 MOVEA_L_MSG     DC.B    'MOVEA.L',0
-ADD_MSG         DC.B    'ADD.',0
-ADDA_MSG        DC.B    'ADDA.',0
-OR_MSG          DC.B    'OR.',0
+ADD_MSG         DC.B    'ADD',0
+ADDA_MSG        DC.B    'ADDA',0
+OR_MSG          DC.B    'OR',0
 DIVS_W_MSG      DC.B    'DIVS.W',0
 MULS_W_MSG      DC.B    'MULS.W',0
 DIVS_L_MSG      DC.B    'DIVS.L',0
 MULS_L_MSG      DC.B    'MULS.L',0
-SUB_MSG         DC.B    'SUB.',0
-SUBQ_MSG        DC.B    'SUBQ.',0
-CMP_MSG         DC.B    'CMP.',0
-EOR_MSG         DC.B    'EOR.',0
+SUB_MSG         DC.B    'SUB',0
+SUBQ_MSG        DC.B    'SUBQ',0
+CMP_MSG         DC.B    'CMP',0
+EOR_MSG         DC.B    'EOR',0
 BCS_MSG         DC.B    'BCS',0
 BVC_MSG         DC.B    'BVC',0
 BGE_MSG         DC.B    'BGE',0
 BLT_MSG         DC.B    'BLT',0
 BRA_MSG         DC.B    'BRA',0
-LSR_MSG         DC.B    'LSR.',0
-LSL_MSG         DC.B    'LSL.',0
-ASR_MSG         DC.B    'ASR.',0
-ASL_MSG         DC.B    'ASL.',0
-ROR_MSG         DC.B    'ROR.',0
-ROL_MSG         DC.B    'ROL.',0
-BCLR_MSG        DC.B    'BCLR.',0
-ORI_MSG         DC.B    'ORI.',0
-CMPI_MSG        DC.B    'CMPI.',0
+LSR_MSG         DC.B    'LSR',0
+LSL_MSG         DC.B    'LSL',0
+ASR_MSG         DC.B    'ASR',0
+ASL_MSG         DC.B    'ASL',0
+ROR_MSG         DC.B    'ROR',0
+ROL_MSG         DC.B    'ROL',0
+BCLR_MSG        DC.B    'BCLR',0
+ORI_MSG         DC.B    'ORI',0
+CMPI_MSG        DC.B    'CMPI',0
 JSR_MSG         DC.B    'JSR',0
 LEA_MSG         DC.B    'LEA',0
-NEG_MSG         DC.B    'NEG.',0
-MOVEM_MSG       DC.B    'MOVEM.',0
+NEG_MSG         DC.B    'NEG',0
+MOVEM_MSG       DC.B    'MOVEM',0
 RTS_MSG         DC.B    'RTS',0
 
 * data size types
-B_MSG           DC.B    'B',0
-W_MSG           DC.B    'W',0
-L_MSG           DC.B    'L',0
-Q_MSG           DC.B    '?',0
+B_MSG           DC.B    '.B',0
+W_MSG           DC.B    '.W',0
+L_MSG           DC.B    '.L',0
+Q_MSG           DC.B    0
 
 * Address print outs
 DATA_REG        DC.B    'D',0
@@ -3434,6 +3437,8 @@ FirstOpcode     DC.W     %0001000000000000      * MOVE.B
 NoMoreOpcodes   DC.W     %1111111111111111
 
     END         START
+
+
 
 
 
