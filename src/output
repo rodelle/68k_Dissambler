@@ -1,7 +1,5 @@
-EASy68K output log file: 6/6/2014 10:48:49 AM
+EASy68K output log file: 6/6/2014 11:25:30 AM
 
-
-***** Reset Program Pressed *****
 68k_Disassemlber
 ------------------
 MOVEA.W D4,A4
@@ -55,11 +53,11 @@ ADDA.L #$0000F452,A6
 ADDA.L $00234546,A5
 ADDA.L (A4)+,A5
 SUB.B $007CF000,D1
-SUB.B (A4),D6
+SUB.B D6,(A4)
 SUB.W (A1)+,D4
-SUB.W (A4),D4
+SUB.W D4,(A4)
 SUB.L (A4),D2
-SUB.L $00424242,D1
+SUB.L D1,$00424242
 SUBQ.B #4,(A1)
 SUBQ.B #8,D7
 SUBQ.W #6,$4000
