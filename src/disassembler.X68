@@ -30,29 +30,29 @@
 START    ORG    $1000
 
 NoPreferenceDisassembler
-    MOVE    #START_MSG,D1
-    JSR     PrintMessage
+        MOVE    #START_MSG,D1
+        JSR     PrintMessage
 
 NPD_DoWhile
-    * JSR     GetStartEndAddress  * Grab ending and starting address from user
+        * JSR     GetStartEndAddress  * Grab ending and starting address from user
 
-    MOVEA.L  #$7FC0,A5
-    MOVEA.L  #$80D0,A6
+        MOVEA.L  #$7FC0,A5
+        MOVEA.L  #$80D0,A6
 
-    JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
-                                * parsing each opcode
-    JSR     PromptForReinput    * Ask the user if they want to dissamble another program
+        JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
+                                    * parsing each opcode
+        JSR     PromptForReinput    * Ask the user if they want to dissamble another program
 
-    JSR     PrintNewline        * prints newline, does not modify D0
-    CMP     #0,D0
-    BEQ     NPD_DoWhile         * User responded they wish to restart
+        JSR     PrintNewline        * prints newline, does not modify D0
+        CMP     #0,D0
+        BEQ     NPD_DoWhile         * User responded they wish to restart
 
 NPD_ProgramDone
-    MOVE    #kGoodbyeMessage,D1
-    JSR     PrintMessage
+        MOVE    #kGoodbyeMessage,D1
+        JSR     PrintMessage
 
-    MOVE.B  #9,D0               * quit program
-    TRAP    #15
+        MOVE.B  #9,D0               * quit program
+        TRAP    #15
 
 DisassembleLoop
         CMP.L   A5,A6   * compare starting address to ending address
@@ -147,30 +147,30 @@ AddressTable
 *     "Would you like to restart the program (y/n)?" n => D0 = 1
 *****************************************************************************
 PromptForReinput
-    MOVEM.L D1-D2, -(SP) * Save used registers
-    MOVE.L #kRestartPrompt,D1
-    JSR PrintMessage
+        MOVEM.L D1-D2, -(SP) * Save used registers
+        MOVE.L #kRestartPrompt,D1
+        JSR PrintMessage
 
-    MOVE.B  #5,D0 * Reads letter from the user into D1
-    TRAP    #15
+        MOVE.B  #5,D0 * Reads letter from the user into D1
+        TRAP    #15
 
-    MOVE.B  D1,D2
-    SUB.B   #121,D2 * compare to 'y'
-    BEQ     PFRRL_ReturnTrue
+        MOVE.B  D1,D2
+        SUB.B   #121,D2 * compare to 'y'
+        BEQ     PFRRL_ReturnTrue
 
-    MOVE.B  D1,D2
-    SUB.B   #89,D1 * compare to 'Y'
-    BEQ     PFRRL_ReturnTrue
+        MOVE.B  D1,D2
+        SUB.B   #89,D1 * compare to 'Y'
+        BEQ     PFRRL_ReturnTrue
 
-    MOVE    #1,D0  * user said no, return false
-    BRA     PFRRL_Done
+        MOVE    #1,D0  * user said no, return false
+        BRA     PFRRL_Done
 
 PFRRL_ReturnTrue
-    MOVE    #0,D0  * user said yes, return true
+        MOVE    #0,D0  * user said yes, return true
 
 PFRRL_Done
-    MOVEM.L (SP)+, D1-D2 * Restore used registers
-    RTS
+        MOVEM.L (SP)+, D1-D2 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -183,25 +183,25 @@ PFRRL_Done
 *     A5 = $00008000, A6 = $0000A000
 *****************************************************************************
 GetStartEndAddress
-    MOVE.L #kStartAddressPrompt,D1
-    JSR PrintMessage
+        MOVE.L #kStartAddressPrompt,D1
+        JSR PrintMessage
 
-    JSR GetFourHexBitsFromUser
-    MOVE.L #0,A5
-    MOVEA.L D0,A5
+        JSR GetFourHexBitsFromUser
+        MOVE.L #0,A5
+        MOVEA.L D0,A5
 
-    JSR PrintNewline
+        JSR PrintNewline
 
-    MOVE.L #kEndAddressPrompt,D1
-    JSR PrintMessage
+        MOVE.L #kEndAddressPrompt,D1
+        JSR PrintMessage
 
-    JSR GetFourHexBitsFromUser
-    MOVE.L #0,A6
-    MOVEA.L D0,A6
+        JSR GetFourHexBitsFromUser
+        MOVE.L #0,A6
+        MOVEA.L D0,A6
 
-    JSR PrintNewline
+        JSR PrintNewline
 
-    RTS
+        RTS
 
 
 *****************************************************************************
@@ -211,28 +211,28 @@ GetStartEndAddress
 * Ex. "AD12" returns $AD12
 *****************************************************************************
 GetFourHexBitsFromUser
-    MOVEM.L D2-D4, -(SP) * Save used registers
-    CLR     D2
-    CLR     D0
-    MOVE.B  #4,D3 * Read the next 4 letters entered by user
+        MOVEM.L D2-D4, -(SP) * Save used registers
+        CLR     D2
+        CLR     D0
+        MOVE.B  #4,D3 * Read the next 4 letters entered by user
 
 GFHBRL_DoWhile
-    MOVE.B  #5,D0 * Reads letter from the user into D1
-    TRAP    #15
+        MOVE.B  #5,D0 * Reads letter from the user into D1
+        TRAP    #15
 
-    JSR ValueFromHexadecimal * convert to decimal
+        JSR ValueFromHexadecimal * convert to decimal
 
-    LSL.L   #4,D2 * Create space for next hex bit
-    ADD.B   D0,D2 * Add the just read hex bit into the return value
+        LSL.L   #4,D2 * Create space for next hex bit
+        ADD.B   D0,D2 * Add the just read hex bit into the return value
 
-    SUB.B   #1,D3       * Read the next hex bit
-    BEQ GFHBRL_Done     * (while --D3 != 0)
-    BRA GFHBRL_DoWhile
+        SUB.B   #1,D3       * Read the next hex bit
+        BEQ GFHBRL_Done     * (while --D3 != 0)
+        BRA GFHBRL_DoWhile
 
 GFHBRL_Done
-    MOVE.L  D2,D0
-    MOVEM.L (SP)+, D2-D4 * Restore used registers
-    RTS
+        MOVE.L  D2,D0
+        MOVEM.L (SP)+, D2-D4 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -243,20 +243,20 @@ GFHBRL_Done
 *     ValueFromHexAscii(51) = $3 * The ascii value of '3' is 51
 *****************************************************************************
 ValueFromHexadecimal
-    MOVEM.L D1, -(SP)   * save registers
-    CMP.B   #58,D1      * Ascii Value '9' is at 57
-    BLT     VFHRL_ParseNumber
-    BRA     VFHRL_ParseLetter
+        MOVEM.L D1, -(SP)   * save registers
+        CMP.B   #58,D1      * Ascii Value '9' is at 57
+        BLT     VFHRL_ParseNumber
+        BRA     VFHRL_ParseLetter
 
 VFHRL_ParseNumber
-    SUB.B   #48,D1      * Ascii value '0' = 48
-    BRA VFHRL_Done
+        SUB.B   #48,D1      * Ascii value '0' = 48
+        BRA VFHRL_Done
 VFHRL_ParseLetter
-    SUB.B   #55,D1      * Ascii value 'A' = 65
+        SUB.B   #55,D1      * Ascii value 'A' = 65
 VFHRL_Done
-    MOVE.L  D1,D0
-    MOVEM.L (SP)+, D1   * restore used registers
-    RTS
+        MOVE.L  D1,D0
+        MOVEM.L (SP)+, D1   * restore used registers
+        RTS
 
 
 
@@ -267,31 +267,31 @@ VFHRL_Done
 * Currently leaves nothing in registers
 *****************************************************************************
 Func_JumpAddressTableModeReg
-            MOVEM.L D0-D6/A1,-(SP)
+        MOVEM.L D0-D6/A1,-(SP)
 
-            CLR     D6
-            MOVE.B  D2,D6
+        CLR     D6
+        MOVE.B  D2,D6
 
-            * preping D2/D3 for mode/register
-            CLR     D2
-            CLR     D3
-            MOVE.B  D1,D2   * Mode
-            MOVE.B  D1,D3   * Register
+        * preping D2/D3 for mode/register
+        CLR     D2
+        CLR     D3
+        MOVE.B  D1,D2   * Mode
+        MOVE.B  D1,D3   * Register
 
-            * get mode
-            MOVE    #3,D4   * Shift Mode down into LS 3 bits
-            LSR.B   D4,D2   * Mode
+        * get mode
+        MOVE    #3,D4   * Shift Mode down into LS 3 bits
+        LSR.B   D4,D2   * Mode
 
-            * get register
-            MOVE    #5,D4   * Shift non-register bits out
-            LSL.B   D4,D3   * And register into LS 3 bits
-            LSR.B   D4,D3   * Register
+        * get register
+        MOVE    #5,D4   * Shift non-register bits out
+        LSL.B   D4,D3   * And register into LS 3 bits
+        LSR.B   D4,D3   * Register
 
-            * check if Mode is 0 - 6
-            MOVE.B  #7,D5
-            SUB.B   D2,D5
-            BNE     NO_ADD_TOGETHER
-            BRA     ADD_TOGETHER
+        * check if Mode is 0 - 6
+        MOVE.B  #7,D5
+        SUB.B   D2,D5
+        BNE     NO_ADD_TOGETHER
+        BRA     ADD_TOGETHER
 
 *****************************************************************************
 * void JumpAddressTableRegMode(6bit Register-Mode, size)
@@ -300,64 +300,64 @@ Func_JumpAddressTableModeReg
 * Currently leaves nothing in registers
 *****************************************************************************
 Func_JumpAddressTableRegMode
-            MOVEM.L D0-D6/A1,-(SP)
+        MOVEM.L D0-D6/A1,-(SP)
 
-            CLR     D6
-            MOVE.B  D2,D6
+        CLR     D6
+        MOVE.B  D2,D6
 
-            * preping D2/D3 for mode/register
-            CLR     D2
-            CLR     D3
-            MOVE.B  D1,D2
-            MOVE.B  D1,D3
+        * preping D2/D3 for mode/register
+        CLR     D2
+        CLR     D3
+        MOVE.B  D1,D2
+        MOVE.B  D1,D3
 
-            * get mode
-            MOVE    #3,D4
-            LSR.B   D4,D3
+        * get mode
+        MOVE    #3,D4
+        LSR.B   D4,D3
 
-            * get register
-            MOVE    #5,D4
-            LSL.B   D4,D2
-            LSR.B   D4,D2
+        * get register
+        MOVE    #5,D4
+        LSL.B   D4,D2
+        LSR.B   D4,D2
 
-            * check if Mode is 0 - 6
-            MOVE.B  #7,D5
-            SUB.B   D2,D5
-            BNE     NO_ADD_TOGETHER
-            BRA     ADD_TOGETHER
+        * check if Mode is 0 - 6
+        MOVE.B  #7,D5
+        SUB.B   D2,D5
+        BNE     NO_ADD_TOGETHER
+        BRA     ADD_TOGETHER
 
 *****************************************************************************
 * Helpers for the JumpAddressTable Functions
 *****************************************************************************
 * get jump value for Word/Long Address OR data
 ADD_TOGETHER
-            LEA     AddressTable,A1
-            CLR     D0
-            ADD.W   D2,D0
-            ADD.W   D3,D0
-            MULS.W  #4,D0
-            ADD.W   A1,D0
-            MOVEA.W D0,A1
-            BRA     Done_Func_JumpAddressTable
+        LEA     AddressTable,A1
+        CLR     D0
+        ADD.W   D2,D0
+        ADD.W   D3,D0
+        MULS.W  #4,D0
+        ADD.W   A1,D0
+        MOVEA.W D0,A1
+        BRA     Done_Func_JumpAddressTable
 
 * get jump value for NON-Word/Long Address OR Data
 NO_ADD_TOGETHER
-            LEA     AddressTable,A1
-            CLR     D0
-            ADD.W   D2,D0
-            MULS.W  #4,D0
-            ADD.W   A1,D0
-            MOVEA.W D0,A1
-            BRA     Done_Func_JumpAddressTable
+        LEA     AddressTable,A1
+        CLR     D0
+        ADD.W   D2,D0
+        MULS.W  #4,D0
+        ADD.W   A1,D0
+        MOVEA.W D0,A1
+        BRA     Done_Func_JumpAddressTable
 
 Done_Func_JumpAddressTable
-            CLR     D2
-            MOVE.B  D6,D2
-            MOVE.L  D3,D1       * move register into D1
-            MOVEA.L (A1),A1
-            JSR     (A1)
-            MOVEM.L (SP)+,D0-D6/A1
-            RTS
+        CLR     D2
+        MOVE.B  D6,D2
+        MOVE.L  D3,D1       * move register into D1
+        MOVEA.L (A1),A1
+        JSR     (A1)
+        MOVEM.L (SP)+,D0-D6/A1
+        RTS
 
 *****************************************************************************
 * void Func_MoveInstructionPointer(number of words)
@@ -493,20 +493,20 @@ Func_JumpOpcodeTable
 *   so D0 will be:          01100
 *****************************************************************************
 GetBits
-    MOVEM.L  D1-D4,-(SP)    * save D4 so it can be used by the function
-    MOVE.L  D1,D0       * store initial value in return register
+        MOVEM.L  D1-D4,-(SP)    * save D4 so it can be used by the function
+        MOVE.L  D1,D0       * store initial value in return register
 
-    * bit mask set up
-    CLR     D4
-    MOVE.L  #1,D4
-    LSL     D3,D4       * calculate 2^n (n = number of bits)
-    SUB     #1,D4       * create the bit mask with 2^n-1
+        * bit mask set up
+        CLR     D4
+        MOVE.L  #1,D4
+        LSL     D3,D4       * calculate 2^n (n = number of bits)
+        SUB     #1,D4       * create the bit mask with 2^n-1
 
-    LSR.L   D2,D0       * shift right, discarding lower bits
-    AND.L   D4,D0       * mask out higher bits
+        LSR.L   D2,D0       * shift right, discarding lower bits
+        AND.L   D4,D0       * mask out higher bits
 
-    MOVEM.L  (SP)+,D1-D4    * restore used register(s)
-    RTS
+        MOVEM.L  (SP)+,D1-D4    * restore used register(s)
+        RTS
 
 
 *****************************************************************************
@@ -2895,21 +2895,21 @@ Func_Junk
 *   function.
 *****************************************************************************
 PrintStringBuffer
-    MOVEM.L D0-D2/A0, -(SP) * Save used registers
-    MOVE    #kStringBuffer,A0
-    MOVE.L  (A0)+,D1
-    AND.L   #$FF000000,D1
-    BEQ     PSB_PrintInvalid   * if valid bit is not set, do not print
-    MOVE.L  A0,D1
-    JSR     PrintMessage
-    BRA     PSB_Done
+        MOVEM.L D0-D2/A0, -(SP) * Save used registers
+        MOVE    #kStringBuffer,A0
+        MOVE.L  (A0)+,D1
+        AND.L   #$FF000000,D1
+        BEQ     PSB_PrintInvalid   * if valid bit is not set, do not print
+        MOVE.L  A0,D1
+        JSR     PrintMessage
+        BRA     PSB_Done
 PSB_PrintInvalid
-    MOVE.L  #kInvalidOpcode,D1
-    JSR     PrintMessage
+        MOVE.L  #kInvalidOpcode,D1
+        JSR     PrintMessage
 
 PSB_Done
-    MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
-    RTS
+        MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -2918,9 +2918,9 @@ PSB_Done
 * Invalidates the string buffer so that its contents will not be printed.
 *****************************************************************************
 InvalidateStringBuffer
-    MOVE    #kStringBuffer,A0
-    MOVE.L  #$0,(A0)       * set the valid bit to false
-    RTS
+        MOVE    #kStringBuffer,A0
+        MOVE.L  #$0,(A0)       * set the valid bit to false
+        RTS
 
 
 *****************************************************************************
@@ -2929,24 +2929,24 @@ InvalidateStringBuffer
 * Resets the contents of the string buffer and sets the valid bit to true
 *****************************************************************************
 ResetStringBuffer
-    MOVEM.L D0/A0, -(SP) * Save used registers
+        MOVEM.L D0/A0, -(SP) * Save used registers
 
-    MOVE.L  #kStringBufferSize,D0
-    MOVE    #kStringBuffer,A0
-    MOVE.L  #$01000000,(A0)+        * reset the string head
-    SUB     #4,D0
+        MOVE.L  #kStringBufferSize,D0
+        MOVE    #kStringBuffer,A0
+        MOVE.L  #$01000000,(A0)+        * reset the string head
+        SUB     #4,D0
 
 RSB_While
-    CMP     #0,D0
-    BEQ     RSB_EndWhile
+        CMP     #0,D0
+        BEQ     RSB_EndWhile
 
-    MOVE.L  #0,(A0)+                * zero out the string buffer
+        MOVE.L  #0,(A0)+                * zero out the string buffer
 
-    SUB     #4,D0
-    BRA     RSB_While
+        SUB     #4,D0
+        BRA     RSB_While
 RSB_EndWhile
-    MOVEM.L (SP)+, D0/A0 * Restore used registers
-    RTS
+        MOVEM.L (SP)+, D0/A0 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -2959,42 +2959,42 @@ RSB_EndWhile
 *                 , ( A 4
 *****************************************************************************
 AddWordToStringBuffer
-    MOVEM.L D0-D7/A0-A1, -(SP) * Save used registers
-    MOVE    D2,D4
+        MOVEM.L D0-D7/A0-A1, -(SP) * Save used registers
+        MOVE    D2,D4
 
-    MOVE    #kStringBuffer,A1
-    MOVE.L  (A1),D5     * D5 contains the string meta
-    AND.L   #$00FFFFFF,D5   * mask out the size of the string
-    MOVE    D4,D6       * save the amount of characters being added
+        MOVE    #kStringBuffer,A1
+        MOVE.L  (A1),D5     * D5 contains the string meta
+        AND.L   #$00FFFFFF,D5   * mask out the size of the string
+        MOVE    D4,D6       * save the amount of characters being added
 
-    MOVE    #kStringBuffer,A0
-    ADD     #4,A0       * ignore string head
-    ADD     D5,A0       * offset to the end of the string
+        MOVE    #kStringBuffer,A0
+        ADD     #4,A0       * ignore string head
+        ADD     D5,A0       * offset to the end of the string
 
 AWTS_While
-    CMP     #0,D4       * while (index != 0)
-    BEQ     AWTS_EndWhile
+        CMP     #0,D4       * while (index != 0)
+        BEQ     AWTS_EndWhile
 
-    MOVE    D4,D2
-    SUB     #1,D2
-    MULS    #8,D2       * get the bit number
-    MOVE    #8,D3       * read the byte
-    JSR     GetBits
+        MOVE    D4,D2
+        SUB     #1,D2
+        MULS    #8,D2       * get the bit number
+        MOVE    #8,D3       * read the byte
+        JSR     GetBits
 
-    MOVE.B  D0,(A0)+
+        MOVE.B  D0,(A0)+
 
-    SUB     #1,D4       * index --
-    BRA AWTS_While
+        SUB     #1,D4       * index --
+        BRA AWTS_While
 
 AWTS_EndWhile
 
-    MOVE    #kStringBuffer,A1     * retreive the string meta
-    MOVE.L  (A1),D5
-    ADD     D6,D5                 * add to the size of the string
+        MOVE    #kStringBuffer,A1     * retreive the string meta
+        MOVE.L  (A1),D5
+        ADD     D6,D5                 * add to the size of the string
 
-    MOVE.L  D5,(A1)               * save the new string size
-    MOVEM.L (SP)+, D0-D7/A0-A1 * Restore used registers
-    RTS
+        MOVE.L  D5,(A1)               * save the new string size
+        MOVEM.L (SP)+, D0-D7/A0-A1 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -3003,11 +3003,11 @@ AWTS_EndWhile
 * Prints a literal newline
 *****************************************************************************
 PrintNewline
-    MOVEM.L D0-D1, -(SP) * Save used registers
-    MOVE.L #kNewline,D1
-    JSR PrintMessage
-    MOVEM.L (SP)+, D0-D1 * Restore used registers
-    RTS
+        MOVEM.L D0-D1, -(SP) * Save used registers
+        MOVE.L #kNewline,D1
+        JSR PrintMessage
+        MOVEM.L (SP)+, D0-D1 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -3016,12 +3016,12 @@ PrintNewline
 * Prints a literal newline
 *****************************************************************************
 PrintSpace
-    MOVEM.L D1-D2, -(SP) * Save used registers
-    MOVE.L  #sSpace,D1
-    MOVE.B  #1,D2
-    JSR     AddWordToStringBuffer
-    MOVEM.L (SP)+, D1-D2 * Restore used registers
-    RTS
+        MOVEM.L D1-D2, -(SP) * Save used registers
+        MOVE.L  #sSpace,D1
+        MOVE.B  #1,D2
+        JSR     AddWordToStringBuffer
+        MOVEM.L (SP)+, D1-D2 * Restore used registers
+        RTS
 
 
 *****************************************************************************
@@ -3034,45 +3034,45 @@ PrintSpace
 *     PrintHexadecimal($0012, 2) prints   "12", no leading 0s
 *****************************************************************************
 PrintHexadecimal
-    MOVEM.L D1-D7, -(SP)    * save registers
-    MOVE.L  D1,D7   * save the register
-    MOVE    D2,D6   * counter
+        MOVEM.L D1-D7, -(SP)    * save registers
+        MOVE.L  D1,D7   * save the register
+        MOVE    D2,D6   * counter
 
-    SUB     #1,D2
-    ASL.L   #2,D2   * offset to the correct hex bit
-    MOVE    #4,D3   * pass the size of a hex bit to GetBits
+        SUB     #1,D2
+        ASL.L   #2,D2   * offset to the correct hex bit
+        MOVE    #4,D3   * pass the size of a hex bit to GetBits
 
 RLPH_DoWhile        * individually mask and print each hex bit
-    MOVE.L  D7,D1
-    JSR     GetBits
-    MOVE    D0,D1
-    CMP     #10,D1
-    BGE     RLPH_ToAsciiLetter  * if (hexBit >= $A)
-                                * else
-    ADD     #48,D1  * add 48 to convert number to ascii
-    BRA RLPH_Continue
+        MOVE.L  D7,D1
+        JSR     GetBits
+        MOVE    D0,D1
+        CMP     #10,D1
+        BGE     RLPH_ToAsciiLetter  * if (hexBit >= $A)
+                                    * else
+        ADD     #48,D1  * add 48 to convert number to ascii
+        BRA RLPH_Continue
 
 RLPH_ToAsciiLetter
-    ADD     #55,D1  * add 55 to convert $A to 'A'
-                    * ascii value of 'A' is 65, 65-10 = 55
+        ADD     #55,D1  * add 55 to convert $A to 'A'
+                        * ascii value of 'A' is 65, 65-10 = 55
 
-    BRA RLPH_Continue
+        BRA RLPH_Continue
 
 RLPH_Continue
-    MOVE    D2,D4   * save D2
-    MOVE    #1,D2   * adding 1 character to string buffer
-    JSR     AddWordToStringBuffer * print the letter
-    MOVE    D4,D2   * restore D2
+        MOVE    D2,D4   * save D2
+        MOVE    #1,D2   * adding 1 character to string buffer
+        JSR     AddWordToStringBuffer * print the letter
+        MOVE    D4,D2   * restore D2
 
-    SUB.L   #4,D2   * get the offset to the next hex bit
+        SUB.L   #4,D2   * get the offset to the next hex bit
 
-    SUB     #1,D6
-    BEQ RLPH_Done   * (while --D6 != 0)
-    BRA RLPH_DoWhile
+        SUB     #1,D6
+        BEQ RLPH_Done   * (while --D6 != 0)
+        BRA RLPH_DoWhile
 
 RLPH_Done
-    MOVEM.L (SP)+, D1-D7    * restore registers
-    RTS
+        MOVEM.L (SP)+, D1-D7    * restore registers
+        RTS
 
 
 *****************************************************************************
@@ -3082,12 +3082,12 @@ RLPH_Done
 *   to print out its contents as a string
 *****************************************************************************
 PrintMessage        * void PrintMessage(String* message)
-    MOVEM.L D1-D7, -(SP)    * save registers
-    MOVEA.L D1,A1   * load address of message from argument 1
-    MOVE.B  #14,D0  * print contents of A1
-    TRAP    #15
-    MOVEM.L (SP)+, D1-D7    * restore registers
-    RTS
+        MOVEM.L D1-D7, -(SP)    * save registers
+        MOVEA.L D1,A1   * load address of message from argument 1
+        MOVE.B  #14,D0  * print contents of A1
+        TRAP    #15
+        MOVEM.L (SP)+, D1-D7    * restore registers
+        RTS
 
 
 *****************************************************************************
@@ -3295,12 +3295,6 @@ kStringBufferSize EQU 128
 kStringBuffer
     DS  kStringBufferSize
 
-kStartMessage
-    DC.B    'These function allows users to print from a literal word',CR,LF
-    DC.B    'by passing in a number containing the ascii values of',CR,LF
-    DC.B    'of each character to be printed',CR,LF
-    DC.B    CR,LF,0
-
 kInvalidOpCode
     DC.B    'Invalid Opcode',0
 
@@ -3391,7 +3385,6 @@ TWELVE          DC.B    'C',0
 THIRTEEN        DC.B    'D',0
 FOURTEEN        DC.B    'E',0
 FIFTEEN         DC.B    'F',0
-
 
 
 
