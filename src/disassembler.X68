@@ -1083,7 +1083,21 @@ Func_MOVE_L
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
+        * Checks for invalid address
+        MOVE.L  #6,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetRegMode
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     MOVE_L_DONE
+
         * Gets and prints the Source parameter for MOVE.L
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1104,6 +1118,7 @@ Func_MOVE_L
         MOVE.L  D0,D1
         JSR     JumpAddressTableRegMode
 
+MOVE_L_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1179,6 +1194,19 @@ Func_MOVE_W
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
+        * Checks for invalid address
+        MOVE.L  #6,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetRegMode
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     MOVE_W_DONE
+
         * Gets and prints the source parameter for MOVE.W
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -1200,6 +1228,7 @@ Func_MOVE_W
         MOVE.L  D0,D1
         JSR     JumpAddressTableRegMode
 
+MOVE_W_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1227,6 +1256,19 @@ Func_MOVE_B
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
+        * Checks for invalid address
+        MOVE.L  #6,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetRegMode
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     MOVE_B_DONE
+
         * Gets and prints the source parameter for MOVE.B
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -1248,7 +1290,7 @@ Func_MOVE_B
         MOVE.L  D0,D1
         JSR     JumpAddressTableRegMode
 
-
+MOVE_B_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1288,6 +1330,20 @@ Func_ADD
         BEQ     Func_ADD_DataSecond
 
 Func_ADD_DataFirst
+
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnData
+        CMP.B   #0,D0
+        BNE     ADD_Done
+
         * Print Data Register
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1476,6 +1532,19 @@ Func_OR
         BRA     Func_OR_DataSecond
 
 Func_OR_DataFirst
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnData
+        CMP.B   #0,D0
+        BNE     OR_Done
+
         * Print Data Register
         CLR.L   D1
         MOVE.L  D4,D1
@@ -1502,6 +1571,19 @@ Func_OR_DataFirst
 
 
 Func_OR_DataSecond
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAn
+        CMP.B   #0,D0
+        BNE     OR_Done
+
         * Print destination effective address
         CLR     D1
         MOVE.L  D4,D1
@@ -1548,6 +1630,19 @@ Func_BCLR
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     BCLR_FINISHED
+
         * Get destination mode
         MOVE.L  #3,D2
         MOVE.L  #3,D3
@@ -1582,7 +1677,8 @@ BCLR_SourceBranch
         BEQ     BCLR_ImmediateSource
         CMP.B   #6,D0
         BEQ     BCLR_DataSource
-        * ELSE Not valid
+        * CALL INVALIDATE?
+        BRA     BCLR_FINISHED
 
 BCLR_DataSource
         * Gets register for source
@@ -1611,6 +1707,7 @@ BCLR_DONE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+BCLR_FINISHED
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1632,6 +1729,19 @@ Func_ORI
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
+
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     ORI_FINISHED
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1669,6 +1779,7 @@ ORI_DONE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+ORI_FINISHED
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1690,6 +1801,19 @@ Func_CMPI
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
+
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     CMPI_FINISHED
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1727,7 +1851,7 @@ CMPI_DONE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
-
+CMPI_FINISHED
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1749,6 +1873,19 @@ Func_NEG
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
+    
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     NEG_DONE
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1765,6 +1902,7 @@ Func_NEG
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+NEG_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1838,6 +1976,19 @@ Func_LEA
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnDataAnpAnm
+        CMP.B   #0,D0
+        BNE     LEA_DONE
+
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
@@ -1861,6 +2012,7 @@ Func_LEA
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+LEA_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -1900,6 +2052,19 @@ Func_SUBQ
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
+
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckData
+        CMP.B   #0,D0
+        BNE     SUBQ_DONE
 
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
@@ -1944,6 +2109,7 @@ SUBQ_CONTINUE
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+SUBQ_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2090,6 +2256,19 @@ Func_SUB
         BRA     Func_SUB_DataSecond
 
 Func_SUB_DataFirst
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnData
+        CMP.B   #0,D0
+        BNE     SUB_DONE
+
         * Print Data Register
         CLR.L   D1
         MOVE.L  D4,D1
@@ -2210,6 +2389,19 @@ Func_EOR
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnData
+        CMP.B   #0,D0
+        BNE     EOR_DONE
+
         * print the size string (standard is in bits 6-7)
         JSR     PrintSizeStandard
 
@@ -2236,6 +2428,7 @@ Func_EOR
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+EOR_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2257,6 +2450,19 @@ Func_MULS_W
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
+
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAn
+        CMP.B   #0,D0
+        BNE     MULS_W_DONE
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -2281,6 +2487,7 @@ Func_MULS_W
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+MULS_W_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2307,7 +2514,20 @@ Func_DIVS_W
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        * Get/Print mode/reg for destination
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAn
+        CMP.B   #0,D0
+        BNE     DIVS_W_DONE
+
+        * Get/Print mode/reg for source
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -2326,6 +2546,7 @@ Func_DIVS_W
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+DIVS_W_DONE
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -3201,12 +3422,26 @@ ROTATE_REG
         BRA     ROTATE_CONTINUE
 
 ROTATE_MEMORY
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnData
+        CMP.B   #0,D0
+        BNE     ROTATE_DONE
+
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
+        BRA     ROTATE_DONE
 
 ROTATE_CONTINUE
         MOVE.L  #COMMA,D1
@@ -3224,14 +3459,15 @@ ROTATE_DONE
 
 
 *****************************************************************************
-* CheckAn(3-bit mode, 3-bit reg)
-*         D1          D2
+* int CheckAn(3-bit mode, 3-bit reg)
+* D0          D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAn
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%001,D1
         BNE     CheckAnDone
+        ADD.B   #1,D0
         * jump to invalidate function
 CheckAnDone     
         MOVEM.L (SP)+,D1-D2
@@ -3239,14 +3475,15 @@ CheckAnDone
 
 
 *****************************************************************************
-* CheckDn(3-bit mode, 3-bit reg)
-*         D1          D2
+* int CheckDn(3-bit mode, 3-bit reg)
+* D0          D1          D2
 * Dummy Return
 *****************************************************************************
 CheckDn
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%000,D1
         BNE     CheckDnDone
+        ADD.B   #1,D0
         * jump to invalidate function
 CheckDnDone     
         MOVEM.L (SP)+,D1-D2
@@ -3254,8 +3491,8 @@ CheckDnDone
 
 
 *****************************************************************************
-* CheckData(3-bit mode, 3-bit reg)
-*           D1          D2
+* int CheckData(3-bit mode, 3-bit reg)
+* DO            D1          D2
 * Dummy Return
 *****************************************************************************
 CheckData
@@ -3265,6 +3502,7 @@ CheckData
         BRA     CheckDataDone
 CheckDataReg
         CMP.B   #%100,D2
+        ADD.B   #1,D0
         * jump to invalidate function
 CheckDataDone     
         MOVEM.L (SP)+,D1-D2
@@ -3272,14 +3510,15 @@ CheckDataDone
 
 
 *****************************************************************************
-* CheckAnp(3-bit mode, 3-bit reg)
-*          D1          D2
+* int CheckAnp(3-bit mode, 3-bit reg)
+* D0           D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnp
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%011,D1
         BNE     CheckAnpDone
+        ADD.B   #1,D0
         * jump to invalidate function
 CheckAnpDone     
         MOVEM.L (SP)+,D1-D2
@@ -3287,14 +3526,15 @@ CheckAnpDone
 
 
 *****************************************************************************
-* CheckAnm(3-bit mode, 3-bit reg)
-*         D1          D2
+* int CheckAnm(3-bit mode, 3-bit reg)
+* Do           D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnm
         MOVEM.L D1-D2,-(SP)
         CMP.B   #%100,D1
         BNE     CheckAnmDone
+        ADD.B   #1,D0
         * jump to invalidate function
 CheckAnmDone     
         MOVEM.L (SP)+,D1-D2
@@ -3302,8 +3542,8 @@ CheckAnmDone
 
 
 *****************************************************************************
-* CheckAnData(3-bit mode, 3-bit reg)
-*         D1          D2
+* int CheckAnData(3-bit mode, 3-bit reg)
+* D0              D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnData
@@ -3314,8 +3554,8 @@ CheckAnData
 
 
 *****************************************************************************
-* CheckAnDnData(3-bit mode, 3-bit reg)
-*         D1          D2
+* int CheckAnDnData(3-bit mode, 3-bit reg)
+* D0                D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnDnData
@@ -3326,8 +3566,8 @@ CheckAnDnData
         
         
 *****************************************************************************
-* CheckAnDnDataAnpAnm(3-bit mode, 3-bit reg)
-*         D1          D2
+* int CheckAnDnDataAnpAnm(3-bit mode, 3-bit reg)
+* D0                      D1          D2
 * Dummy Return
 *****************************************************************************
 CheckAnDnDataAnpAnm
@@ -3335,7 +3575,56 @@ CheckAnDnDataAnpAnm
         JSR     CheckAnDnData
         JSR     CheckAnm
         JSR     CheckAnp
-        RTS        
+        RTS
+
+
+*****************************************************************************
+* int CheckAnDnDataAnm(3-bit mode, 3-bit reg)
+* D0                   D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnDnDataAnm
+        MOVEM.L D1-D2,-(SP)
+        JSR     CheckAnDnData
+        JSR     CheckAnm
+        RTS
+        
+        
+*****************************************************************************
+* int CheckAnDnDataAnp(3-bit mode, 3-bit reg)
+* D0                   D1          D2
+* Dummy Return
+*****************************************************************************
+CheckAnDnDataAnp
+        MOVEM.L D1-D2,-(SP)
+        JSR     CheckAnDnData
+        JSR     CheckAnp
+        RTS
+
+*****************************************************************************
+* mode reg GetModeReg(6-bit)
+* D0   D1             D1
+* mode AND reg
+*****************************************************************************
+GetRegMode
+        MOVE.L  D1,D0
+        LSR     #3,D0
+        LSL     #5,D1
+        LSR     #5,D1
+        RTS
+
+
+*****************************************************************************
+* mode reg GetModeReg(6-bit)
+* D0   D1             D1
+* mode AND reg
+*****************************************************************************
+GetModeReg
+        MOVE.L  D1,D0
+        LSR.B   #3,D1
+        LSL.B   #5,D0
+        LSR.B   #5,D0
+        RTS
 
 
 *****************************************************************************
