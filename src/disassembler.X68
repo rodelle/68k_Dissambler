@@ -60,7 +60,6 @@ NPD_ProgramDone
 
 DisassembleLoop
         CMP.L   A5,A6   * compare starting address to ending address
-
         * if starting address == ending address, done
         BLE     DisassembleDone
     
@@ -68,9 +67,13 @@ DisassembleLoop
     
         JSR     ResetStringBuffer
 
+        MOVEA.L A5,A4   * save current program counter
         * else decode next instruction
         JSR     DecodeOpcode
-
+        
+        * if the opcode is invalid, incremenets A4 by 1 and sets A5 equal to it
+        JSR     CheckInvalid  
+        
         * actually print the buffer
         JSR     PrintStringBuffer
         JSR     PrintNewLine
@@ -443,7 +446,7 @@ Long_PrintSizeStandard
 
 Error_PrintSizeStandard
         * else it is an error
-        MOVE    #Q_MSG,D1
+        JSR     InvalidateStringBuffer
 
 Done_PrintSizeStandard
         JSR     AddStringToStringBuffer
@@ -3206,7 +3209,29 @@ Func_Print_Number
 Func_Junk
         JSR     InvalidateStringBuffer
         RTS
-
+        
+*****************************************************************************
+* void CheckInvalid()
+* Args: none
+* Checks if the string buffer has been invalidated. If it has, it increments
+* the program counter by 1 word invalidating all of the incrementing done 
+* prior to this function
+*****************************************************************************
+CheckInvalid
+        MOVEM.L D0-D2/A0, -(SP) * Save used registers
+        MOVE    #kStringBuffer,A0
+        MOVE.L  (A0),D1
+        AND.L   #$FF000000,D1
+        BNE     CI_IsValid   * if string is valid, do nothing
+        
+CI_IsInvalid
+        MOVEA.L A4,A5   * invalidates all PC changes prior to this call
+        MOVE    #1,D1
+        JSR     MoveInstructionPointer * incremenets program counter by 4
+        
+CI_IsValid
+        MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
+        RTS
 
 *****************************************************************************
 * void PrintStringBuffer()
@@ -4086,6 +4111,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
