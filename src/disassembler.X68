@@ -2093,7 +2093,7 @@ Func_LEA
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
-        ADD.B   #%100,D0
+        ADD.B   #%1000,D0
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 

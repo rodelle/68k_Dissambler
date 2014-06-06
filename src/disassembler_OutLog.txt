@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 2:04:40 PM
+EASy68K output log file: 6/6/2014 2:23:18 PM
 
 68k_Disassemlber
 ------------------
@@ -14,9 +14,9 @@ MOVEA.L $00010238,A2
 MOVEA.L (A3),A3
 MOVEA.L -(A3),A3
 MOVEA.L (A3)+,A3
-LEA (A5),A1
-LEA $00034512,A2
-LEA $0320,A2
+LEA (A5),A5
+LEA $00034512,A6
+LEA $0320,A6
 MOVE.B (A0),D2
 MOVE.B ,(A6)
 ORI.B #$149011F8-(A3)
