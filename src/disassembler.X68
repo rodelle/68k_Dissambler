@@ -266,7 +266,7 @@ VFHRL_Done
 * Unsure what to leave in the registers
 * Currently leaves nothing in registers
 *****************************************************************************
-Func_JumpAddressTableModeReg
+JumpAddressTableModeReg
         MOVEM.L D0-D6/A1,-(SP)
 
         CLR     D6
@@ -299,7 +299,7 @@ Func_JumpAddressTableModeReg
 * Unsure what to leave in the registers
 * Currently leaves nothing in registers
 *****************************************************************************
-Func_JumpAddressTableRegMode
+JumpAddressTableRegMode
         MOVEM.L D0-D6/A1,-(SP)
 
         CLR     D6
@@ -338,7 +338,7 @@ ADD_TOGETHER
         MULS.W  #4,D0
         ADD.W   A1,D0
         MOVEA.W D0,A1
-        BRA     Done_Func_JumpAddressTable
+        BRA     Done_JumpAddressTable
 
 * get jump value for NON-Word/Long Address OR Data
 NO_ADD_TOGETHER
@@ -348,9 +348,9 @@ NO_ADD_TOGETHER
         MULS.W  #4,D0
         ADD.W   A1,D0
         MOVEA.W D0,A1
-        BRA     Done_Func_JumpAddressTable
+        BRA     Done_JumpAddressTable
 
-Done_Func_JumpAddressTable
+Done_JumpAddressTable
         CLR     D2
         MOVE.B  D6,D2
         MOVE.L  D3,D1       * move register into D1
@@ -360,11 +360,11 @@ Done_Func_JumpAddressTable
         RTS
 
 *****************************************************************************
-* void Func_MoveInstructionPointer(number of words)
+* void MoveInstructionPointer(number of words)
 *                                  D1
 * expects global variable A5 to contain current address location
 *****************************************************************************
-Func_MoveInstructionPointer
+MoveInstructionPointer
         MOVEM.L D1,-(SP) * save D1 so we can use it
 
         LSL.L   #1,D1    * multiply byte by 2 to get word
@@ -375,7 +375,7 @@ Func_MoveInstructionPointer
 
 
 *****************************************************************************
-* void Func_PrintSizeStandard()
+* void PrintSizeStandard()
 * expects global variable A5 to be pointing at current opcode.
 *
 * prints the size for instructions who fit the following configuration:
@@ -385,7 +385,7 @@ Func_MoveInstructionPointer
 *      1,0 = long
 *      1,1 = ?   (error)
 *****************************************************************************
-Func_PrintSizeStandard
+PrintSizeStandard
         MOVEM.L D1-D3,-(SP)
 
         CLR.L   D1
@@ -400,31 +400,31 @@ Func_PrintSizeStandard
         * if D1 is 0, then it is a byte
         * load 'byte' msg into D0
         CMP     #0,D1
-        BNE     Word_Func_PrintSizeStandard
+        BNE     Word_PrintSizeStandard
         MOVE    #B_MSG,D1
-        BRA     Done_Func_PrintSizeStandard
+        BRA     Done_PrintSizeStandard
 
-Word_Func_PrintSizeStandard
+Word_PrintSizeStandard
         * if D1 is 1, then it is a word
         * load 'word' msg into D0
         CMP     #1,D1
-        BNE     Long_Func_PrintSizeStandard
+        BNE     Long_PrintSizeStandard
         MOVE    #W_MSG,D1
-        BRA     Done_Func_PrintSizeStandard
+        BRA     Done_PrintSizeStandard
 
-Long_Func_PrintSizeStandard
+Long_PrintSizeStandard
         * if D1 is 2, then it is a long
         * load 'long' msg into D0
         CMP     #2,D1
-        BNE     Error_Func_PrintSizeStandard
+        BNE     Error_PrintSizeStandard
         MOVE    #L_MSG,D1
-        BRA     Done_Func_PrintSizeStandard
+        BRA     Done_PrintSizeStandard
 
-Error_Func_PrintSizeStandard
+Error_PrintSizeStandard
         * else it is an error
         MOVE    #Q_MSG,D1
 
-Done_Func_PrintSizeStandard
+Done_PrintSizeStandard
         JSR     AddStringToStringBuffer
         MOVEM.L (SP)+,D1-D3
         RTS
@@ -1040,7 +1040,7 @@ Func_MOVEA_L
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #1,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1054,11 +1054,11 @@ Func_MOVEA_L
         JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1089,7 +1089,7 @@ Func_MOVE_L
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #1,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1102,11 +1102,11 @@ Func_MOVE_L
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableRegMode
+        JSR     JumpAddressTableRegMode
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1136,7 +1136,7 @@ Func_MOVEA_W
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1150,11 +1150,11 @@ Func_MOVEA_W
         JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1185,7 +1185,7 @@ Func_MOVE_W
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1198,11 +1198,11 @@ Func_MOVE_W
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableRegMode
+        JSR     JumpAddressTableRegMode
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1233,7 +1233,7 @@ Func_MOVE_B
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1246,12 +1246,12 @@ Func_MOVE_B
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableRegMode
+        JSR     JumpAddressTableRegMode
 
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1268,7 +1268,7 @@ Func_ADD
         JSR     AddStringToStringBuffer
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -1295,7 +1295,7 @@ Func_ADD_DataFirst
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1309,7 +1309,7 @@ Func_ADD_DataFirst
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     ADD_Done
 
 Func_ADD_DataSecond
@@ -1321,7 +1321,7 @@ Func_ADD_DataSecond
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1334,13 +1334,13 @@ Func_ADD_DataSecond
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     ADD_Done
 
 ADD_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
@@ -1385,7 +1385,7 @@ Func_ADDA_W
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1399,7 +1399,7 @@ Func_ADDA_W
         JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     ADDA_Done
 
 Func_ADDA_L
@@ -1420,7 +1420,7 @@ Func_ADDA_L
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #1,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1434,13 +1434,13 @@ Func_ADDA_L
         JSR     GetBits
         ADD.L   #%001000,D0     * adds mode for An
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     ADDA_Done
 
 ADDA_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
@@ -1459,7 +1459,7 @@ Func_OR
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -1483,7 +1483,7 @@ Func_OR_DataFirst
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1497,7 +1497,7 @@ Func_OR_DataFirst
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     OR_Done
 
 
@@ -1510,7 +1510,7 @@ Func_OR_DataSecond
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -1523,13 +1523,13 @@ Func_OR_DataSecond
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     OR_Done
 
 OR_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
@@ -1591,7 +1591,7 @@ BCLR_DataSource
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     BCLR_DONE
 
 BCLR_ImmediateSource
@@ -1609,11 +1609,11 @@ BCLR_DONE
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1634,7 +1634,7 @@ Func_ORI
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -1667,11 +1667,11 @@ ORI_DONE
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1692,7 +1692,7 @@ Func_CMPI
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -1725,12 +1725,12 @@ CMPI_DONE
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1751,7 +1751,7 @@ Func_NEG
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -1763,11 +1763,11 @@ Func_NEG
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1785,7 +1785,7 @@ Func_MOVEM
 
         * increment A5 by 2 words
         MOVE.L  #2,D1   * put 2 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1814,11 +1814,11 @@ Func_JSR
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1847,7 +1847,7 @@ Func_LEA
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
@@ -1859,11 +1859,11 @@ Func_LEA
         JSR     GetBits
         ADD.B   #%100,D0
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1881,7 +1881,7 @@ Func_RTS
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1902,7 +1902,7 @@ Func_SUBQ
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -1942,11 +1942,11 @@ SUBQ_CONTINUE
         JSR     GetBits
 
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -1967,7 +1967,7 @@ Func_BCS
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -1988,7 +1988,7 @@ Func_BVC
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2009,7 +2009,7 @@ Func_BGE
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2030,7 +2030,7 @@ Func_BLT
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2052,7 +2052,7 @@ Func_BRA
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2073,7 +2073,7 @@ Func_SUB
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -2097,7 +2097,7 @@ Func_SUB_DataFirst
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -2111,7 +2111,7 @@ Func_SUB_DataFirst
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     SUB_Done
 
 
@@ -2124,7 +2124,7 @@ Func_SUB_DataSecond
         JSR     GetBits
         MOVE.L  D0,D1
         MOVE.L  #0,D2
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print comma
         MOVE.L  #COMMA,D1
@@ -2137,13 +2137,13 @@ Func_SUB_DataSecond
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     SUB_Done
 
 SUB_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
@@ -2163,7 +2163,7 @@ Func_CMP
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -2175,7 +2175,7 @@ Func_CMP
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
@@ -2186,11 +2186,11 @@ Func_CMP
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -2211,7 +2211,7 @@ Func_EOR
         MOVE.W  (A5),D4
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
@@ -2223,7 +2223,7 @@ Func_EOR
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
@@ -2234,11 +2234,11 @@ Func_EOR
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -2268,7 +2268,7 @@ Func_MULS_W
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
@@ -2279,11 +2279,11 @@ Func_MULS_W
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -2313,7 +2313,7 @@ Func_DIVS_W
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
@@ -2324,11 +2324,11 @@ Func_DIVS_W
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -2358,14 +2358,14 @@ Func_MULS_L
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
 
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2386,7 +2386,7 @@ MULS_ONE_DESTINATION
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     MULS_DONE
 
 MULS_TWO_DESTINATIONS
@@ -2396,7 +2396,7 @@ MULS_TWO_DESTINATIONS
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print '-'
         MOVE.L  #MINUS,D1
@@ -2408,13 +2408,13 @@ MULS_TWO_DESTINATIONS
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     MULS_DONE
 
 MULS_DONE
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -2444,14 +2444,14 @@ Func_DIVS_L
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
 
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2472,7 +2472,7 @@ DIVS_ONE_DESTINATION
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     DIVS_DONE
 
 DIVS_TWO_DESTINATIONS
@@ -2482,7 +2482,7 @@ DIVS_TWO_DESTINATIONS
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
         * Print '-'
         MOVE.L  #MINUS,D1
@@ -2494,13 +2494,13 @@ DIVS_TWO_DESTINATIONS
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     DIVS_DONE
 
 DIVS_DONE
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
@@ -2520,7 +2520,7 @@ Func_LSR
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2540,7 +2540,7 @@ Func_LSL
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2560,7 +2560,7 @@ Func_ASR
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2580,7 +2580,7 @@ Func_ASL
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2600,7 +2600,7 @@ Func_ROR
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2620,7 +2620,7 @@ Func_ROL
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2636,7 +2636,7 @@ Func_NO_OP
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     Func_MoveInstructionPointer
+        JSR     MoveInstructionPointer
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
@@ -2765,7 +2765,7 @@ Func_HexWord
         MOVEM.L     D1-D2,-(SP)
         CLR         D1
         MOVE.B      #1,D1
-        JSR         Func_MoveInstructionPointer
+        JSR         MoveInstructionPointer
         MOVE.W      (A5),D1
         MOVE.B      #3,D2
         JSR         Func_PrintHexLoop
@@ -3151,7 +3151,7 @@ Func_PrintRotate
         MOVEM.L     D1-D4,-(SP)
 
         * print the size string (standard is in bits 6-7)
-        JSR     Func_PrintSizeStandard
+        JSR     PrintSizeStandard
 
         * Gets address
         MOVE.W  (A5),D1
@@ -3197,7 +3197,7 @@ ROTATE_REG
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
         BRA     ROTATE_CONTINUE
 
 ROTATE_MEMORY
@@ -3206,7 +3206,7 @@ ROTATE_MEMORY
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
 ROTATE_CONTINUE
         MOVE.L  #COMMA,D1
@@ -3216,7 +3216,7 @@ ROTATE_CONTINUE
         MOVE.L  #3,D3
         JSR     GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg
+        JSR     JumpAddressTableModeReg
 
 ROTATE_DONE
         MOVEM.L  (SP)+,D1-D4    * restore
