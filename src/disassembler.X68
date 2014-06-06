@@ -425,17 +425,19 @@ Error_Func_PrintSizeStandard
         MOVE    #Q_MSG,D1
 
 Done_Func_PrintSizeStandard
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         MOVEM.L (SP)+,D1-D3
         RTS
 
 
 *****************************************************************************
-* void Func_Print(MsgAddress)
-*                 D1
-* prints the contents of memory location specified by D1
+* void AddStringToStringBuffer( StringAddress )
+*                                    D1
+* add a null-terminated string to the string buffer
+* this function provides compatability between the string buffer and
+* more conventional 68k string usage
 *****************************************************************************
-Func_Print
+AddStringToStringBuffer
         MOVEM.L D0-D7/A1,-(SP)
 
         * d1 contains null terminated string
@@ -1022,11 +1024,11 @@ Func_MOVEA_L
 
         * print pseudo assembly
         MOVE    #MOVEA_L_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1042,7 +1044,7 @@ Func_MOVEA_L
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for MOVEA.L
         CLR.L   D1
@@ -1071,11 +1073,11 @@ Func_MOVE_L
 
         * print pseudo assembly
         MOVE    #MOVE_L_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1091,7 +1093,7 @@ Func_MOVE_L
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the Destination parameter for MOVE.L
         CLR.L   D1
@@ -1118,11 +1120,11 @@ Func_MOVEA_W
 
         * print pseudo assembly
         MOVE    #MOVEA_W_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1138,7 +1140,7 @@ Func_MOVEA_W
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for MOVEA.L
         CLR.L   D1
@@ -1167,11 +1169,11 @@ Func_MOVE_W
 
         * print pseudo assembly
         MOVE    #MOVE_W_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1187,7 +1189,7 @@ Func_MOVE_W
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the destination parameter for MOVE.W
         CLR.L   D1
@@ -1215,11 +1217,11 @@ Func_MOVE_B
 
         * print pseudo assembly
         MOVE    #MOVE_B_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1235,7 +1237,7 @@ Func_MOVE_B
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the destination parameter for MOVE.B
         CLR.L   D1
@@ -1263,14 +1265,14 @@ Func_ADD
 
         * print pseudo assembly
         MOVE    #ADD_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * print the size string (standard is in bits 6-7)
         JSR     Func_PrintSizeStandard
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1297,7 +1299,7 @@ Func_ADD_DataFirst
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print destination effective address
         CLR     D1
@@ -1323,7 +1325,7 @@ Func_ADD_DataSecond
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print Data Register
         CLR.L   D1
@@ -1350,7 +1352,7 @@ Func_ADDA
 
         * print pseudo assembly
         MOVE    #ADDA_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1368,11 +1370,11 @@ Func_ADDA
 Func_ADDA_W
         * Print W
         MOVE.L  #W_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         CLR     D1
         MOVE.W  D4,D1
@@ -1387,7 +1389,7 @@ Func_ADDA_W
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for ADDA.W
         CLR.L   D1
@@ -1403,11 +1405,11 @@ Func_ADDA_W
 Func_ADDA_L
         * Print L
         MOVE.L  #L_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         CLR     D1
         MOVE.W  D4,D1
@@ -1422,7 +1424,7 @@ Func_ADDA_L
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets and prints the An parameter for ADDA.L
         CLR.L   D1
@@ -1450,7 +1452,7 @@ Func_OR
 
         * print pseudo assembly
         MOVE    #OR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1461,7 +1463,7 @@ Func_OR
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * determin data first or second
         MOVE.L  D4,D1
@@ -1485,7 +1487,7 @@ Func_OR_DataFirst
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print destination effective address
         CLR     D1
@@ -1512,7 +1514,7 @@ Func_OR_DataSecond
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print Data Register
         CLR.L   D1
@@ -1540,7 +1542,7 @@ Func_BCLR
 
         * print pseudo assembly
         MOVE    #BCLR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1558,17 +1560,17 @@ Func_BCLR
 BCLR_DataDestination
         *Print size/space
         MOVE.L  #L_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         BRA     BCLR_SourceBranch
 
 BCLR_OtherDestination
         *Print size/space
         MOVE.L  #B_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         BRA     BCLR_SourceBranch
 
 BCLR_SourceBranch
@@ -1599,7 +1601,7 @@ BCLR_ImmediateSource
 
 BCLR_DONE
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Prints destination
         MOVE.L  D4,D1
@@ -1625,7 +1627,7 @@ Func_ORI
 
         * print pseudo assembly
         MOVE    #ORI_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1636,7 +1638,7 @@ Func_ORI
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print immediate data
         MOVE.L  D4,D1
@@ -1683,7 +1685,7 @@ Func_CMPI
 
         * print pseudo assembly
         MOVE    #CMPI_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1694,7 +1696,7 @@ Func_CMPI
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print immediate data
         MOVE.L  D4,D1
@@ -1742,7 +1744,7 @@ Func_NEG
 
         * print pseudo assembly
         MOVE    #NEG_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1753,7 +1755,7 @@ Func_NEG
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get mode/reg and print
         MOVE.L  D4,D1
@@ -1779,7 +1781,7 @@ Func_MOVEM
 
         * print pseudo assembly
         MOVE    #MOVEM_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * increment A5 by 2 words
         MOVE.L  #2,D1   * put 2 in D1 for parameter 1
@@ -1797,14 +1799,14 @@ Func_JSR
 
         * print pseudo assembly
         MOVE    #JSR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get and Print mode/reg
         MOVE.L  D4,D1
@@ -1830,14 +1832,14 @@ Func_LEA
 
         * print pseudo assembly
         MOVE    #LEA_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
 
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get source mode/reg and print
         MOVE.L  D4,D1
@@ -1848,7 +1850,7 @@ Func_LEA
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get address register
         MOVE.L  D4,D1
@@ -1875,7 +1877,7 @@ Func_RTS
 
         * print pseudo assembly
         MOVE    #RTS_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1893,7 +1895,7 @@ Func_SUBQ
 
         * print pseudo assembly
         MOVE    #SUBQ_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -1904,11 +1906,11 @@ Func_SUBQ
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print # for data
         MOVE.L  #POUND,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get number 1-8 for immediate data
         MOVE.L  D4,D1
@@ -1931,7 +1933,7 @@ SUBQ_CONTINUE
         JSR     Func_Print_Number
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get mode-reg
         MOVE.L  D4,D1
@@ -1958,7 +1960,7 @@ Func_BCS
 
         * print pseudo assembly
         MOVE    #BCS_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Jump to Label Printer
         JSR     Func_PrintLabel
@@ -1979,7 +1981,7 @@ Func_BVC
 
         * print pseudo assembly
         MOVE    #BVC_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Jump to Label Printer
         JSR     Func_PrintLabel
@@ -2000,7 +2002,7 @@ Func_BGE
 
         * print pseudo assembly
         MOVE    #BGE_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Jump to Label Printer
         JSR     Func_PrintLabel
@@ -2021,7 +2023,7 @@ Func_BLT
 
         * print pseudo assembly
         MOVE    #BLT_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Jump to Label Printer
         JSR     Func_PrintLabel
@@ -2043,7 +2045,7 @@ Func_BRA
 
         * print pseudo assembly
         MOVE    #BRA_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Jump to Label Printer
         JSR     Func_PrintLabel
@@ -2064,7 +2066,7 @@ Func_SUB
 
         * print pseudo assembly
         MOVE    #SUB_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2075,7 +2077,7 @@ Func_SUB
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * determin data first or second
         MOVE.L  #8,D2
@@ -2098,7 +2100,7 @@ Func_SUB_DataFirst
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print destination effective address
         CLR     D1
@@ -2125,7 +2127,7 @@ Func_SUB_DataSecond
 
         * Print comma
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print Data Register
         CLR.L   D1
@@ -2153,7 +2155,7 @@ Func_CMP
 
         * print pseudo assembly
         MOVE    #CMP_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2164,7 +2166,7 @@ Func_CMP
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
@@ -2175,7 +2177,7 @@ Func_CMP
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
          * Get bits for Dn and Print
         MOVE.L  D4,D1
@@ -2201,7 +2203,7 @@ Func_EOR
 
         * print pseudo assembly
         MOVE    #EOR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2212,7 +2214,7 @@ Func_EOR
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get bits for Dn and Print
         MOVE.L  D4,D1
@@ -2223,7 +2225,7 @@ Func_EOR
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
@@ -2249,7 +2251,7 @@ Func_MULS_W
 
         * print pseudo assembly
         MOVE    #MULS_W_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2257,7 +2259,7 @@ Func_MULS_W
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
@@ -2268,7 +2270,7 @@ Func_MULS_W
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
          * Get bits for Dn and Print
         MOVE.L  D4,D1
@@ -2294,7 +2296,7 @@ Func_DIVS_W
 
         * print pseudo assembly
         MOVE    #DIVS_W_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2302,7 +2304,7 @@ Func_DIVS_W
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
@@ -2313,7 +2315,7 @@ Func_DIVS_W
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
          * Get bits for Dn and Print
         MOVE.L  D4,D1
@@ -2339,7 +2341,7 @@ Func_MULS_L
 
         * print pseudo assembly
         MOVE    #MULS_L_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2347,7 +2349,7 @@ Func_MULS_L
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
@@ -2358,7 +2360,7 @@ Func_MULS_L
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2397,7 +2399,7 @@ MULS_TWO_DESTINATIONS
 
         * Print '-'
         MOVE.L  #MINUS,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print Second Address Destination
         MOVE.L  D4,D1
@@ -2425,7 +2427,7 @@ Func_DIVS_L
 
         * print pseudo assembly
         MOVE    #DIVS_L_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Gets address
         MOVE.W  (A5),D1
@@ -2433,7 +2435,7 @@ Func_DIVS_L
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
@@ -2444,7 +2446,7 @@ Func_DIVS_L
         JSR     Func_JumpAddressTableModeReg
 
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
@@ -2483,7 +2485,7 @@ DIVS_TWO_DESTINATIONS
 
         * Print '-'
         MOVE.L  #MINUS,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Print Second Address Destination
         MOVE.L  D4,D1
@@ -2511,7 +2513,7 @@ Func_LSR
 
         * print pseudo assembly
         MOVE    #LSR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         JSR     Func_PrintRotate
 
@@ -2531,7 +2533,7 @@ Func_LSL
 
         * print pseudo assembly
         MOVE    #LSL_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         JSR     Func_PrintRotate
 
@@ -2551,7 +2553,7 @@ Func_ASR
 
         * print pseudo assembly
         MOVE    #ASR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         JSR     Func_PrintRotate
 
@@ -2571,7 +2573,7 @@ Func_ASL
 
         * print pseudo assembly
         MOVE    #ASL_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         JSR     Func_PrintRotate
 
@@ -2591,7 +2593,7 @@ Func_ROR
 
         * print pseudo assembly
         MOVE    #ROR_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         JSR     Func_PrintRotate
 
@@ -2611,7 +2613,7 @@ Func_ROL
 
         * print pseudo assembly
         MOVE    #ROL_MSG,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         JSR     Func_PrintRotate
 
@@ -2649,7 +2651,7 @@ Func_Dn
         MOVE.B      D1,D0
         CLR         D1
         MOVE.L      #DATA_REG,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         CLR         D1
         MOVE.B      D0,D1
         JSR         Func_Print_Number
@@ -2667,7 +2669,7 @@ Func_An
         MOVE.B      D1,D0
         CLR         D1
         MOVE.L      #ADDRESS_REG,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         CLR         D1
         MOVE.B      D0,D1
         JSR         Func_Print_Number
@@ -2686,12 +2688,12 @@ Func_An_i
         MOVE.B      D1,D0
         CLR         D1
         MOVE.L      #PAR_OPEN,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         CLR         D1
         MOVE.B      D0,D1
         JSR         Func_An
         MOVE.L      #PAR_CLOSE,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         MOVEM.L     (SP)+,D0-D1
         RTS
 
@@ -2705,7 +2707,7 @@ Func_An_ip
         MOVEM.L     D0-D1,-(SP)
         JSR         Func_An_i
         MOVE.L      #PLUS,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         MOVEM.L     (SP)+,D0-D1
         RTS
 
@@ -2719,7 +2721,7 @@ Func_An_im
         MOVEM.L     D0-D1,-(SP)
         MOVE.B      D1,D0
         MOVE.L      #MINUS,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         CLR         D1
         MOVE.B      D0,D1
         JSR         Func_An_i
@@ -2734,7 +2736,7 @@ Func_An_im
 Func_Word_A
         MOVEM.L     D1,-(SP)
         MOVE.L      #MONEY,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         JSR         Func_HexWord
         MOVEM.L     (SP)+,D1
         RTS
@@ -2747,7 +2749,7 @@ Func_Word_A
 Func_Long_A
         MOVEM.L     D1,-(SP)
         MOVE.L      #MONEY,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         JSR         Func_HexWord
         JSR         Func_HexWord
         MOVEM.L     (SP)+,D1
@@ -2805,7 +2807,7 @@ Func_PrintHex
         MOVE.B      #4,D3
         JSR         Func_GetBits
         MOVE.B      D0,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         MOVEM.L     (SP)+,D1-D3
         RTS
 
@@ -2817,7 +2819,7 @@ Func_PrintHex
 Func_WordData
         MOVEM.L     D1,-(SP)
         MOVE.L      #POUND,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         JSR         Func_Word_A
         MOVEM.L     (SP)+,D1
         RTS
@@ -2830,7 +2832,7 @@ Func_WordData
 Func_LongData
         MOVEM.L     D1,-(SP)
         MOVE.L      #POUND,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         JSR         Func_Long_A
         MOVEM.L     (SP)+,D1
         RTS
@@ -2872,7 +2874,7 @@ Func_Print_Number
         MOVE.L      #ZERO,D1
         MULS.W      #2,D0
         ADD.W       D0,D1
-        JSR         Func_Print
+        JSR         AddStringToStringBuffer
         MOVEM.L     (SP)+,D0-D1
         RTS
 
@@ -3116,7 +3118,7 @@ Func_PrintLabel
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Get Displacement
         MOVE.L  D4,D1
@@ -3171,7 +3173,7 @@ Func_PrintRotate
 
         * Print space
         MOVE.L  #SPACE,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
 
         * Check for memory rotate XXX <ea>
         MOVE.L  D4,D1
@@ -3192,9 +3194,9 @@ Func_PrintRotate
 
 ROTATE_DATA
         MOVE.L  #POUND,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         MOVE.L  #MONEY,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
@@ -3222,7 +3224,7 @@ ROTATE_MEMORY
 
 ROTATE_CONTINUE
         MOVE.L  #COMMA,D1
-        JSR     Func_Print
+        JSR     AddStringToStringBuffer
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #3,D3
@@ -3404,6 +3406,14 @@ THIRTEEN        DC.B    'D',0
 FOURTEEN        DC.B    'E',0
 FIFTEEN         DC.B    'F',0
 
+
+
+
+*****************************************************************************
+*****************************************************************************
+* Disassembler End
+*****************************************************************************
+*****************************************************************************
     END         START
 
 
