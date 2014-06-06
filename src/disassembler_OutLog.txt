@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 2:38:07 PM
+EASy68K output log file: 6/6/2014 3:28:17 PM
 
     __   ___  _                       _   _       
    / /  / _ \| |                     | \ | |      
@@ -11,530 +11,131 @@ EASy68K output log file: 6/6/2014 2:38:07 PM
  |  ___/ '__/ _ \  _/ _ \ '__/ _ \ '_ \ / __/ _ \ 
  | |   | | |  __/ ||  __/ | |  __/ | | | (_|  __/ 
  |_|   |_|  \___|_| \___|_|  \___|_| |_|\___\___| 
-MOVEA.W D4,A4
-MOVEA.W #$1C44,A5
-MOVEA.W $0001F23F,A6
-MOVEA.W (A1),A7
-MOVEA.W -(A1),A7
-MOVEA.W (A1)+,A7
-MOVEA.L D0,A0
-MOVEA.L #$001234F5,A1
-MOVEA.L $00010238,A2
-MOVEA.L (A3),A3
-MOVEA.L -(A3),A3
-MOVEA.L (A3)+,A3
-LEA (A5),A5
-LEA $00034512,A6
-LEA $0320,A6
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-LEA ,A5
-LEA ,A5
-MOVE.B D2,D2
-Press any key to coninue
- 
-MOVE.B #$0023,(A6)
-MOVE.B (A0),(A2)
-MOVE.B $0991,$1001
-MOVE.B $00022457,D0
-MOVE.B -(A5),D3
-MOVE.W D5,D4
-MOVE.W #$0234,(A3)
-MOVE.W A6,D7
-MOVE.W (A1),D6
-MOVE.W $00009998,$00010000
-MOVE.W $0227,D0
-MOVE.W (A4)+,D3
-MOVE.L D1,D2
-MOVE.L #$00000234,D4
-MOVE.L A5,D2
-MOVE.L (A5),D6
-MOVE.L D1,$4567
-MOVE.L $6543,D0
-MOVE.L -(A2),D3
-ADD.B D3,D4
-ADD.B (A5),D0
-ADD.W (A5),D5
-Press any key to coninue
- 
-ADD.W D6,D7
-ADD.W D1,$0000ABCD
-ADD.L (A4),D1
-ADD.L $00034564,D2
-ADD.L D3,D0
-ADD.L D6,(A5)
-ADDA.W ,A3
-ADDA.L (A5),A2
-ADDA.W (A5),A5
-ADDA.W D0,A5
-ADDA.W -(A3),A3
-ADDA.L #$0000F452,A6
-ADDA.L $00234546,A5
-ADDA.L (A4)+,A5
-SUB.B $007CF000,D1
-SUB.B D6,(A4)
-SUB.W (A1)+,D4
-SUB.W D4,(A4)
-SUB.L (A4),D2
-SUB.L D1,$00424242
-SUB ,D3
-SUB D2,(A5)
-Press any key to coninue
- 
-SUBQ.B #4,(A1)
-SUBQ.B #8,D7
-SUBQ.W #6,$4000
-SUBQ.W #3,A3
-SUBQ.L #1,$00044000
-SUBQ.L #1,D2
-SUBQ #3,D2
-Invalid Opcode
-BCS #$00B8
-BVC #$00B6
-BGE #$00B4
-BLT #$00B2
-BRA #$00B0
-OR.B (A4),D4
-OR.B D2,$5600
-OR.W #$FACE,D6
-OR.W D3,D0
-OR.L (A1),D1
-OR.L -(A3),D4
-ORI.B #$00040016D1
-ORI.B #$00380050(A3)
-Invalid Opcode
-Press any key to coninue
- 
-ORI.B #$00A70001$FACE0023
-Invalid Opcode
-ORI.W #$0F44D3
-ORI.W #$FFF0(A2)+
-ORI.W #$FFA7$0001FACE
-ORI.L #$FF00$FF000001
-MOVE.L D5,
-ORI.L #$0008D6
-Invalid Opcode
-MULS.W $5432,D1
-MULS.W #$0ACE,D5
-DIVS.W D2,D1
-DIVS.W (A4),D5
-CMP.B #$000F,D3
-CMP.B D2,D4
-CMP.B $0001FACE,D7
-CMP.W #$98AE,D3
-CMP.W (A2)+,D2
-CMP.L #$0FAF,D4
-Invalid Opcode
-CMP.L A3,D6
-CMP.B A4,D3
-Press any key to coninue
- 
-CMPI.B #$00420042$0C14
-ORI.B #$0C5EB437-(A4)
-CMPI.W #$0042D3
-CMPI.L #$0006-(A2)
-Invalid Opcode
-CMPI #$0C894BEDD2
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-ORI.B #$00000000D0
-ORI.B #$00000000D0
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
- 
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Invalid Opcode
-Press any key to coninue
+$00007FC0    MOVEA.W D4,A4
+$00007FC2    MOVEA.W #$1C44,A5
+$00007FC6    MOVEA.W $0001F23F,A6
+$00007FCC    MOVEA.W (A1),A7
+$00007FCE    MOVEA.W -(A1),A7
+$00007FD0    MOVEA.W (A1)+,A7
+$00007FD2    MOVEA.L D0,A0
+$00007FD4    MOVEA.L #$001234F5,A1
+$00007FDA    MOVEA.L $00010238,A2
+$00007FE0    MOVEA.L (A3),A3
+$00007FE2    MOVEA.L -(A3),A3
+$00007FE4    MOVEA.L (A3)+,A3
+$00007FE6    LEA (A5),A5
+$00007FE8    LEA $00034512,A6
+$00007FEE    LEA $0320,A6
+$00007FF2    Invalid Opcode
+$00007FF4    Invalid Opcode
+$00007FF6    Invalid Opcode
+$00007FF8    Invalid Opcode
+$00007FFA    Invalid Opcode
+$00007FFC    Invalid Opcode
+$00007FFE    MOVE.B D2,D2
+Press any key to continue
+j
+$00008000    MOVE.B #$0023,(A6)
+$00008004    MOVE.B (A0),(A2)
+$00008006    MOVE.B $0991,$1001
+$0000800C    MOVE.B $00022457,D0
+$00008012    MOVE.B -(A5),D3
+$00008014    MOVE.W D5,D4
+$00008016    MOVE.W #$0234,(A3)
+$0000801A    MOVE.W A6,D7
+$0000801C    MOVE.W (A1),D6
+$0000801E    MOVE.W $00009998,$00010000
+$00008028    MOVE.W $0227,D0
+$0000802C    MOVE.W (A4)+,D3
+$0000802E    MOVE.L D1,D2
+$00008030    MOVE.L #$00000234,D4
+$00008036    MOVE.L A5,D2
+$00008038    MOVE.L (A5),D6
+$0000803A    MOVE.L D1,$4567
+$0000803E    MOVE.L $6543,D0
+$00008042    MOVE.L -(A2),D3
+$00008044    ADD.B D3,D4
+$00008046    ADD.B (A5),D0
+$00008048    ADD.W (A5),D5
+Press any key to continue
+j
+$0000804A    ADD.W D6,D7
+$0000804C    ADD.W D1,$0000ABCD
+$00008052    ADD.L (A4),D1
+$00008054    ADD.L $00034564,D2
+$0000805A    ADD.L D3,D0
+$0000805C    ADD.L D6,(A5)
+$0000805E    Invalid Opcode
+$00008060    ADDA.L (A5),A2
+$00008062    ADDA.W (A5),A5
+$00008064    ADDA.W D0,A5
+$00008066    ADDA.W -(A3),A3
+$00008068    ADDA.L #$0000F452,A6
+$0000806E    ADDA.L $00234546,A5
+$00008074    ADDA.L (A4)+,A5
+$00008076    SUB.B $007CF000,D1
+$0000807C    SUB.B D6,(A4)
+$0000807E    SUB.W (A1)+,D4
+$00008080    SUB.W D4,(A4)
+$00008082    SUB.L (A4),D2
+$00008084    SUB.L D1,$00424242
+$0000808A    Invalid Opcode
+$0000808C    SUB D2,(A5)
+Press any key to continue
+j
+$0000808E    SUBQ.B #4,(A1)
+$00008090    SUBQ.B #8,D7
+$00008092    SUBQ.W #6,$4000
+$00008096    SUBQ.W #3,A3
+$00008098    SUBQ.L #1,$00044000
+$0000809E    SUBQ.L #1,D2
+$000080A0    SUBQ #3,D2
+$000080A2    Invalid Opcode
+$000080A4    BCS #$00B8
+$000080A8    BVC #$00B6
+$000080AC    BGE #$00B4
+$000080B0    BLT #$00B2
+$000080B4    BRA #$00B0
+$000080B8    OR.B (A4),D4
+$000080BA    OR.B D2,$5600
+$000080BE    OR.W #$FACE,D6
+$000080C2    OR.W D3,D0
+$000080C4    OR.L (A1),D1
+$000080C6    OR.L -(A3),D4
+$000080C8    ORI.B #$00040016D1
+$000080CE    ORI.B #$00380050(A3)
+$000080D4    Invalid Opcode
+Press any key to continue
+j
+$000080D6    ORI.B #$00A70001$FACE0023
+$000080E0    Invalid Opcode
+$000080E2    ORI.W #$0F44D3
+$000080E6    ORI.W #$FFF0(A2)+
+$000080EA    ORI.W #$FFA7$0001FACE
+$000080F2    ORI.L #$FF00$FF000001
+$000080FA    Invalid Opcode
+$000080FC    ORI.L #$0008D6
+$00008100    Invalid Opcode
+$00008102    MULS.W $5432,D1
+$00008106    MULS.W #$0ACE,D5
+$0000810A    DIVS.W D2,D1
+$0000810C    DIVS.W (A4),D5
+$0000810E    CMP.B #$000F,D3
+$00008112    CMP.B D2,D4
+$00008114    CMP.B $0001FACE,D7
+$0000811A    CMP.W #$98AE,D3
+$0000811E    CMP.W (A2)+,D2
+$00008120    CMP.L #$0FAF,D4
+$00008124    Invalid Opcode
+$00008126    CMP.L A3,D6
+$00008128    CMP.B A4,D3
+Press any key to continue
+j
+$0000812A    CMPI.B #$00420042$0C14
+$00008132    ORI.B #$0C5EB437-(A4)
+$00008138    CMPI.W #$0042D3
+$0000813C    CMPI.L #$0006-(A2)
+$00008140    Invalid Opcode
+$00008142    CMPI #$0C894BEDD2
+Would you like to dissamble another program (y/n)? n
+Goodbye!

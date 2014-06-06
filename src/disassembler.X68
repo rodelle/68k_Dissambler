@@ -1769,11 +1769,11 @@ Func_ORI
         MOVE.L  #2,D3
         JSR     GetBits
         CMP.L   #0,D0
-        BEQ     PRINT_LONGWORD
+        BEQ     PRINT_WORD
         CMP.L   #1,D0
         BEQ     PRINT_WORD
         CMP.L   #2,D0
-        BEQ     PRINT_WORD
+        BEQ     PRINT_LONGWORD
         * Not 0/1/2 then incorrect command
 
 PRINT_LONGWORD
@@ -1785,6 +1785,9 @@ PRINT_WORD
         BRA     ORI_DONE
 
 ORI_DONE
+        MOVE.L  #COMMA,D1
+        JSR     AddStringToStringBuffer
+
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
@@ -3083,7 +3086,7 @@ Func_Long_A
 Func_HexWord
         MOVEM.L     D1-D2,-(SP)
         CLR         D1
-        MOVE.B      #1,D1
+        MOVE.L      #1,D1
         JSR         MoveInstructionPointer
         MOVE.W      (A5),D1
         MOVE.B      #3,D2
@@ -3167,7 +3170,6 @@ Func_LongData
 *****************************************************************************
 Func_Data
         MOVEM.L     D1-D2,-(SP)
-        * Needs to get size here
         CMP.B       #0,D2
         BEQ         WORD
         BNE         LONG
@@ -4086,6 +4088,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
