@@ -31,10 +31,10 @@ START    ORG    $1000
 
 NoPreferenceDisassembler        
 
-NPD_DoWhile
         MOVE    #START_MSG,D1
         JSR     PrintMessage
-        
+
+NPD_DoWhile        
         MOVE    #gPrintCount,A0
         MOVE    #0,(A0) * set the number of currently printed lines to 0
         
@@ -3945,7 +3945,18 @@ sMULS   EQU     $4D554C53
 sCMPI   EQU     $434D5049
 
 NEW_LINE        DC.B    CR,LF,0
-START_MSG       DC.B    '68k_Disassemlber',CR,LF,'------------------',CR,LF,0
+START_MSG
+    DC.B    '    __   ___  _                       _   _       ',CR,LF
+    DC.B    '   / /  / _ \| |                     | \ | |      ',CR,LF
+    DC.B    '  / /_ | (_) | | __                  |  \| | ___  ',CR,LF
+    DC.B    ' |  _ \ > _ <| |/ /                  | . ` |/ _ \ ',CR,LF
+    DC.B    ' | (_) | (_) |   <                   | |\  | (_) |',CR,LF
+    DC.B    '  \___/ \___/|_|\_\_                 |_| \_|\___/ ',CR,LF
+    DC.B    ' |  __ \         / _|                             ',CR,LF
+    DC.B    ' | |__) | __ ___| |_ ___ _ __ ___ _ __   ___ ___  ',CR,LF
+    DC.B    ' |  ___/ ''__/ _ \  _/ _ \ ''__/ _ \ ''_ \ / __/ _ \ ',CR,LF
+    DC.B    ' | |   | | |  __/ ||  __/ | |  __/ | | | (_|  __/ ',CR,LF
+    DC.B    ' |_|   |_|  \___|_| \___|_|  \___|_| |_|\___\___| ',CR,LF,0
 
 kLinesPerScreen EQU  22
 gPrintCount
