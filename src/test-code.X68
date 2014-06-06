@@ -328,7 +328,20 @@ Start   ORG     $7FC0    ; first instruction of program
         DC.W    %1110000000010000      * bad op (variation of RO*/AS*/LS*)
         DC.W    %1110010011000000      * bad op (variation of RO*/AS*/LS*)
  
-*       TODO - movem
+        **** MOVEM.B ****
+        MOVE.B  D1-D3/A4-A6/A1,-(SP)
+        MOVE.B  D4/A4/D3/D1/A2,-(SP)
+        MOVE.B  D1/A3,-(SP)
+
+        **** MOVEM.W ****
+        MOVE.W  D1-D3/A4-A6/A1,-(SP)
+        MOVE.W  D4/A4/D3/D1/A2,-(SP)
+        MOVE.W  D1/A3,-(SP)
+        
+        **** MOVEM.L ****
+        MOVE.L  D1-D3/A4-A6/A1,-(SP)
+        MOVE.L  D4/A4/D3/D1/A2,-(SP)
+        MOVE.L  D1/A3,-(SP)        
         
 * separate the labels by a word
 bcs_label
@@ -345,7 +358,6 @@ jsr_label
         DC.W    0
                 
         END     Start       ; last line of source
-
 
 
 
