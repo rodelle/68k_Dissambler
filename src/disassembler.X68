@@ -1915,17 +1915,102 @@ NEG_DONE
 * void Func_MOVEM()
 *****************************************************************************
 Func_MOVEM
-        MOVEM.L  D1,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save D1
 
         * print pseudo assembly
         MOVE    #MOVEM_MSG,D1
         JSR     AddStringToStringBuffer
 
-        * increment A5 by 2 words
-        MOVE.L  #2,D1   * put 2 in D1 for parameter 1
+        * Gets address
+        MOVE.W  (A5),D1
+        MOVE.W  (A5),D4
+
+        MOVE.L  #SPACE,D1
+        JSR     AddStringToStringBuffer
+
+        * Check Direction
+        MOVE.L  D4,D1
+        MOVE.L  #10,D2
+        MOVE.L  #1,D3
+        JSR     GetBits
+        CMP.B   #0,D0
+        BEQ     MOVEM_IN
+        BNE     MOVEM_OUT
+
+MOVEM_IN
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnDataAnp
+        CMP.B   #0,D0
+        BNE     MOVEM_DONE
+        
+        * print MOVEM registers
+        MOVE.L  #1,D1
+        JSR     MoveInstructionPointer
+        CLR     D1
+        MOVE.W  (A5),D1
+        JSR     PreDecrementMovemBitMask
+        
+        MOVE.L  #COMMA,D1
+        JSR     AddStringToStringBuffer
+        
+        * print effective address
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     JumpAddressTableModeReg
+        
+        BRA     MOVEM_DONE
+
+MOVEM_OUT
+        * Checks for invalid address
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     GetModeReg
+        MOVE.L  D1,D2
+        MOVE.L  D0,D1
+        CLR     D0
+        JSR     CheckAnDnDataAnm
+        CMP.B   #0,D0
+        BNE     MOVEM_DONE
+        
+        * print effective address
+        MOVE.L  D4,D1
+        MOVE.L  #0,D2
+        MOVE.L  #6,D3
+        JSR     GetBits
+        MOVE.L  D0,D1
+        JSR     JumpAddressTableModeReg
+        
+        MOVE.L  #COMMA,D1
+        JSR     AddStringToStringBuffer
+        
+        * print MOVEM registers
+        MOVE.L  #1,D1
+        JSR     MoveInstructionPointer
+        CLR     D1
+        MOVE.W  (A5),D1
+        JSR     PreDecrementMovemBitMask
+        
+        BRA     MOVEM_DONE
+
+MOVEM_DONE
+        * increment A5 by 1 words
+        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1    * restore
+        MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
 
