@@ -29,11 +29,15 @@
 
 START    ORG    $1000
 
-NoPreferenceDisassembler
-        MOVE    #START_MSG,D1
-        JSR     PrintMessage
+NoPreferenceDisassembler        
 
 NPD_DoWhile
+        MOVE    #START_MSG,D1
+        JSR     PrintMessage
+        
+        MOVE    #gPrintCount,A0
+        MOVE    #0,(A0) * set the number of currently printed lines to 0
+        
         * JSR     GetStartEndAddress  * Grab ending and starting address from user
 
         MOVEA.L  #$7FC0,A5
@@ -172,6 +176,21 @@ PFRRL_Done
         MOVEM.L (SP)+, D1-D2 * Restore used registers
         RTS
 
+*****************************************************************************
+* PromptToContinue()
+* Args: None
+* Pauses the program until the user enters a value on the keyboard.
+*****************************************************************************
+PromptToContinue
+        MOVEM.L D0-D2, -(SP) * Save used registers
+        MOVE.L  #kContinuePrompt,D1
+        JSR     PrintMessage
+
+        MOVE.B  #5,D0 * Reads letter from the user into D1
+        TRAP    #15
+        
+        MOVEM.L (SP)+, D0-D2 * Restore used registers
+        RTS
 
 *****************************************************************************
 * GetStartEndAddress()
@@ -3209,15 +3228,26 @@ PrintStringBuffer
         BEQ     PSB_PrintInvalid   * if valid bit is not set, do not print
         MOVE.L  A0,D1
         JSR     PrintMessage
-        BRA     PSB_Done
+        BRA     PSB_Continue
 PSB_PrintInvalid
         MOVE.L  #kInvalidOpcode,D1
         JSR     PrintMessage
 
+PSB_Continue
+        MOVE    #gPrintCount,A0     
+        MOVE    (A0),D0             * read the number of lines printed since last prompt
+        ADD     #1,D0               * LinesPrinted++
+        CMP     #kLinesPerScreen,D0 
+        BLT     PSB_Done            * if (linesPrinted < kNumLinesPerScreen)
+        
+        MOVE    #0,D0               * reset the number of printed lines
+        JSR     PrintNewline
+        JSR     PromptToContinue    * pause the output
+
 PSB_Done
+        MOVE    D0,(A0)             * save the number of printed lines
         MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
         RTS
-
 
 *****************************************************************************
 * void InvalidateStringBuffer()
@@ -3917,6 +3947,10 @@ sCMPI   EQU     $434D5049
 NEW_LINE        DC.B    CR,LF,0
 START_MSG       DC.B    '68k_Disassemlber',CR,LF,'------------------',CR,LF,0
 
+kLinesPerScreen EQU  22
+gPrintCount
+        DS  2
+
 kStringBufferSize EQU 128
 kStringBuffer
     DS  kStringBufferSize
@@ -3938,6 +3972,9 @@ kEndAddressPrompt
 
 kRestartPrompt
     DC.B 'Would you like to dissamble another program (y/n)? ',0
+    
+kContinuePrompt
+    DC.B 'Press any key to coninue',CR,LF,0
 
 * opcode print outs
 MOVE_B_MSG      DC.B    'MOVE.B',0
@@ -4021,6 +4058,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
