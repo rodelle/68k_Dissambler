@@ -21,12 +21,20 @@ Start   ORG     $7FC0    ; first instruction of program
         MOVEA.L $10238,A2
         MOVEA.L (A3),A3
         MOVEA.L -(A3),A3
-        MOVEA.L (A3)+,A3
+        MOVEA.L (A3)+,A3         
 
         **** LEA ****
         LEA     (A5),A5
         LEA     $34512,A6
         LEA     $320,A6
+
+        **** Invalid LEA ****
+        DC.W    %0100101111000100     
+        DC.W    %0100101111100100     
+        DC.W    %0100101111001100     
+        DC.W    %0100101111011100     
+        DC.W    %0100101111101100     
+        DC.W    %0100101111110100     
 
         **** MOVE.B ****        
         MOVE.B  D2,D2
@@ -71,6 +79,10 @@ Start   ORG     $7FC0    ; first instruction of program
         ADD.L   D6,(A5)
         * ADD.L   #$32423F,D0 * assembles to addi
 
+        **** Invalid ADD ****
+        DC.W    %1101011011101010 * opmode field invalid
+        DC.W    %1101010111010101 * opmode field invalid
+        
         **** ADDA.W ****
         ADDA.W  (A5),A5
         ADDA.W  D0,A5        
@@ -90,10 +102,13 @@ Start   ORG     $7FC0    ; first instruction of program
         SUB.W   (A1)+,D4
         SUB.W   D4,(A4)
 
-
         **** SUB.L ****
         SUB.L   (A4),D2
         SUB.L   D1,$424242
+
+        **** Invalid SUB ****
+        DC.W    %1001011011101010 * opmode field invalid
+        DC.W    %1001010111010101 * opmode field invalid
 
         **** SUBQ.B ****
         SUBQ.B  #$4,(A1)
@@ -106,6 +121,10 @@ Start   ORG     $7FC0    ; first instruction of program
         **** SUBQ.L ****
         SUBQ.L  #$1,$44000
         SUBQ.L  #$1,D2
+
+        **** Invalid SUBQ ****
+        DC.W    %0101011111000010 * size field invalid
+        DC.W    %0101010110111100 * <ea> field invalid (write into data literal)
 
         **** Bcc/BRA ****
         BCS     bcs_label
@@ -127,31 +146,60 @@ Start   ORG     $7FC0    ; first instruction of program
         OR.L    -(A3),D4
         
         **** ORI.B ****
-        
+        ORI.B   #$4,D1
+        ORI.B   #$13,(A6)
+        ORI.B   #$50,$0ACE
+        ORI.B   #$A7,$0001FACE
+        ORI.B   #$8,-(A3)
+
         **** ORI.W ****
+        ORI.W   #$0F44,D3
+        ORI.W   #$FFF0,(A2)+
+        ORI.W   #$FFA7,$0001FACE
         
         **** ORI.L ****        
+        ORI.L   #$FF00FF00,$12345
+        ORI.L   #$8F120,D6
         
         **** MULS.W ****
         MULS.W  $5432,D1
-        MULS.W  #$ACE,D5
+        MULS.W  #$0ACE,D5
 
         **** DIVS.W ****
         DIVS.W  D2,D1
         DIVS.W  (A4),D5
 
         **** CMP.B ****
+        CMP.B   #$F,D3
+        CMP.B   D2,D4
+        CMP.B   $1FACE,D7
         
         **** CMP.W ****
+        CMP.W   #$98AE,D3
+        CMP.W   (A2)+,D2
         
-        **** CMP.L ****    
+        **** CMP.L **** 
+        CMP.L   #$FAFAE67,D4
+        CMP.L   A3,D6
+
+        **** Invalid CMP ****
+        DC.W    %1011011000001100 * An can't be used as source if byte size
 
         **** CMPI.B ****
-        
+        CMPI.B  #$42,$42
+        CMPI.B  #$24,(A4)  
+
         **** CMPI.W ****
+        CMPI.W  #$B437,(A6)+
+        CMPI.W  #$42,D3
         
         **** CMPI.L ****    
-        
+        CMPI.L  #$66766,-(A2)
+                
+        **** Invalid CMPI ****
+        DC.W    %0000110011000010 * invalid size
+        DC.W    %0000110010001001 * An can't be destination for CMPI        
+
         **** EOR.B ****
         
         **** EOR.W ****
@@ -178,7 +226,16 @@ Start   ORG     $7FC0    ; first instruction of program
 *        movem
         
         
+        **** LEA ****
+        LEA     12(A5),A5
+        
+        
         **** Error opcodes ****
+        
+
+
+
+
         DC.W    %0111000000000000      * bad op (based on first 4 bits)
         DC.W    %1010000000000000      * bad op (based on first 4 bits)
         DC.W    %1111000000000000      * bad op (based on first 4 bits)
