@@ -63,7 +63,7 @@ DisassembleLoop
         JSR     ResetStringBuffer
 
         * else decode next instruction
-        JSR     Func_JumpOpcodeTable
+        JSR     DecodeOpcode
 
         * actually print the buffer
         JSR     PrintStringBuffer
@@ -458,10 +458,10 @@ Done_Func_Print
 
 
 *****************************************************************************
-* void Func_JumpOpcodeTable()
+* void DecodeOpcode()
 * expects global variable A5 to contain current address location
 *****************************************************************************
-Func_JumpOpcodeTable
+DecodeOpcode
         MOVEM.L D0-D3/A1,-(SP)     * save registers that will be modified
 
         * get the 4 MSBits of the address
@@ -2080,18 +2080,19 @@ Func_SUB
         JSR     AddStringToStringBuffer
 
         * determin data first or second
+        MOVE.L  D4,D1
         MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     GetBits
 
         CMP.B   #0,D0
         BNE     Func_SUB_DataFirst
-        BEQ     Func_SUB_DataSecond
+        BRA     Func_SUB_DataSecond
 
 Func_SUB_DataFirst
         * Print Data Register
         CLR.L   D1
-        MOVE.W  D4,D1
+        MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
