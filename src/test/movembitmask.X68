@@ -8,25 +8,70 @@
     ORG    $1000
 START:                  ; first instruction of program
 
-    MOVE    #%11111111,D1
-    MOVE    #0,D2
-    MOVE    #DataRegisterStrings,D3
     JSR     ResetStringBuffer
-    JSR     PrintRegistersFromBitMask
-
-    MOVE    #1,D2
-    MOVE    #AddressRegisterStrings,D3
-    JSR     PrintRegistersFromBitMask
+    MOVE.L  #%1110100011001101,D1
+    JSR     PostIncrementMovemBitMask
     JSR     PrintStringBuffer
+    
+    JSR     PrintNewline
+    
+    JSR     ResetStringBuffer
+    MOVE.L  #%1110100011001101,D1
+    JSR     PreDecrementMovemBitMask
+    JSR     PrintStringBuffer
+
     SIMHALT
     
+*****************************************************************************
+* PostIncrementMovemBitMask
+* Args: D1 (bit mask)
+* Traverses the bit mask and add the associated register to the bit mask
+* ex.   BitMask - 1  1  1  0  1  0  0  0  1  1  0  0  1  1  0  1 
+*                 A7 A6 A5 A4 A3 A2 A1 A0 D7 D6 D5 D4 D3 D2 D1 D0
+*       prints - D0/D2/D3/D6/D7/A3/A5/A6/A7                 
+*****************************************************************************
+PostIncrementMovemBitMask
+    MOVEM   D0-D3,-(SP)
+    MOVE    #0,D2       * printing first half of registers
+    MOVE    #DataRegisterStrings,D3
+    JSR     PrintRegistersFromBitMask
+
+    LSR     #8,D1       * read the left half of the bit mask
+    MOVE    D0,D2       * may or may not have previously printed registers
+    MOVE    #AddressRegisterStrings,D3
+    JSR     PrintRegistersFromBitMask
+    MOVEM   (SP)+,D0-D3
+    RTS
+
+*****************************************************************************
+* PreDecrementMovemBitMask
+* Args: D1 (bit mask)
+* Traverses the bit mask and add the associated register to the bit mask
+* ex.   BitMask - 1  1  1  0  1  0  0  0  1  1  0  0  1  1  0  1 
+*                 D0 D1 D2 D3 D4 D5 D6 D7 A0 A1 A2 A3 A4 A5 A6 A7
+*       prints - A7/A5/A4/A1/A0/D4/D2/D1/D0
+*****************************************************************************
+PreDecrementMovemBitMask
+    MOVEM   D0-D7,-(SP)    
+    MOVE    #0,D2       * printing first half of registers
+    MOVE    #ReversedAddressRegisterStrings,D3
+    JSR     PrintRegistersFromBitMask
+
+    LSR     #8,D1       * read the left half of the bit mask
+    MOVE    D0,D2       * may or may not have previously printed registers
+    MOVE    #ReversedDataRegisterStrings,D3
+    JSR     PrintRegistersFromBitMask
+    MOVEM   (SP)+,D0-D7
+    RTS
+
+
 *****************************************************************************
 * PrintRegistersFromBitMask
 * Args: D1 (bit mask), D2 (isFirst), D3 (registerStrings)
 * Traverses the bit mask and add the associated register to the bit mask
 *****************************************************************************
 PrintRegistersFromBitMask
-    MOVEM   D0-D7/A0-A6,-(SP)
+    MOVEM   D1-D7/A0-A6,-(SP)
 
     MOVE    D3,A0
     MOVE    #8,D7
@@ -74,8 +119,9 @@ PRFBM_AddSlash
     BRA     PRFBM_AddSlashContinue
     
 PRFBM_Done
+    MOVE    D6,D0   * return the number of registers printed
     MOVEM   (SP)+,D1
-    MOVEM   (SP)+,D0-D7/A0-A6
+    MOVEM   (SP)+,D1-D7/A0-A6
     RTS
 
 DataRegisterStrings
@@ -88,6 +134,16 @@ DataRegisterStrings
     DC.B    'D6',0,0
     DC.B    'D7',0,0
     
+ReversedDataRegisterStrings
+    DC.B    'D7',0,0
+    DC.B    'D6',0,0
+    DC.B    'D5',0,0
+    DC.B    'D4',0,0
+    DC.B    'D3',0,0
+    DC.B    'D2',0,0
+    DC.B    'D1',0,0
+    DC.B    'D0',0,0
+    
 AddressRegisterStrings
     DC.B    'A0',0,0
     DC.B    'A1',0,0
@@ -97,6 +153,17 @@ AddressRegisterStrings
     DC.B    'A5',0,0
     DC.B    'A6',0,0
     DC.B    'A7',0,0
+    
+ReversedAddressRegisterStrings
+    DC.B    'A7',0,0
+    DC.B    'A6',0,0
+    DC.B    'A5',0,0
+    DC.B    'A4',0,0
+    DC.B    'A3',0,0
+    DC.B    'A2',0,0
+    DC.B    'A1',0,0
+    DC.B    'A0',0,0
+
 
 *****************************************************************************
 * Opcode Table
@@ -3151,6 +3218,7 @@ FOURTEEN        DC.B    'E',0
 FIFTEEN         DC.B    'F',0
 
     END         START
+
 
 
 
