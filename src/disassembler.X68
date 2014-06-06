@@ -37,7 +37,7 @@ NPD_DoWhile
         * JSR     GetStartEndAddress  * Grab ending and starting address from user
 
         MOVEA.L  #$7FC0,A5
-        MOVEA.L  #$80D0,A6
+        MOVEA.L  #$80BC,A6
 
         JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                     * parsing each opcode
@@ -3553,7 +3553,7 @@ CheckAn
         CMP.B   #%001,D1
         BNE     CheckAnDone
         ADD.B   #1,D0
-        * jump to invalidate function
+        JSR     InvalidateStringBuffer
 CheckAnDone     
         MOVEM.L (SP)+,D1-D2
         RTS
@@ -3569,7 +3569,7 @@ CheckDn
         CMP.B   #%000,D1
         BNE     CheckDnDone
         ADD.B   #1,D0
-        * jump to invalidate function
+        JSR     InvalidateStringBuffer
 CheckDnDone     
         MOVEM.L (SP)+,D1-D2
         RTS
@@ -3588,7 +3588,7 @@ CheckData
 CheckDataReg
         CMP.B   #%100,D2
         ADD.B   #1,D0
-        * jump to invalidate function
+        JSR     InvalidateStringBuffer
 CheckDataDone     
         MOVEM.L (SP)+,D1-D2
         RTS
@@ -3604,7 +3604,7 @@ CheckAnp
         CMP.B   #%011,D1
         BNE     CheckAnpDone
         ADD.B   #1,D0
-        * jump to invalidate function
+        JSR     InvalidateStringBuffer
 CheckAnpDone     
         MOVEM.L (SP)+,D1-D2
         RTS
@@ -3620,7 +3620,7 @@ CheckAnm
         CMP.B   #%100,D1
         BNE     CheckAnmDone
         ADD.B   #1,D0
-        * jump to invalidate function
+        JSR     InvalidateStringBuffer
 CheckAnmDone     
         MOVEM.L (SP)+,D1-D2
         RTS
