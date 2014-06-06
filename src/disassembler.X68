@@ -41,7 +41,7 @@ NPD_DoWhile
         * JSR     GetStartEndAddress  * Grab ending and starting address from user
 
         MOVEA.L  #$7FC0,A5
-        MOVEA.L  #$8146,A6
+        MOVEA.L  #$8202,A6
         
         JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                     * parsing each opcode
@@ -447,6 +447,7 @@ Long_PrintSizeStandard
 Error_PrintSizeStandard
         * else it is an error
         JSR     InvalidateStringBuffer
+        MOVE    #Q_MSG,D1
 
 Done_PrintSizeStandard
         JSR     AddStringToStringBuffer
@@ -4113,6 +4114,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
