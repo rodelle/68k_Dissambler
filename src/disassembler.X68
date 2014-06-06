@@ -41,7 +41,7 @@ NPD_DoWhile
         * JSR     GetStartEndAddress  * Grab ending and starting address from user
 
         MOVEA.L  #$7FC0,A5
-        MOVEA.L  #$80BC,A6
+        MOVEA.L  #$8146,A6
 
         JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                     * parsing each opcode
@@ -62,7 +62,7 @@ DisassembleLoop
         CMP.L   A5,A6   * compare starting address to ending address
 
         * if starting address == ending address, done
-        BEQ     DisassembleDone
+        BLE     DisassembleDone
 
         JSR     ResetStringBuffer
 
@@ -3202,6 +3202,7 @@ Func_Print_Number
 * Dummy Return
 *****************************************************************************
 Func_Junk
+        JSR     InvalidateStringBuffer
         RTS
 
 
@@ -4061,6 +4062,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 
