@@ -2,7 +2,7 @@
 * Title      : Disassembler
 * Written by : No Preference
 * Date       : 5/30/14
-*  
+*
 * 68000 Machine Code Disassembler
 *****************************************************************************
 *
@@ -17,23 +17,28 @@
 *   Preservation - all Dn and An registers that are modified must be saved
 *                  at entry on the stack, and restored from the stack before
 *                  RTS (D0 and A5 are exceptions).
-* 
+*
 *****************************************************************************
 
+
+*****************************************************************************
 *****************************************************************************
 * Main
 *****************************************************************************
+*****************************************************************************
+
 START    ORG    $1000
+
 NoPreferenceDisassembler
     MOVE    #START_MSG,D1
     JSR     PrintMessage
 
 NPD_DoWhile
     * JSR     GetStartEndAddress  * Grab ending and starting address from user
-    
+
     MOVEA.L  #$7FC0,A5
     MOVEA.L  #$80D0,A6
-    
+
     JSR     DisassembleLoop     * Ending and starting address are assigned, begin loop
                                 * parsing each opcode
     JSR     PromptForReinput    * Ask the user if they want to dissamble another program
@@ -41,7 +46,7 @@ NPD_DoWhile
     JSR     PrintNewline        * prints newline, does not modify D0
     CMP     #0,D0
     BEQ     NPD_DoWhile         * User responded they wish to restart
-    
+
 NPD_ProgramDone
     MOVE    #kGoodbyeMessage,D1
     JSR     PrintMessage
@@ -54,12 +59,12 @@ DisassembleLoop
 
         * if starting address == ending address, done
         BEQ     DisassembleDone
-        
+
         JSR     ResetStringBuffer
-        
+
         * else decode next instruction
         JSR     Func_JumpOpcodeTable
-        
+
         * actually print the buffer
         JSR     PrintStringBuffer
         JSR     PrintNewLine
@@ -69,123 +74,14 @@ DisassembleLoop
 DisassembleDone
         RTS
 
-*****************************************************************************
-* PromptForReinput()
-* Args: None
-* Prompts the user with a question to restart the program and grabs a single
-*   character input as response.
-* Returns 0 if the user responded yes, 1 otherwise
-* Ex. "Would you like to restart the program (y/n)?" y => D0 = 0
-*     "Would you like to restart the program (y/n)?" n => D0 = 1
-*****************************************************************************
-PromptForReinput
-    MOVEM.L D1-D2, -(SP) * Save used registers
-    MOVE.L #kRestartPrompt,D1
-    JSR PrintMessage
-    
-    MOVE.B  #5,D0 * Reads letter from the user into D1
-    TRAP    #15
-    
-    MOVE.B  D1,D2
-    SUB.B   #121,D2 * compare to 'y'
-    BEQ     PFRRL_ReturnTrue
-    
-    MOVE.B  D1,D2
-    SUB.B   #89,D1 * compare to 'Y'
-    BEQ     PFRRL_ReturnTrue
-    
-    MOVE    #1,D0  * user said no, return false
-    BRA     PFRRL_Done
-    
-PFRRL_ReturnTrue
-    MOVE    #0,D0  * user said yes, return true
-    
-PFRRL_Done
-    MOVEM.L (SP)+, D1-D2 * Restore used registers
-    RTS
-    
-*****************************************************************************
-* GetStartEndAddress()
-* Args: None
-* Gets two addresses from the user and assigns them to A5 and A6 respectively
-*   A5 and A6 represent the starting and ending address of the program we
-*   are dissambling.
-* Ex. User enters 8000 and A000 as the starting and ending address
-*     A5 = $00008000, A6 = $0000A000
-*****************************************************************************
-GetStartEndAddress
-    MOVE.L #kStartAddressPrompt,D1
-    JSR PrintMessage
-    
-    JSR GetFourHexBitsFromUser
-    MOVE.L #0,A5
-    MOVEA.L D0,A5
-    
-    JSR PrintNewline
-    
-    MOVE.L #kEndAddressPrompt,D1
-    JSR PrintMessage
-    
-    JSR GetFourHexBitsFromUser
-    MOVE.L #0,A6
-    MOVEA.L D0,A6
-    
-    JSR PrintNewline
-    
-    RTS
-    
-*****************************************************************************
-* GetFourHexBitsFromUser()
-* Args: None
-* Returns the hexadecimal value of the next 4 characters entered by the user
-* Ex. "AD12" returns $AD12
-*****************************************************************************
-GetFourHexBitsFromUser
-    MOVEM.L D2-D4, -(SP) * Save used registers
-    CLR     D2
-    CLR     D0
-    MOVE.B  #4,D3 * Read the next 4 letters entered by user
-    
-GFHBRL_DoWhile
-    MOVE.B  #5,D0 * Reads letter from the user into D1
-    TRAP    #15
 
-    JSR ValueFromHexadecimal * convert to decimal
-
-    LSL.L   #4,D2 * Create space for next hex bit
-    ADD.B   D0,D2 * Add the just read hex bit into the return value
-
-    SUB.B   #1,D3       * Read the next hex bit
-    BEQ GFHBRL_Done     * (while --D3 != 0)
-    BRA GFHBRL_DoWhile
-    
-GFHBRL_Done
-    MOVE.L  D2,D0
-    MOVEM.L (SP)+, D2-D4 * Restore used registers
-    RTS
 
 *****************************************************************************
-* ValueFromHexAscii(hexNumber)
-* Args: D1 (the hexBit ascii value)
-* Converts the hex bit ascii value into decimal value
-* Ex. ValueFromHexAscii(65) = $A * The ascii value of 'A' is 65
-*     ValueFromHexAscii(51) = $3 * The ascii value of '3' is 51
 *****************************************************************************
-ValueFromHexadecimal
-    MOVEM.L D1, -(SP)   * save registers
-    CMP.B   #58,D1      * Ascii Value '9' is at 57
-    BLT     VFHRL_ParseNumber
-    BRA     VFHRL_ParseLetter
+* Function Tables
+*****************************************************************************
+*****************************************************************************
 
-VFHRL_ParseNumber
-    SUB.B   #48,D1      * Ascii value '0' = 48
-    BRA VFHRL_Done
-VFHRL_ParseLetter
-    SUB.B   #55,D1      * Ascii value 'A' = 65
-VFHRL_Done
-    MOVE.L  D1,D0
-    MOVEM.L (SP)+, D1   * restore used registers
-    RTS
 
 *****************************************************************************
 * Opcode Table
@@ -232,9 +128,136 @@ AddressTable
         DC.L    Func_Data   * 111 100 11
 
 
+
+
+*****************************************************************************
 *****************************************************************************
 * Functions
 *****************************************************************************
+*****************************************************************************
+
+
+*****************************************************************************
+* PromptForReinput()
+* Args: None
+* Prompts the user with a question to restart the program and grabs a single
+*   character input as response.
+* Returns 0 if the user responded yes, 1 otherwise
+* Ex. "Would you like to restart the program (y/n)?" y => D0 = 0
+*     "Would you like to restart the program (y/n)?" n => D0 = 1
+*****************************************************************************
+PromptForReinput
+    MOVEM.L D1-D2, -(SP) * Save used registers
+    MOVE.L #kRestartPrompt,D1
+    JSR PrintMessage
+
+    MOVE.B  #5,D0 * Reads letter from the user into D1
+    TRAP    #15
+
+    MOVE.B  D1,D2
+    SUB.B   #121,D2 * compare to 'y'
+    BEQ     PFRRL_ReturnTrue
+
+    MOVE.B  D1,D2
+    SUB.B   #89,D1 * compare to 'Y'
+    BEQ     PFRRL_ReturnTrue
+
+    MOVE    #1,D0  * user said no, return false
+    BRA     PFRRL_Done
+
+PFRRL_ReturnTrue
+    MOVE    #0,D0  * user said yes, return true
+
+PFRRL_Done
+    MOVEM.L (SP)+, D1-D2 * Restore used registers
+    RTS
+
+
+*****************************************************************************
+* GetStartEndAddress()
+* Args: None
+* Gets two addresses from the user and assigns them to A5 and A6 respectively
+*   A5 and A6 represent the starting and ending address of the program we
+*   are dissambling.
+* Ex. User enters 8000 and A000 as the starting and ending address
+*     A5 = $00008000, A6 = $0000A000
+*****************************************************************************
+GetStartEndAddress
+    MOVE.L #kStartAddressPrompt,D1
+    JSR PrintMessage
+
+    JSR GetFourHexBitsFromUser
+    MOVE.L #0,A5
+    MOVEA.L D0,A5
+
+    JSR PrintNewline
+
+    MOVE.L #kEndAddressPrompt,D1
+    JSR PrintMessage
+
+    JSR GetFourHexBitsFromUser
+    MOVE.L #0,A6
+    MOVEA.L D0,A6
+
+    JSR PrintNewline
+
+    RTS
+
+
+*****************************************************************************
+* GetFourHexBitsFromUser()
+* Args: None
+* Returns the hexadecimal value of the next 4 characters entered by the user
+* Ex. "AD12" returns $AD12
+*****************************************************************************
+GetFourHexBitsFromUser
+    MOVEM.L D2-D4, -(SP) * Save used registers
+    CLR     D2
+    CLR     D0
+    MOVE.B  #4,D3 * Read the next 4 letters entered by user
+
+GFHBRL_DoWhile
+    MOVE.B  #5,D0 * Reads letter from the user into D1
+    TRAP    #15
+
+    JSR ValueFromHexadecimal * convert to decimal
+
+    LSL.L   #4,D2 * Create space for next hex bit
+    ADD.B   D0,D2 * Add the just read hex bit into the return value
+
+    SUB.B   #1,D3       * Read the next hex bit
+    BEQ GFHBRL_Done     * (while --D3 != 0)
+    BRA GFHBRL_DoWhile
+
+GFHBRL_Done
+    MOVE.L  D2,D0
+    MOVEM.L (SP)+, D2-D4 * Restore used registers
+    RTS
+
+
+*****************************************************************************
+* ValueFromHexAscii(hexNumber)
+* Args: D1 (the hexBit ascii value)
+* Converts the hex bit ascii value into decimal value
+* Ex. ValueFromHexAscii(65) = $A * The ascii value of 'A' is 65
+*     ValueFromHexAscii(51) = $3 * The ascii value of '3' is 51
+*****************************************************************************
+ValueFromHexadecimal
+    MOVEM.L D1, -(SP)   * save registers
+    CMP.B   #58,D1      * Ascii Value '9' is at 57
+    BLT     VFHRL_ParseNumber
+    BRA     VFHRL_ParseLetter
+
+VFHRL_ParseNumber
+    SUB.B   #48,D1      * Ascii value '0' = 48
+    BRA VFHRL_Done
+VFHRL_ParseLetter
+    SUB.B   #55,D1      * Ascii value 'A' = 65
+VFHRL_Done
+    MOVE.L  D1,D0
+    MOVEM.L (SP)+, D1   * restore used registers
+    RTS
+
 
 
 *****************************************************************************
@@ -245,25 +268,25 @@ AddressTable
 *****************************************************************************
 Func_JumpAddressTableModeReg
             MOVEM.L D0-D6/A1,-(SP)
-            
+
             CLR     D6
             MOVE.B  D2,D6
-            
+
             * preping D2/D3 for mode/register
             CLR     D2
             CLR     D3
             MOVE.B  D1,D2   * Mode
             MOVE.B  D1,D3   * Register
-            
+
             * get mode
             MOVE    #3,D4   * Shift Mode down into LS 3 bits
             LSR.B   D4,D2   * Mode
-            
+
             * get register
             MOVE    #5,D4   * Shift non-register bits out
             LSL.B   D4,D3   * And register into LS 3 bits
             LSR.B   D4,D3   * Register
-            
+
             * check if Mode is 0 - 6
             MOVE.B  #7,D5
             SUB.B   D2,D5
@@ -278,36 +301,36 @@ Func_JumpAddressTableModeReg
 *****************************************************************************
 Func_JumpAddressTableRegMode
             MOVEM.L D0-D6/A1,-(SP)
-            
+
             CLR     D6
             MOVE.B  D2,D6
-            
+
             * preping D2/D3 for mode/register
             CLR     D2
             CLR     D3
             MOVE.B  D1,D2
             MOVE.B  D1,D3
-            
+
             * get mode
             MOVE    #3,D4
             LSR.B   D4,D3
-            
+
             * get register
             MOVE    #5,D4
             LSL.B   D4,D2
             LSR.B   D4,D2
-            
+
             * check if Mode is 0 - 6
             MOVE.B  #7,D5
             SUB.B   D2,D5
             BNE     NO_ADD_TOGETHER
             BRA     ADD_TOGETHER
-            
+
 *****************************************************************************
 * Helpers for the JumpAddressTable Functions
 *****************************************************************************
 * get jump value for Word/Long Address OR data
-ADD_TOGETHER            
+ADD_TOGETHER
             LEA     AddressTable,A1
             CLR     D0
             ADD.W   D2,D0
@@ -326,7 +349,7 @@ NO_ADD_TOGETHER
             ADD.W   A1,D0
             MOVEA.W D0,A1
             BRA     Done_Func_JumpAddressTable
-            
+
 Done_Func_JumpAddressTable
             CLR     D2
             MOVE.B  D6,D2
@@ -364,16 +387,16 @@ Func_MoveInstructionPointer
 *****************************************************************************
 Func_PrintSizeStandard
         MOVEM.L D1-D3,-(SP)
-        
+
         CLR.L   D1
         MOVE.W  (A5),D1         * copy current "PC" into D1
         MOVE.L  #6,D2           * get bit 6
         MOVE.L  #2,D3           * to bit 7
         JSR     Func_GetBits    * store result in D0
-        
+
         * print the size string
         MOVE.L  D0,D1           * move size bits into D1
-        
+
         * if D1 is 0, then it is a byte
         * load 'byte' msg into D0
         CMP     #0,D1
@@ -388,7 +411,7 @@ Word_Func_PrintSizeStandard
         BNE     Long_Func_PrintSizeStandard
         MOVE    #W_MSG,D1
         BRA     Done_Func_PrintSizeStandard
-   
+
 Long_Func_PrintSizeStandard
         * if D1 is 2, then it is a long
         * load 'long' msg into D0
@@ -397,15 +420,15 @@ Long_Func_PrintSizeStandard
         MOVE    #L_MSG,D1
         BRA     Done_Func_PrintSizeStandard
 
-Error_Func_PrintSizeStandard 
+Error_Func_PrintSizeStandard
         * else it is an error
         MOVE    #Q_MSG,D1
 
 Done_Func_PrintSizeStandard
         JSR     Func_Print
-        MOVEM.L (SP)+,D1-D3     
+        MOVEM.L (SP)+,D1-D3
         RTS
-        
+
 
 *****************************************************************************
 * void Func_Print(MsgAddress)
@@ -422,11 +445,11 @@ Loop_Func_Print
         MOVE.B  (A1)+,D1
         CMP     #0,D1
         BEQ     Done_Func_Print
-        
+
         MOVE.L  #1,D2
-        JSR     AddWordToStringBuffer               
+        JSR     AddWordToStringBuffer
         BRA     Loop_Func_Print
-        
+
 Done_Func_Print
         MOVEM.L (SP)+,D0-D7/A1
         RTS
@@ -828,11 +851,11 @@ NEG_MOVEM_Func_MISC
 
         * if bit 11 is 0 then the instruction is probably NEG
         BEQ     NEG_Func_ASL_ASR
-        
+
         * else it is probably MOVEM
         JSR     Func_MOVEM
         BRA     Done_Func_MISC
-        
+
 NEG_Func_ASL_ASR
         JSR     Func_NEG
 
@@ -1000,7 +1023,7 @@ Func_MOVEA_L
         * print pseudo assembly
         MOVE    #MOVEA_L_MSG,D1
         JSR     Func_Print
-        
+
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
@@ -1016,11 +1039,11 @@ Func_MOVEA_L
         MOVE.L  D0,D1
         MOVE.L  #1,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the An parameter for MOVEA.L
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1065,11 +1088,11 @@ Func_MOVE_L
         MOVE.L  D0,D1
         MOVE.L  #1,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the Destination parameter for MOVE.L
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1112,11 +1135,11 @@ Func_MOVEA_W
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the An parameter for MOVEA.L
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1161,11 +1184,11 @@ Func_MOVE_W
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the destination parameter for MOVE.W
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1209,11 +1232,11 @@ Func_MOVE_B
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the destination parameter for MOVE.B
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1241,7 +1264,7 @@ Func_ADD
         * print pseudo assembly
         MOVE    #ADD_MSG,D1
         JSR     Func_Print
-        
+
         * print the size string (standard is in bits 6-7)
         JSR     Func_PrintSizeStandard
 
@@ -1257,7 +1280,7 @@ Func_ADD
         MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     Func_GetBits
-        
+
         CMP.B   #0,D0
         BNE     Func_ADD_DataFirst
         BEQ     Func_ADD_DataSecond
@@ -1271,11 +1294,11 @@ Func_ADD_DataFirst
         JSR     Func_GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Print destination effective address
         CLR     D1
         MOVE.W  D4,D1
@@ -1286,7 +1309,7 @@ Func_ADD_DataFirst
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
         BRA     ADD_Done
-        
+
 Func_ADD_DataSecond
         * Print destination effective address
         CLR     D1
@@ -1297,11 +1320,11 @@ Func_ADD_DataSecond
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Print Data Register
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1311,7 +1334,7 @@ Func_ADD_DataSecond
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     ADD_Done
-        
+
 ADD_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1337,7 +1360,7 @@ Func_ADDA
         MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     Func_GetBits
-        
+
         CMP.B   #0,D0
         BNE     Func_ADDA_L
         BEQ     Func_ADDA_W
@@ -1361,11 +1384,11 @@ Func_ADDA_W
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the An parameter for ADDA.W
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1385,7 +1408,7 @@ Func_ADDA_L
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         CLR     D1
         MOVE.W  D4,D1
 
@@ -1396,11 +1419,11 @@ Func_ADDA_L
         MOVE.L  D0,D1
         MOVE.L  #1,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Gets and prints the An parameter for ADDA.L
         CLR.L   D1
         MOVE.W  D4,D1
@@ -1411,7 +1434,7 @@ Func_ADDA_L
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     ADDA_Done
-        
+
 ADDA_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1439,17 +1462,17 @@ Func_OR
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * determin data first or second
-        MOVE.L  D4,D1        
+        MOVE.L  D4,D1
         MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     Func_GetBits
-        
+
         CMP.B   #0,D0
         BNE     Func_OR_DataFirst
         BRA     Func_OR_DataSecond
-        
+
 Func_OR_DataFirst
         * Print Data Register
         CLR.L   D1
@@ -1459,11 +1482,11 @@ Func_OR_DataFirst
         JSR     Func_GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Print destination effective address
         CLR     D1
         MOVE.L  D4,D1
@@ -1475,7 +1498,7 @@ Func_OR_DataFirst
         JSR     Func_JumpAddressTableModeReg
         BRA     OR_Done
 
-        
+
 Func_OR_DataSecond
         * Print destination effective address
         CLR     D1
@@ -1486,11 +1509,11 @@ Func_OR_DataSecond
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Print Data Register
         CLR.L   D1
         MOVE.L  D4,D1
@@ -1500,7 +1523,7 @@ Func_OR_DataSecond
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     OR_Done
-        
+
 OR_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -1527,11 +1550,11 @@ Func_BCLR
         MOVE.L  #3,D2
         MOVE.L  #3,D3
         JSR     Func_GetBits
-        
+
         CMP.B   #0,D0
         BEQ     BCLR_DataDestination
         BRA     BCLR_OtherDestination
-        
+
 BCLR_DataDestination
         *Print size/space
         MOVE.L  #L_MSG,D1
@@ -1547,7 +1570,7 @@ BCLR_OtherDestination
         MOVE.L  #SPACE,D1
         JSR     Func_Print
         BRA     BCLR_SourceBranch
-        
+
 BCLR_SourceBranch
         MOVE.L  D4,D1
         MOVE.L  #6,D2
@@ -1628,7 +1651,7 @@ Func_ORI
         BEQ     PRINT_WORD
         * Not 0/1/2 then incorrect command
 
-PRINT_LONGWORD        
+PRINT_LONGWORD
         JSR     Func_LongData
         BRA     ORI_DONE
 
@@ -1686,7 +1709,7 @@ Func_CMPI
         BEQ     PRINT_WORD_CMPI
         * Not 0/1/2 then incorrect command
 
-PRINT_LONGWORD_CMPI 
+PRINT_LONGWORD_CMPI
         JSR     Func_LongData
         BRA     CMPI_DONE
 
@@ -1764,7 +1787,7 @@ Func_MOVEM
 
         MOVEM.L  (SP)+,D1    * restore
         RTS
-        
+
 
 *****************************************************************************
 * void Func_JSR()
@@ -1775,7 +1798,7 @@ Func_JSR
         * print pseudo assembly
         MOVE    #JSR_MSG,D1
         JSR     Func_Print
-        
+
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
@@ -1812,10 +1835,10 @@ Func_LEA
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-        
+
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get source mode/reg and print
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -1823,10 +1846,10 @@ Func_LEA
         JSR     Func_GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
-        
+
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Get address register
         MOVE.L  D4,D1
         MOVE.L  #9,D2
@@ -1882,40 +1905,40 @@ Func_SUBQ
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Print # for data
         MOVE.L  #POUND,D1
         JSR     Func_Print
-        
+
         * Get number 1-8 for immediate data
         MOVE.L  D4,D1
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     Func_GetBits
-        
+
         * If D0 == 0 change to 8
         CMP.L   #0,D0
         BEQ     ADD_EIGHT
         BRA     SUBQ_CONTINUE
-        
+
 ADD_EIGHT
         ADD.B   #8,D0
         BRA     SUBQ_CONTINUE
-        
+
 SUBQ_CONTINUE
         * Print immediate data
         MOVE.L  D0,D1
         JSR     Func_Print_Number
-        
+
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Get mode-reg
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
-        
+
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
 
@@ -2053,12 +2076,12 @@ Func_SUB
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * determin data first or second
         MOVE.L  #8,D2
         MOVE.L  #1,D3
         JSR     Func_GetBits
-        
+
         CMP.B   #0,D0
         BNE     Func_SUB_DataFirst
         BEQ     Func_SUB_DataSecond
@@ -2072,11 +2095,11 @@ Func_SUB_DataFirst
         JSR     Func_GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Print destination effective address
         CLR     D1
         MOVE.W  D4,D1
@@ -2088,7 +2111,7 @@ Func_SUB_DataFirst
         JSR     Func_JumpAddressTableModeReg
         BRA     SUB_Done
 
- 
+
 Func_SUB_DataSecond
         * Print destination effective address
         CLR     D1
@@ -2099,11 +2122,11 @@ Func_SUB_DataSecond
         MOVE.L  D0,D1
         MOVE.L  #0,D2
         JSR     Func_JumpAddressTableModeReg
-        
+
         * Print comma
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Print Data Register
         CLR.L   D1
         MOVE.W  D4,D1
@@ -2113,7 +2136,7 @@ Func_SUB_DataSecond
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     SUB_Done
-        
+
 SUB_Done
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2142,7 +2165,7 @@ Func_CMP
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2190,7 +2213,7 @@ Func_EOR
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get bits for Dn and Print
         MOVE.L  D4,D1
         MOVE.L  #9,D2
@@ -2201,7 +2224,7 @@ Func_EOR
 
         MOVE.L  #COMMA,D1
         JSR     Func_Print
-        
+
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2235,7 +2258,7 @@ Func_MULS_W
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2253,7 +2276,7 @@ Func_MULS_W
         MOVE.L  #3,D3
         JSR     Func_GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg        
+        JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2272,7 +2295,7 @@ Func_DIVS_W
         * print pseudo assembly
         MOVE    #DIVS_W_MSG,D1
         JSR     Func_Print
-        
+
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
@@ -2280,7 +2303,7 @@ Func_DIVS_W
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2298,7 +2321,7 @@ Func_DIVS_W
         MOVE.L  #3,D3
         JSR     Func_GetBits
         MOVE.L  D0,D1
-        JSR     Func_JumpAddressTableModeReg        
+        JSR     Func_JumpAddressTableModeReg
 
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
@@ -2325,7 +2348,7 @@ Func_MULS_L
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2340,11 +2363,11 @@ Func_MULS_L
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
-        
+
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-        
+
         * Get size bit
         MOVE.L  #10,D2
         MOVE.L  #1,D3
@@ -2352,7 +2375,7 @@ Func_MULS_L
         CMP.L   #0,D0
         BEQ     MULS_ONE_DESTINATION
         BRA     MULS_TWO_DESTINATIONS
-        
+
 MULS_ONE_DESTINATION
         * Print Address Destination
         MOVE.L  D4,D1
@@ -2362,7 +2385,7 @@ MULS_ONE_DESTINATION
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     MULS_DONE
-    
+
 MULS_TWO_DESTINATIONS
         * Print First Address Destination
         MOVE.L  D4,D1
@@ -2384,7 +2407,7 @@ MULS_TWO_DESTINATIONS
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     MULS_DONE
-        
+
 MULS_DONE
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
@@ -2411,7 +2434,7 @@ Func_DIVS_L
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get/Print mode/reg for destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2426,11 +2449,11 @@ Func_DIVS_L
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
-        
+
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-        
+
         * Get size bit
         MOVE.L  #10,D2
         MOVE.L  #1,D3
@@ -2438,7 +2461,7 @@ Func_DIVS_L
         CMP.L   #0,D0
         BEQ     DIVS_ONE_DESTINATION
         BRA     DIVS_TWO_DESTINATIONS
-        
+
 DIVS_ONE_DESTINATION
         * Print Address Destination
         MOVE.L  D4,D1
@@ -2448,7 +2471,7 @@ DIVS_ONE_DESTINATION
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     DIVS_DONE
-    
+
 DIVS_TWO_DESTINATIONS
         * Print First Address Destination
         MOVE.L  D4,D1
@@ -2470,7 +2493,7 @@ DIVS_TWO_DESTINATIONS
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     DIVS_DONE
-        
+
 DIVS_DONE
         * increment A5 by 1 words
         MOVE.L  #1,D1   * put 2 in D1 for parameter 1
@@ -2491,7 +2514,7 @@ Func_LSR
         JSR     Func_Print
 
         JSR     Func_PrintRotate
-        
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2511,7 +2534,7 @@ Func_LSL
         JSR     Func_Print
 
         JSR     Func_PrintRotate
-        
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2531,7 +2554,7 @@ Func_ASR
         JSR     Func_Print
 
         JSR     Func_PrintRotate
-        
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2549,9 +2572,9 @@ Func_ASL
         * print pseudo assembly
         MOVE    #ASL_MSG,D1
         JSR     Func_Print
-        
+
         JSR     Func_PrintRotate
-        
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2590,8 +2613,8 @@ Func_ROL
         MOVE    #ROL_MSG,D1
         JSR     Func_Print
 
-        JSR     Func_PrintRotate        
-        
+        JSR     Func_PrintRotate
+
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     Func_MoveInstructionPointer
@@ -2798,8 +2821,8 @@ Func_WordData
         JSR         Func_Word_A
         MOVEM.L     (SP)+,D1
         RTS
-        
-        
+
+
 *****************************************************************************
 * Func_LongData()
 * Prints #<data>
@@ -2811,8 +2834,8 @@ Func_LongData
         JSR         Func_Long_A
         MOVEM.L     (SP)+,D1
         RTS
-        
-        
+
+
 *****************************************************************************
 * Func_Data(Dummy, Size)
 *           D1     D2
@@ -2834,7 +2857,7 @@ LONG
         JSR         Func_LongData
         MOVEM.L     (SP)+,D1-D2
         RTS
-    
+
 
 *****************************************************************************
 * Func_Print_Number(Number)
@@ -2850,7 +2873,7 @@ Func_Print_Number
         MULS.W      #2,D0
         ADD.W       D0,D1
         JSR         Func_Print
-        MOVEM.L     (SP)+,D0-D1        
+        MOVEM.L     (SP)+,D0-D1
         RTS
 
 *****************************************************************************
@@ -2879,40 +2902,40 @@ PrintStringBuffer
 PSB_PrintInvalid
     MOVE.L  #kInvalidOpcode,D1
     JSR     PrintMessage
- 
+
 PSB_Done
     MOVEM.L (SP)+, D0-D2/A0 * Restore used registers
     RTS
- 
+
 *****************************************************************************
 * void InvalidateStringBuffer()
 * Args: none
 * Invalidates the string buffer so that its contents will not be printed.
-*****************************************************************************   
+*****************************************************************************
 InvalidateStringBuffer
     MOVE    #kStringBuffer,A0
     MOVE.L  #$0,(A0)       * set the valid bit to false
     RTS
- 
+
 *****************************************************************************
 * void ResetStringBuffer()
 * Args: none
 * Resets the contents of the string buffer and sets the valid bit to true
-*****************************************************************************    
+*****************************************************************************
 ResetStringBuffer
     MOVEM.L D0/A0, -(SP) * Save used registers
-    
+
     MOVE.L  #kStringBufferSize,D0
-    MOVE    #kStringBuffer,A0    
+    MOVE    #kStringBuffer,A0
     MOVE.L  #$01000000,(A0)+        * reset the string head
     SUB     #4,D0
-    
+
 RSB_While
     CMP     #0,D0
     BEQ     RSB_EndWhile
-    
+
     MOVE.L  #0,(A0)+                * zero out the string buffer
-    
+
     SUB     #4,D0
     BRA     RSB_While
 RSB_EndWhile
@@ -2927,35 +2950,35 @@ RSB_EndWhile
 *                 A D D x
 *     AddWordToStringBuffer($2C284134) prints out ",(A4"
 *                 , ( A 4
-*****************************************************************************  
+*****************************************************************************
 AddWordToStringBuffer
     MOVEM.L D0-D7/A0-A1, -(SP) * Save used registers
     MOVE    D2,D4
-        
+
     MOVE    #kStringBuffer,A1
     MOVE.L  (A1),D5     * D5 contains the string meta
     AND.L   #$00FFFFFF,D5   * mask out the size of the string
     MOVE    D4,D6       * save the amount of characters being added
-    
+
     MOVE    #kStringBuffer,A0
     ADD     #4,A0       * ignore string head
     ADD     D5,A0       * offset to the end of the string
-    
+
 AWTS_While
     CMP     #0,D4       * while (index != 0)
-    BEQ     AWTS_EndWhile  
-    
+    BEQ     AWTS_EndWhile
+
     MOVE    D4,D2
     SUB     #1,D2
     MULS    #8,D2       * get the bit number
     MOVE    #8,D3       * read the byte
     JSR     GetBits
-    
+
     MOVE.B  D0,(A0)+
-    
+
     SUB     #1,D4       * index --
-    BRA AWTS_While      
-    
+    BRA AWTS_While
+
 AWTS_EndWhile
 
     MOVE    #kStringBuffer,A1     * retreive the string meta
@@ -2993,27 +3016,27 @@ PrintSpace
 
 *****************************************************************************
 * void PrintHexadecimal(number, size)
-* Args: D1 (the number to print), D2 (how many numbers to print)     
-* Prints the hexadecimal number stored in D0. The size is used to print or 
+* Args: D1 (the number to print), D2 (how many numbers to print)
+* Prints the hexadecimal number stored in D0. The size is used to print or
 * omit trailing zeros;
 * ex. PrintHexadecimal($AFE1, 4) prints "AFE1"
 *     PrintHexadecimal($00BC, 4) prints "00E1", leading 0s to fit 4 chars
 *     PrintHexadecimal($0012, 2) prints   "12", no leading 0s
 *****************************************************************************
-PrintHexadecimal    
+PrintHexadecimal
     MOVEM.L D1-D7, -(SP)    * save registers
     MOVE.L  D1,D7   * save the register
     MOVE    D2,D6   * counter
-    
+
     SUB     #1,D2
     ASL.L   #2,D2   * offset to the correct hex bit
     MOVE    #4,D3   * pass the size of a hex bit to GetBits
-    
+
 RLPH_DoWhile        * individually mask and print each hex bit
     MOVE.L  D7,D1
     JSR     GetBits
     MOVE    D0,D1
-    CMP     #10,D1  
+    CMP     #10,D1
     BGE     RLPH_ToAsciiLetter  * if (hexBit >= $A)
                                 * else
     ADD     #48,D1  * add 48 to convert number to ascii
@@ -3022,25 +3045,25 @@ RLPH_DoWhile        * individually mask and print each hex bit
 RLPH_ToAsciiLetter
     ADD     #55,D1  * add 55 to convert $A to 'A'
                     * ascii value of 'A' is 65, 65-10 = 55
-                    
+
     BRA RLPH_Continue
-    
+
 RLPH_Continue
     MOVE    D2,D4   * save D2
     MOVE    #1,D2   * adding 1 character to string buffer
     JSR     AddWordToStringBuffer * print the letter
     MOVE    D4,D2   * restore D2
-    
+
     SUB.L   #4,D2   * get the offset to the next hex bit
-    
+
     SUB     #1,D6
     BEQ RLPH_Done   * (while --D6 != 0)
     BRA RLPH_DoWhile
-    
+
 RLPH_Done
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
-        
+
 *****************************************************************************
 * int GetBits(value, lowerBit, numBits)
 * D0          D1     D2        D3
@@ -3064,7 +3087,7 @@ GetBits
     AND.L   D4,D0       * mask out higher bits
 
     MOVEM.L  (SP)+,D1-D4    * restore used register(s)
-    RTS 
+    RTS
 
 *****************************************************************************
 * void PrintMessage(String* message)
@@ -3076,7 +3099,7 @@ PrintMessage        * void PrintMessage(String* message)
     MOVEM.L D1-D7, -(SP)    * save registers
     MOVEA.L D1,A1   * load address of message from argument 1
     MOVE.B  #14,D0  * print contents of A1
-    TRAP    #15     
+    TRAP    #15
     MOVEM.L (SP)+, D1-D7    * restore registers
     RTS
 
@@ -3090,25 +3113,25 @@ Func_PrintLabel
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
-        
+
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Get Displacement
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     Func_GetBits
-        
+
         * If displacement == 00
         CMP.L   #0,D0
         BEQ     DISPLACEMENT_WORD
-        
+
         * If displacement == FF
         CMP.L   #$FF,D0
         BEQ     DISPLACEMENT_LONG
-        
+
         * Else
         MOVE.B  D0,D1
         LSL     #4,D1
@@ -3118,7 +3141,7 @@ Func_PrintLabel
         LSR     #4,D1
         JSR     Func_Print_Number
         BRA     LABEL_DONE
-        
+
 DISPLACEMENT_WORD
         JSR     Func_WordData
         BRA     LABEL_DONE
@@ -3141,7 +3164,7 @@ Func_PrintRotate
 
         * print the size string (standard is in bits 6-7)
         JSR     Func_PrintSizeStandard
-        
+
         * Gets address
         MOVE.W  (A5),D1
         MOVE.W  (A5),D4
@@ -3149,7 +3172,7 @@ Func_PrintRotate
         * Print space
         MOVE.L  #SPACE,D1
         JSR     Func_Print
-        
+
         * Check for memory rotate XXX <ea>
         MOVE.L  D4,D1
         MOVE.L  #6,D2
@@ -3157,7 +3180,7 @@ Func_PrintRotate
         JSR     Func_GetBits
         CMP.B   #3,D0
         BEQ     ROTATE_MEMORY
-        
+
         * Get source
         MOVE.L  D4,D1
         MOVE.L  #5,D2
@@ -3166,7 +3189,7 @@ Func_PrintRotate
         CMP.B   #0,D0
         BEQ     ROTATE_DATA
         BRA     ROTATE_REG
-        
+
 ROTATE_DATA
         MOVE.L  #POUND,D1
         JSR     Func_Print
@@ -3179,7 +3202,7 @@ ROTATE_DATA
         MOVE.L  D0,D1
         JSR     Func_Print_Number
         BRA     ROTATE_CONTINUE
-        
+
 ROTATE_REG
         MOVE.L  D4,D1
         MOVE.L  #9,D2
@@ -3188,7 +3211,7 @@ ROTATE_REG
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
         BRA     ROTATE_CONTINUE
-        
+
 ROTATE_MEMORY
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -3206,16 +3229,21 @@ ROTATE_CONTINUE
         JSR     Func_GetBits
         MOVE.L  D0,D1
         JSR     Func_JumpAddressTableModeReg
-        
+
 ROTATE_DONE
         MOVEM.L  (SP)+,D1-D4    * restore
         RTS
 
+
+
+*****************************************************************************
 *****************************************************************************
 * Data
 *****************************************************************************
+*****************************************************************************
+
 CR      EQU     $0D
-LF      EQU     $0A    
+LF      EQU     $0A
 
 * Ascii Table Reference
 * A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
@@ -3304,7 +3332,6 @@ kRestartPrompt
     DC.B 'Would you like to dissamble another program (y/n)? ',0
 
 * opcode print outs
-NO_OP_MSG       DC.B    'Error: invalid opcode',0
 MOVE_B_MSG      DC.B    'MOVE.B',0
 MOVE_W_MSG      DC.B    'MOVE.W',0
 MOVEA_W_MSG     DC.B    'MOVEA.W',0
@@ -3359,7 +3386,7 @@ MONEY           DC.B    '$',0
 SPACE           DC.B    ' ',0
 COMMA           DC.B    ',',0
 
-* Number Table 
+* Number Table
 ZERO            DC.B    '0',0
 ONE             DC.B    '1',0
 TWO             DC.B    '2',0
@@ -3377,70 +3404,7 @@ THIRTEEN        DC.B    'D',0
 FOURTEEN        DC.B    'E',0
 FIFTEEN         DC.B    'F',0
 
-* opcodes loaded into memory
-* output should be in the same order
-FirstOpcode     DC.W     %0001000000000000      * MOVE.B
-*                DC.W     %0010000000000000      * MOVE.L
-*                DC.W     %0010000001000000      * MOVEA.L
-*                DC.W     %0011000000000000      * MOVE.W
-*                DC.W     %0011000001000000      * MOVEA.W
-*                DC.W     %1101000000000000      * ADD
-*                DC.W     %1101000011000000      * ADDA
-*                DC.W     %1000000000000000      * OR
-*                DC.W     %1000000011000000      * DIVS.W
-*                DC.W     %1100000000000000      * MULS.W
-*                DC.W     %1001000000000000      * SUB
-*                DC.W     %0101000000000000      * SUBQ
-*                DC.W     %1011000000000000      * CMP
-*                DC.W     %1011000100000000      * EOR
-                DC.W     %0110010100000000      * BCS
-                DC.W     %0110100000000000      * BVC
-                DC.W     %0110110000000000      * BGE
-                DC.W     %0110110100000000      * BLT
-                DC.W     %0110000000000000      * BRA
-                DC.W     %1110000000001000      * LSR
-                DC.W     %1110001011000000      * LSR <ea>
-                DC.W     %1110000100001000      * LSL
-                DC.W     %1110001111000000      * LSL <ea>
-                DC.W     %1110000000000000      * ASR
-                DC.W     %1110000011000000      * ASR <ea>
-                DC.W     %1110000100000000      * ASL
-                DC.W     %1110000111000000      * ASL <ea>
-                DC.W     %1110000000011000      * ROR
-                DC.W     %1110011011000000      * ROR <ea>
-                DC.W     %1110000100011000      * ROL
-                DC.W     %1110011111000000      * ROL <ea>
-                DC.W     %0000000110000000      * BCLR Dn,<ea>
-                DC.W     %0000100010000000      * BCLR Dn,Dn
-                DC.W     %0000000000000000      * ORI
-                DC.W     %0000110000000000      * CMPI
-                DC.W     %0100000111000000      * LEA
-                DC.W     %0100111010000000      * JSR
-                DC.W     %0100111001000000      * RTS
-                DC.W     %0100110000000000      * MULS.L
-                DC.W     %0000100000000000      *    MULS.L (cont)
-                DC.W     %0100110001000000      * DIVS.L
-                DC.W     %0000100000000000      *    DIVS.L (cont)
-                DC.W     %0100100010000000      * MOVEM
-                DC.W     %0100100010000000      *    MOVEM (cont)
-                DC.W     %0100010000000000      * NEG
-                DC.W     %0111000000000000      * bad op (based on first 4 bits)
-                DC.W     %1010000000000000      * bad op (based on first 4 bits)
-                DC.W     %1111000000000000      * bad op (based on first 4 bits)
-                DC.W     %0110111100000000      * bad op (variation of Bcc)
-                DC.W     %0110000100000000      * bad op (variation of Bcc)
-                DC.W     %0110001000000000      * bad op (variation of Bcc)
-                DC.W     %0110001100000000      * bad op (variation of Bcc)
-                DC.W     %0110010000000000      * bad op (variation of Bcc)
-                DC.W     %1110000000010000      * bad op (variation of RO*/AS*/LS*)
-                DC.W     %1110010011000000      * bad op (variation of RO*/AS*/LS*)
-NoMoreOpcodes   DC.W     %1111111111111111
-
     END         START
-
-
-
-
 
 
 
