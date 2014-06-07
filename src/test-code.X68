@@ -329,18 +329,11 @@ Start   ORG     $7FC0    ; first instruction of program
         **** Invalid AS/LS/RO ****       
         DC.W    %1110000000010000      * bad op (variation of RO*/AS*/LS*)
         DC.W    %1110010011000000      * bad op (variation of RO*/AS*/LS*)
- 
-        **** MOVEM.B ****
-        *MOVEM.B  D1-D3/A4-A6/A1,-(SP)
-        *MOVEM.B  D4/A4/D3/D1/A2,-(SP)
-        *MOVEM.B  D1/A3,-(SP)
 
         **** MOVEM.W ****
         MOVEM.W  D1-D3/A4-A6/A1,-(SP)
-        MOVE.L  D1,D2
         MOVEM.W  D4/A4/D3/D1/A2,-(SP)
         MOVEM.W  D1/A3,-(SP)
-        
         MOVEM.W  (SP)+,D1-D3/A4-A6/A1
         MOVEM.W  (SP)+,D4/A4/D3/D1/A2
         MOVEM.W  (SP)+,D1/A3
@@ -349,7 +342,6 @@ Start   ORG     $7FC0    ; first instruction of program
         MOVEM.L  D1-D3/A4-A6/A1,-(SP)
         MOVEM.L  D4/A4/D3/D1/A2,-(SP)
         MOVEM.L  D1/A3,-(SP)       
-
         MOVEM.L  (SP)+,D1-D3/A4-A6/A1
         MOVEM.L  (SP)+,D4/A4/D3/D1/A2
         MOVEM.L  (SP)+,D1/A3      

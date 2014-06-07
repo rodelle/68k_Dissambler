@@ -3984,36 +3984,6 @@ sComma  EQU     $2C
 
 sOR     EQU     $4F52
 
-sADD    EQU     $414444
-sBCC    EQU     $424343
-sBCS    EQU     $424353
-sBVC    EQU     $425643
-sBGE    EQU     $424745
-sBLT    EQU     $424C54
-sBRA    EQU     $425241
-sCMP    EQU     $434D50
-sEOR    EQU     $454F52
-sROR    EQU     $524F52
-sROL    EQU     $524F4C
-sLSR    EQU     $4C5352
-sLSL    EQU     $4C534C
-sASL    EQU     $41534C
-sASR    EQU     $415352
-sSUB    EQU     $535542
-sORI    EQU     $4F5249
-sJSR    EQU     $4A5352
-sLEA    EQU     $4C4541
-sRTS    EQU     $525453
-sNEG    EQU     $4E4547
-
-sADDA   EQU     $41444441
-sMOVE   EQU     $4D4F5645
-sBCLR   EQU     $42434C52
-sDIVS   EQU     $44495653
-sSUBQ   EQU     $53554251
-sMULS   EQU     $4D554C53
-sCMPI   EQU     $434D5049
-
 NEW_LINE        DC.B    CR,LF,0
 START_MSG
     DC.B    '    __   ___  _                       _   _       ',CR,LF
