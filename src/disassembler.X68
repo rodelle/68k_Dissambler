@@ -3564,7 +3564,6 @@ LABEL_DONE
 
 *****************************************************************************
 * Func_PrintRotate()
-* Dummy Return
 *****************************************************************************
 Func_PrintRotate
         MOVEM.L     D1-D4,-(SP)
@@ -3606,6 +3605,13 @@ ROTATE_DATA
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
+        
+        * If D0 == 0 change to 8
+        CMP.L   #0,D0
+        BNE     ROTATE_DATA_CONTINUE
+        MOVE.L  #8,D0
+
+ROTATE_DATA_CONTINUE        
         MOVE.L  D0,D1
         JSR     Func_Print_Number
         BRA     ROTATE_CONTINUE
