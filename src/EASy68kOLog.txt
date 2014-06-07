@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 7:42:03 PM
+EASy68K output log file: 6/6/2014 9:26:47 PM
 
     __   ___  _                       _   _       
    / /  / _ \| |                     | \ | |      
@@ -134,7 +134,8 @@ $00008128    CMP.B D2,D4
 Press any key to continue
  
 $0000812A    CMP.B $0001FACE,D7
-$00008130    CMP.W #$98AEB45A,D3
+$00008130    CMP.W #$98AE,D3
+$00008134    CMP.W (A2)+,D2
 $00008136    CMP.L #$0FAFAE67,D4
 $0000813C    CMP.L A3,D6
 $0000813E    Invalid Opcode
@@ -154,9 +155,9 @@ $0000816C    EOR.L D2,$0042
 $00008170    EOR.L D6,D6
 $00008172    NEG.B D4
 $00008174    NEG.B $0524
-$00008178    NEG.B (A1)
 Press any key to continue
  
+$00008178    NEG.B (A1)
 $0000817A    NEG.W (A2)
 $0000817C    NEG.W (A4)+
 $0000817E    NEG.W $0001FACE
@@ -178,9 +179,9 @@ $000081AE    ROL.B #$3,D3
 $000081B0    ROL.B D3,D4
 $000081B2    ROL.W D6,D1
 $000081B4    ROL.W #$7,D3
-$000081B6    ROL.L #$2,D6
 Press any key to continue
  
+$000081B6    ROL.L #$2,D6
 $000081B8    ROL.L D4,D4
 $000081BA    ROL (A4)
 $000081BC    ROL $00045314
@@ -202,9 +203,9 @@ $000081E2    ASL (A4)
 $000081E4    ASL $00045314
 $000081EA    ASR.B #$8,D2
 $000081EC    ASR.B D3,D5
-$000081EE    ASR.W D6,D6
 Press any key to continue
  
+$000081EE    ASR.W D6,D6
 $000081F0    ASR.W #$4,D3
 $000081F2    ASR.L #$2,D6
 $000081F4    ASR.L D1,D5

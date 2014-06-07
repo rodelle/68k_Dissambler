@@ -2471,8 +2471,8 @@ Func_CMP
 
         * Get size for JumpAddressTableModeReg
         MOVE.L  D4,D1
-        MOVE.L  #6,D2
-        MOVE.L  #2,D3
+        MOVE.L  #7,D2
+        MOVE.L  #1,D3
         JSR     GetBits
         MOVE.L  D0,D5       * D5 now contains size of CMP opcode
 
