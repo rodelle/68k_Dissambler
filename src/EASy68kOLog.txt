@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 6:28:47 PM
+EASy68K output log file: 6/6/2014 6:45:40 PM
 
     __   ___  _                       _   _       
    / /  / _ \| |                     | \ | |      
@@ -215,14 +215,14 @@ $00008200    Invalid Opcode
 $00008202    MOVEM.W A6/A5/A4/A1/D3/D2/D1,-(A7)
 $00008206    MOVEM.W A4/A2/D4/D3/D1,-(A7)
 $0000820A    MOVEM.W A3/D1,-(A7)
-$0000820E    MOVEM.W (A7)+,A6/A5/A4/D6/D3/D2/D1
-$00008212    MOVEM.W (A7)+,A6/A4/A3/D5/D3
-$00008216    MOVEM.W (A7)+,A6/D4
+$0000820E    MOVEM.W (A7)+,D1/D2/D3/A1/A4/A5/A6
+$00008212    MOVEM.W (A7)+,D1/D3/D4/A2/A4
+$00008216    MOVEM.W (A7)+,D1/A3
 $0000821A    MOVEM.L A6/A5/A4/A1/D3/D2/D1,-(A7)
 $0000821E    MOVEM.L A4/A2/D4/D3/D1,-(A7)
 $00008222    MOVEM.L A3/D1,-(A7)
-$00008226    MOVEM.L (A7)+,A6/A5/A4/D6/D3/D2/D1
-$0000822A    MOVEM.L (A7)+,A6/A4/A3/D5/D3
-$0000822E    MOVEM.L (A7)+,A6/D4
+$00008226    MOVEM.L (A7)+,D1/D2/D3/A1/A4/A5/A6
+$0000822A    MOVEM.L (A7)+,D1/D3/D4/A2/A4
+$0000822E    MOVEM.L (A7)+,D1/A3
 Would you like to dissamble another program (y/n)?  
 Goodbye!
