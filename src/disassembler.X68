@@ -816,7 +816,7 @@ Done_Func_BCLR_ORI_CMPI
 *****************************************************************************
 * void Func_MISC()
 * second level opcode decoding
-* determines between JSR, LEA, RTS, NEG, DIVS, MULS, MOVEM
+* determines between JSR, LEA, RTS, NEG, MOVEM
 *****************************************************************************
 Func_MISC
         MOVEM.L  D1-D3,-(SP)    * save D1-D3 so they can be modified
@@ -851,24 +851,8 @@ RTS_Func_MISC
         * else if (D0 is 57)
         * then the instruction is RTS
         CMP     #57,D0
-        BNE     MULS_Func_MISC
-        JSR     Func_RTS
-        BRA     Done_Func_MISC
-
-MULS_Func_MISC
-        * else if (D0 is 48)
-        * then the instruction is MULS.L
-        CMP     #48,D0
-        BNE     DIVS_Func_MISC
-        JSR     Func_MULS_L
-        BRA     Done_Func_MISC
-
-DIVS_Func_MISC
-        * else if (D0 is 49)
-        * then the instruction is DIVS.L
-        CMP     #49,D0
         BNE     NEG_MOVEM_Func_MISC
-        JSR     Func_DIVS_L
+        JSR     Func_RTS
         BRA     Done_Func_MISC
 
 NEG_MOVEM_Func_MISC
@@ -887,7 +871,7 @@ NEG_Func_ASL_ASR
         JSR     Func_NEG
 
 Done_Func_MISC
-        * done determining JSR, LEA, RTS, NEG, DIVS, MULS, MOVEM
+        * done determining JSR, LEA, RTS, NEG, MOVEM
         MOVEM.L  (SP)+,D1-D3    * restore
         RTS
 
@@ -2718,178 +2702,6 @@ DIVS_W_DONE
 
 
 *****************************************************************************
-* void Func_MULS_L()
-*****************************************************************************
-Func_MULS_L
-        MOVEM.L  D1-D4,-(SP)    * save registers
-
-        * print pseudo assembly
-        MOVE    #MULS_L_MSG,D1
-        JSR     AddStringToStringBuffer
-
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-
-        * Print space
-        MOVE.L  #SPACE,D1
-        JSR     AddStringToStringBuffer
-
-        * Get/Print mode/reg for destination
-        MOVE.L  D4,D1
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-
-        MOVE.L  #COMMA,D1
-        JSR     AddStringToStringBuffer
-
-        * increment A5 by 1 words
-        MOVE.L  #1,D1   * put 1 in D1 for parameter 1
-        JSR     MoveInstructionPointer
-
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-
-        * Get size bit
-        MOVE.L  #10,D2
-        MOVE.L  #1,D3
-        JSR     GetBits
-        CMP.L   #0,D0
-        BEQ     MULS_ONE_DESTINATION
-        BRA     MULS_TWO_DESTINATIONS
-
-MULS_ONE_DESTINATION
-        * Print Address Destination
-        MOVE.L  D4,D1
-        MOVE.L  #12,D2
-        MOVE.L  #3,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-        BRA     MULS_DONE
-
-MULS_TWO_DESTINATIONS
-        * Print First Address Destination
-        MOVE.L  D4,D1
-        MOVE.L  #12,D2
-        MOVE.L  #3,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-
-        * Print '-'
-        MOVE.L  #MINUS,D1
-        JSR     AddStringToStringBuffer
-
-        * Print Second Address Destination
-        MOVE.L  D4,D1
-        MOVE.L  #0,D2
-        MOVE.L  #3,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-        BRA     MULS_DONE
-
-MULS_DONE
-        * increment A5 by 1 words
-        MOVE.L  #1,D1   * put 2 in D1 for parameter 1
-        JSR     MoveInstructionPointer
-
-        MOVEM.L  (SP)+,D1-D4    * restore
-        RTS
-
-
-*****************************************************************************
-* void Func_DIVS_L()
-*****************************************************************************
-Func_DIVS_L
-        MOVEM.L  D1-D4,-(SP)    * save registers
-
-        * print pseudo assembly
-        MOVE    #DIVS_L_MSG,D1
-        JSR     AddStringToStringBuffer
-
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-
-        * Print space
-        MOVE.L  #SPACE,D1
-        JSR     AddStringToStringBuffer
-
-        * Get/Print mode/reg for destination
-        MOVE.L  D4,D1
-        MOVE.L  #0,D2
-        MOVE.L  #6,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-
-        MOVE.L  #COMMA,D1
-        JSR     AddStringToStringBuffer
-
-        * increment A5 by 1 words
-        MOVE.L  #1,D1   * put 2 in D1 for parameter 1
-        JSR     MoveInstructionPointer
-
-        * Gets address
-        MOVE.W  (A5),D1
-        MOVE.W  (A5),D4
-
-        * Get size bit
-        MOVE.L  #10,D2
-        MOVE.L  #1,D3
-        JSR     GetBits
-        CMP.L   #0,D0
-        BEQ     DIVS_ONE_DESTINATION
-        BRA     DIVS_TWO_DESTINATIONS
-
-DIVS_ONE_DESTINATION
-        * Print Address Destination
-        MOVE.L  D4,D1
-        MOVE.L  #12,D2
-        MOVE.L  #3,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-        BRA     DIVS_DONE
-
-DIVS_TWO_DESTINATIONS
-        * Print First Address Destination
-        MOVE.L  D4,D1
-        MOVE.L  #12,D2
-        MOVE.L  #3,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-
-        * Print '-'
-        MOVE.L  #MINUS,D1
-        JSR     AddStringToStringBuffer
-
-        * Print Second Address Destination
-        MOVE.L  D4,D1
-        MOVE.L  #0,D2
-        MOVE.L  #3,D3
-        JSR     GetBits
-        MOVE.L  D0,D1
-        JSR     JumpAddressTableModeReg
-        BRA     DIVS_DONE
-
-DIVS_DONE
-        * increment A5 by 1 words
-        MOVE.L  #1,D1   * put 2 in D1 for parameter 1
-        JSR     MoveInstructionPointer
-
-        MOVEM.L  (SP)+,D1-D4    * restore
-        RTS
-
-
-*****************************************************************************
 * void Func_LSR()
 *****************************************************************************
 Func_LSR
@@ -4080,8 +3892,6 @@ ADDA_MSG        DC.B    'ADDA',0
 OR_MSG          DC.B    'OR',0
 DIVS_W_MSG      DC.B    'DIVS.W',0
 MULS_W_MSG      DC.B    'MULS.W',0
-DIVS_L_MSG      DC.B    'DIVS.L',0
-MULS_L_MSG      DC.B    'MULS.L',0
 SUB_MSG         DC.B    'SUB',0
 SUBQ_MSG        DC.B    'SUBQ',0
 CMP_MSG         DC.B    'CMP',0
@@ -4151,6 +3961,7 @@ FIFTEEN         DC.B    'F',0
 *****************************************************************************
 *****************************************************************************
     END         START
+
 
 
 

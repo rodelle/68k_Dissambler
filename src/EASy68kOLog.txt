@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 7:36:45 PM
+EASy68K output log file: 6/6/2014 7:42:03 PM
 
     __   ___  _                       _   _       
    / /  / _ \| |                     | \ | |      
