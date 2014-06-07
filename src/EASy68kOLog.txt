@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 7:07:31 PM
+EASy68K output log file: 6/6/2014 7:36:45 PM
 
     __   ___  _                       _   _       
    / /  / _ \| |                     | \ | |      
@@ -137,7 +137,7 @@ $0000812A    CMP.B $0001FACE,D7
 $00008130    CMP.W #$98AEB45A,D3
 $00008136    CMP.L #$0FAFAE67,D4
 $0000813C    CMP.L A3,D6
-$0000813E    CMP.B A4,D3
+$0000813E    Invalid Opcode
 $00008140    CMPI.B #$0042,$0042
 $00008146    CMPI.B #$0024,(A4)
 $0000814A    CMPI.W #$B437,(A6)+

@@ -1589,6 +1589,7 @@ Func_OR_DataFirst
 
 Func_OR_DataSecond
         * Checks for invalid address
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -1983,8 +1984,9 @@ MOVEM_CONTINUE
 MOVEM_IN
         * regsiters moved to memory
         * decrement the stack pointer
-        
+
         * Checks for invalid address
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -2020,8 +2022,9 @@ MOVEM_IN
 MOVEM_OUT
         * stack moved to registers
         * increment the stack pointer
-        
+
         * Checks for invalid address
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -2489,6 +2492,20 @@ Func_CMP
         JSR     GetBits
         MOVE.L  D0,D5       * D5 now contains size of CMP opcode
 
+        * if D5 contains 0, then size is byte
+        * make sure <ea> mode is not An
+        CMP     #0,D5
+        BNE     CONTINUE_Func_CMP
+        MOVE.L  D4,D1
+        MOVE.L  #3,D2
+        MOVE.L  #3,D3
+        JSR     GetBits
+        CMP     #1,D0   * if D0 contains 1, then mode is An
+        BNE     CONTINUE_Func_CMP
+        JSR     InvalidateStringBuffer
+        BRA     DONE_Func_CMP
+
+CONTINUE_Func_CMP
         * Get/Print mode/reg for <ea> destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
@@ -2510,6 +2527,7 @@ Func_CMP
         MOVE.L  D0,D1
         JSR     JumpAddressTableModeReg
 
+DONE_Func_CMP
         * increment A5 by 1 word
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
@@ -2658,6 +2676,7 @@ Func_DIVS_W
         JSR     AddStringToStringBuffer
 
         * Checks for invalid address
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
@@ -3605,13 +3624,13 @@ ROTATE_DATA
         MOVE.L  #9,D2
         MOVE.L  #3,D3
         JSR     GetBits
-        
+
         * If D0 == 0 change to 8
         CMP.L   #0,D0
         BNE     ROTATE_DATA_CONTINUE
         MOVE.L  #8,D0
 
-ROTATE_DATA_CONTINUE        
+ROTATE_DATA_CONTINUE
         MOVE.L  D0,D1
         JSR     Func_Print_Number
         BRA     ROTATE_CONTINUE
@@ -3630,6 +3649,7 @@ ROTATE_MEMORY
         JSR     AddStringToStringBuffer
 
         * Checks for invalid address
+        MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
