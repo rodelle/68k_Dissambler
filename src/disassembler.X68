@@ -2458,7 +2458,7 @@ SUB_Done
 * void Func_CMP()
 *****************************************************************************
 Func_CMP
-        MOVEM.L  D1-D4,-(SP)    * save D1
+        MOVEM.L  D1-D5,-(SP)    * save regsiters
 
         * print pseudo assembly
         MOVE    #CMP_MSG,D1
@@ -2475,14 +2475,23 @@ Func_CMP
         MOVE.L  #SPACE,D1
         JSR     AddStringToStringBuffer
 
-        * Get/Print mode/reg for destination
+        * Get size for JumpAddressTableModeReg
+        MOVE.L  D4,D1
+        MOVE.L  #6,D2
+        MOVE.L  #2,D3
+        JSR     GetBits
+        MOVE.L  D0,D5       * D5 now contains size of CMP opcode
+
+        * Get/Print mode/reg for <ea> destination
         MOVE.L  D4,D1
         MOVE.L  #0,D2
         MOVE.L  #6,D3
         JSR     GetBits
         MOVE.L  D0,D1
+        MOVE.L  D5,D2       * move D5 into D2 for JumpAddressTable parameter
         JSR     JumpAddressTableModeReg
 
+        * print comma
         MOVE.L  #COMMA,D1
         JSR     AddStringToStringBuffer
 
@@ -2498,7 +2507,7 @@ Func_CMP
         MOVE.L  #1,D1   * put 1 in D1 for parameter 1
         JSR     MoveInstructionPointer
 
-        MOVEM.L  (SP)+,D1-D4    * restore
+        MOVEM.L  (SP)+,D1-D5    * restore
         RTS
 
 
@@ -2506,7 +2515,7 @@ Func_CMP
 * void Func_EOR()
 *****************************************************************************
 Func_EOR
-        MOVEM.L  D1-D4,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save registers
 
         * print pseudo assembly
         MOVE    #EOR_MSG,D1
@@ -2568,7 +2577,7 @@ EOR_DONE
 * void Func_MULS_W()
 *****************************************************************************
 Func_MULS_W
-        MOVEM.L  D1-D4,-(SP)    * save D1
+        MOVEM.L  D1-D4,-(SP)    * save registers
 
         * print pseudo assembly
         MOVE    #MULS_W_MSG,D1
