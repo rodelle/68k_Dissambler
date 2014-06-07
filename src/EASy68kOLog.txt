@@ -1,4 +1,4 @@
-EASy68K output log file: 6/6/2014 6:17:55 PM
+EASy68K output log file: 6/6/2014 6:28:47 PM
 
     __   ___  _                       _   _       
    / /  / _ \| |                     | \ | |      
@@ -12,7 +12,7 @@ EASy68K output log file: 6/6/2014 6:17:55 PM
  | |   | | |  __/ ||  __/ | |  __/ | | | (_|  __/ 
  |_|   |_|  \___|_| \___|_|  \___|_| |_|\___\___| 
 Please enter the starting address: 7FC0
-Please enter the ending address: 822E
+Please enter the ending address: 8232
 $00007FC0    Invalid Opcode
 $00007FC2    Invalid Opcode
 $00007FC4    Invalid Opcode
@@ -163,11 +163,11 @@ $0000817E    NEG.W $0001FACE
 $00008184    NEG.L $1234ABCD
 $0000818A    NEG.L D7
 $0000818C    NEG.L -(A3)
-$0000818E    BCLR.L D4,$4532
-$00008192    BCLR.L D2,(A6)
-$00008194    BCLR.L D5,(A2)+
-$00008196    BCLR.L #$0003,$4532
-$0000819C    BCLR.L #$0007,(A3)
+$0000818E    BCLR.B D4,$4532
+$00008192    BCLR.B D2,(A6)
+$00008194    BCLR.B D5,(A2)+
+$00008196    BCLR.B #$0003,$4532
+$0000819C    BCLR.B #$0007,(A3)
 $000081A0    BCLR.L D4,D4
 $000081A2    BCLR.L D7,D6
 $000081A4    BCLR.L #$0056,D3
@@ -223,5 +223,6 @@ $0000821E    MOVEM.L A4/A2/D4/D3/D1,-(A7)
 $00008222    MOVEM.L A3/D1,-(A7)
 $00008226    MOVEM.L (A7)+,A6/A5/A4/D6/D3/D2/D1
 $0000822A    MOVEM.L (A7)+,A6/A4/A3/D5/D3
+$0000822E    MOVEM.L (A7)+,A6/D4
 Would you like to dissamble another program (y/n)?  
 Goodbye!
